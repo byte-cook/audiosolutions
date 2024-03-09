@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="AudioSolutions" uid="AudioSolutions" id="de.kobich.audiosolutions.product" application="AudioSolutions.application" version="9.0.0.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
+
+   <aboutInfo>
+      <image path="/de.kobich.audiosolutions/icons/audiosolutions.png"/>
+      <text>
+         AudioSolutions 9
+Copyright (C) 2024 Christoph Korn
+
+AudioSolutions is the software solution for all audio related issues like:
+- converting to MP3
+- editing ID3 tags
+- renaming files
+- and many more...
+
+Moreover, AudioSolutions allows to manage audio files and offers a fast search engine.
+It can handle thousand files and many more. 
+
+I hope you enjoy AudioSolutions.
+      </text>
+   </aboutInfo>
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>#-data 
+#@noDefault
+-data 
+/home/christoph/Desktop-PC/Projekte/Java/data/audiosolutions
+#-consoleLog
+#-Dswt.enable.autoScale=true -Dswt.autoScale=200 -Dswt.autoScale.method=nearest
+-clean
+--launcher.GTK_version
+2
+      </programArgs>
+      <vmArgs>-client -Xms512m -Xmx512m -DadjustHeightEnabled=true
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages i16="/de.kobich.audiosolutions/icons/logo-16x16.png" i32="/de.kobich.audiosolutions/icons/logo-32x32.png" i48="/de.kobich.audiosolutions/icons/logo-48x48.png" i64="/de.kobich.audiosolutions/icons/logo-64x64.png" i128="/de.kobich.audiosolutions/icons/logo-128x128.png"/>
+
+   <splash
+      location="de.kobich.audiosolutions"
+      startupProgressRect="5,450,970,15"
+      startupMessageRect="5,430,970,20"
+      startupForegroundColor="FFFFFF" />
+   <launcher name="audiosolutions">
+      <win useIco="true">
+         <bmp
+            winSmallHigh="/de.kobich.audiosolutions.ui/icons/logo-16x16-32bit.bmp"
+            winSmallLow="/de.kobich.audiosolutions.ui/icons/logo-16x16-8bit.bmp"
+            winMediumHigh="/de.kobich.audiosolutions.ui/icons/logo-32x32-32bit.bmp"
+            winMediumLow="/de.kobich.audiosolutions.ui/icons/logo-32x32-8bit.bmp"
+            winLargeHigh="/de.kobich.audiosolutions.ui/icons/logo-48x48-32bit.bmp"
+            winLargeLow="/de.kobich.audiosolutions.ui/icons/logo-48x48-8bit.bmp"/>
+      </win>
+   </launcher>
+
+
+   <vm>
+      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</linux>
+      <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/OSGi%Minimum-1.0</windows>
+   </vm>
+
+
+   <plugins>
+      <plugin id="com.ibm.icu"/>
+      <plugin id="com.sun.jna"/>
+      <plugin id="com.sun.jna.platform"/>
+      <plugin id="de.kobich.audiosolutions"/>
+      <plugin id="javax.annotation"/>
+      <plugin id="javax.inject"/>
+      <plugin id="org.apache.batik.constants"/>
+      <plugin id="org.apache.batik.css"/>
+      <plugin id="org.apache.batik.i18n"/>
+      <plugin id="org.apache.batik.util"/>
+      <plugin id="org.apache.commons.commons-io"/>
+      <plugin id="org.apache.commons.jxpath"/>
+      <plugin id="org.apache.commons.logging"/>
+      <plugin id="org.apache.felix.scr"/>
+      <plugin id="org.apache.xmlgraphics"/>
+      <plugin id="org.eclipse.compare.core"/>
+      <plugin id="org.eclipse.core.commands"/>
+      <plugin id="org.eclipse.core.contenttype"/>
+      <plugin id="org.eclipse.core.databinding"/>
+      <plugin id="org.eclipse.core.databinding.observable"/>
+      <plugin id="org.eclipse.core.databinding.property"/>
+      <plugin id="org.eclipse.core.expressions"/>
+      <plugin id="org.eclipse.core.filesystem"/>
+      <plugin id="org.eclipse.core.filesystem.linux.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.net"/>
+      <plugin id="org.eclipse.core.net.linux" fragment="true"/>
+      <plugin id="org.eclipse.core.resources"/>
+      <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.core.variables"/>
+      <plugin id="org.eclipse.debug.core"/>
+      <plugin id="org.eclipse.e4.core.commands"/>
+      <plugin id="org.eclipse.e4.core.contexts"/>
+      <plugin id="org.eclipse.e4.core.di"/>
+      <plugin id="org.eclipse.e4.core.di.annotations"/>
+      <plugin id="org.eclipse.e4.core.di.extensions"/>
+      <plugin id="org.eclipse.e4.core.di.extensions.supplier"/>
+      <plugin id="org.eclipse.e4.core.services"/>
+      <plugin id="org.eclipse.e4.emf.xpath"/>
+      <plugin id="org.eclipse.e4.ui.bindings"/>
+      <plugin id="org.eclipse.e4.ui.css.core"/>
+      <plugin id="org.eclipse.e4.ui.css.swt"/>
+      <plugin id="org.eclipse.e4.ui.css.swt.theme"/>
+      <plugin id="org.eclipse.e4.ui.di"/>
+      <plugin id="org.eclipse.e4.ui.dialogs"/>
+      <plugin id="org.eclipse.e4.ui.model.workbench"/>
+      <plugin id="org.eclipse.e4.ui.services"/>
+      <plugin id="org.eclipse.e4.ui.swt.gtk" fragment="true"/>
+      <plugin id="org.eclipse.e4.ui.widgets"/>
+      <plugin id="org.eclipse.e4.ui.workbench"/>
+      <plugin id="org.eclipse.e4.ui.workbench.addons.swt"/>
+      <plugin id="org.eclipse.e4.ui.workbench.renderers.swt"/>
+      <plugin id="org.eclipse.e4.ui.workbench.swt"/>
+      <plugin id="org.eclipse.e4.ui.workbench3"/>
+      <plugin id="org.eclipse.emf.common"/>
+      <plugin id="org.eclipse.emf.ecore"/>
+      <plugin id="org.eclipse.emf.ecore.change"/>
+      <plugin id="org.eclipse.emf.ecore.xmi"/>
+      <plugin id="org.eclipse.equinox.app"/>
+      <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.event"/>
+      <plugin id="org.eclipse.equinox.preferences"/>
+      <plugin id="org.eclipse.equinox.registry"/>
+      <plugin id="org.eclipse.equinox.security"/>
+      <plugin id="org.eclipse.equinox.security.linux" fragment="true"/>
+      <plugin id="org.eclipse.help"/>
+      <plugin id="org.eclipse.jface"/>
+      <plugin id="org.eclipse.jface.databinding"/>
+      <plugin id="org.eclipse.jface.text"/>
+      <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
+      <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.gtk.linux.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.team.core"/>
+      <plugin id="org.eclipse.text"/>
+      <plugin id="org.eclipse.ui"/>
+      <plugin id="org.eclipse.ui.console"/>
+      <plugin id="org.eclipse.ui.forms"/>
+      <plugin id="org.eclipse.ui.intro"/>
+      <plugin id="org.eclipse.ui.net"/>
+      <plugin id="org.eclipse.ui.views"/>
+      <plugin id="org.eclipse.ui.workbench"/>
+      <plugin id="org.eclipse.ui.workbench.texteditor"/>
+      <plugin id="org.eclipse.urischeme"/>
+      <plugin id="org.osgi.service.component"/>
+      <plugin id="org.osgi.service.event"/>
+      <plugin id="org.osgi.service.prefs"/>
+      <plugin id="org.osgi.util.function"/>
+      <plugin id="org.osgi.util.promise"/>
+      <plugin id="org.w3c.css.sac"/>
+      <plugin id="org.w3c.dom.events"/>
+      <plugin id="org.w3c.dom.smil"/>
+      <plugin id="org.w3c.dom.svg"/>
+   </plugins>
+
+   <configurations>
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
+
+</product>
