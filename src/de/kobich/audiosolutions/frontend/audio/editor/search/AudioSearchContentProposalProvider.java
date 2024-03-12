@@ -23,7 +23,7 @@ public class AudioSearchContentProposalProvider extends SimpleContentProposalPro
 			if (SearchTokenType.UNDEFINED.equals(variable)) {
 				continue;
 			}
-			proposals.add(variable.getKeyWord() + ":");
+			proposals.add(variable.getKeyWord() + ": ");
 		}
 		setProposals(proposals.toArray(new String[0]));
 		setFiltering(false);
