@@ -13,7 +13,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
-import de.kobich.audiosolutions.core.service.data.AddAudioDataByID3TagsRequest;
 import de.kobich.audiosolutions.core.service.data.AudioDataService;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
@@ -55,12 +54,10 @@ public class SetAudioDataByID3TagsAction extends AbstractHandler {
 				case WORKER_1:
 					IServiceProgressMonitor progressMonitor = super.getProgressMonitor();
 					try {
-						AddAudioDataByID3TagsRequest request = new AddAudioDataByID3TagsRequest(fileDescriptors);
-						request.setProgressMonitor(progressMonitor);
-						progressMonitor.beginTask(new ProgressData("Set Audio Data by ID3 tags...", request.getFileDescriptors().size()));
+						progressMonitor.beginTask(new ProgressData("Set Audio Data by ID3 tags...", fileDescriptors.size()));
 
 						AudioDataService audioDataService = AudioSolutions.getService(AudioDataService.class);
-						audioDataService.addAudioDataByID3Tags(request);
+						audioDataService.addAudioDataByID3Tags(fileDescriptors, progressMonitor);
 					}
 					finally {
 						progressMonitor.endTask(new ProgressData("Audio data successfully added"));

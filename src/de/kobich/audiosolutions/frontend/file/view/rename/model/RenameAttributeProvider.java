@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +14,6 @@ import de.kobich.audiosolutions.core.service.AudioData;
 import de.kobich.audiosolutions.core.service.AudioException;
 import de.kobich.audiosolutions.core.service.mp3.id3.IFileID3TagService;
 import de.kobich.audiosolutions.core.service.mp3.id3.MP3ID3TagType;
-import de.kobich.audiosolutions.core.service.mp3.id3.ReadID3TagRequest;
 import de.kobich.audiosolutions.core.service.mp3.id3.ReadID3TagResponse;
 import de.kobich.component.file.FileDescriptor;
 
@@ -102,8 +102,7 @@ public class RenameAttributeProvider {
 
 	private Map<MP3ID3TagType, String> getID3TagValues() throws AudioException {
 		if (id3Values == null) {
-			ReadID3TagRequest request = new ReadID3TagRequest(fileDescriptor);
-			ReadID3TagResponse response = id3TagService.readID3Tags(request);
+			ReadID3TagResponse response = id3TagService.readID3Tags(Set.of(fileDescriptor), null);
 			id3Values = response.getSucceededFiles().get(fileDescriptor);
 		}
 		return id3Values;

@@ -24,7 +24,6 @@ import de.kobich.audiosolutions.core.service.AudioFileResult;
 import de.kobich.audiosolutions.core.service.mp3.id3.ID3TagVersion;
 import de.kobich.audiosolutions.core.service.mp3.id3.IFileID3TagService;
 import de.kobich.audiosolutions.core.service.mp3.id3.MP3ID3TagType;
-import de.kobich.audiosolutions.core.service.mp3.id3.WriteSingleID3TagRequest;
 import de.kobich.audiosolutions.frontend.audio.view.id3.ID3TagView;
 import de.kobich.audiosolutions.frontend.audio.view.id3.model.ID3TagItem;
 import de.kobich.audiosolutions.frontend.common.FileDescriptorConverter;
@@ -153,9 +152,7 @@ public class ID3TagEditingSupport extends EditingSupport {
 					case WORKER_1:
 						logger.info("Set tag: " + tag + " to value: " + value);
 						IFileID3TagService id3TagService = AudioSolutions.getService(IFileID3TagService.JAUDIO_TAGGER, IFileID3TagService.class);
-						WriteSingleID3TagRequest request = new WriteSingleID3TagRequest(item.getFileDescriptors(), tag, value, ID3TagVersion.ALL);
-						request.setProgressMonitor(super.getProgressMonitor());
-						this.result = id3TagService.writeSingleID3Tag(request);
+						this.result = id3TagService.writeSingleID3Tag(item.getFileDescriptors(), tag, value, ID3TagVersion.ALL, super.getProgressMonitor());
 						break;
 					case UI_2:
 						if (value == null) {

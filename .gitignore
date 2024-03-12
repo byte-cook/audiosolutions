@@ -6,3 +6,4 @@
 *.log
 .options
 /classes/
+/docs-private/

@@ -22,7 +22,6 @@ import de.kobich.audiosolutions.core.service.AudioAttribute2StructureVariableMap
 import de.kobich.audiosolutions.core.service.AudioFileResult;
 import de.kobich.audiosolutions.core.service.mp3.id3.ID3TagVersion;
 import de.kobich.audiosolutions.core.service.mp3.id3.IFileID3TagService;
-import de.kobich.audiosolutions.core.service.mp3.id3.WriteID3TagsByStructureRequest;
 import de.kobich.audiosolutions.frontend.audio.view.id3.ID3TagView;
 import de.kobich.audiosolutions.frontend.audio.view.id3.ID3TagViewPredicate;
 import de.kobich.audiosolutions.frontend.common.FileDescriptorConverter;
@@ -78,11 +77,8 @@ public class SetID3TagsByStructureAction extends AbstractHandler {
 						IServiceProgressMonitor progressMonitor = super.getProgressMonitor();
 						try {
 							progressMonitor.beginTask(new ProgressData("Write ID3 tags...", fileDescriptors.size()));
-							WriteID3TagsByStructureRequest request = new WriteID3TagsByStructureRequest(fileDescriptors, ID3TagVersion.ID3_V2,
-									fileStructure);
-							request.setProgressMonitor(progressMonitor);
 							IFileID3TagService id3TagService = AudioSolutions.getService(IFileID3TagService.JAUDIO_TAGGER, IFileID3TagService.class);
-							result = id3TagService.writeID3TagsByStructure(request);
+							result = id3TagService.writeID3TagsByStructure(fileDescriptors, ID3TagVersion.ALL, fileStructure, progressMonitor);
 						}
 						finally {
 							progressMonitor.endTask(new ProgressData("ID3 tags successfully written"));

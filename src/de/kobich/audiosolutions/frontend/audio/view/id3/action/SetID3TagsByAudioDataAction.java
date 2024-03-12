@@ -20,7 +20,6 @@ import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.AudioFileResult;
 import de.kobich.audiosolutions.core.service.mp3.id3.ID3TagVersion;
 import de.kobich.audiosolutions.core.service.mp3.id3.IFileID3TagService;
-import de.kobich.audiosolutions.core.service.mp3.id3.WriteID3TagsByAudioDataRequest;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.audio.view.id3.ID3TagView;
 import de.kobich.audiosolutions.frontend.audio.view.id3.ID3TagViewPredicate;
@@ -63,10 +62,8 @@ public class SetID3TagsByAudioDataAction extends AbstractHandler {
 			protected void run(RunningState state) throws Exception {
 				switch (state) {
 				case WORKER_1:
-					WriteID3TagsByAudioDataRequest request = new WriteID3TagsByAudioDataRequest(fileDescriptors, ID3TagVersion.ID3_V2);
-					request.setProgressMonitor(super.getProgressMonitor());
 					IFileID3TagService id3TagService = AudioSolutions.getService(IFileID3TagService.JAUDIO_TAGGER, IFileID3TagService.class);
-					result = id3TagService.writeID3TagsByAudioData(request);
+					result = id3TagService.writeID3TagsByAudioData(fileDescriptors, ID3TagVersion.ALL, super.getProgressMonitor());
 					break;
 				case UI_2:
 					// show failed dialog

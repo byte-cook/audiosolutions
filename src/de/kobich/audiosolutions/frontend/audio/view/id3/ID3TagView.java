@@ -33,7 +33,6 @@ import org.eclipse.ui.services.ISourceProviderService;
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.mp3.id3.IFileID3TagService;
 import de.kobich.audiosolutions.core.service.mp3.id3.MP3ID3TagType;
-import de.kobich.audiosolutions.core.service.mp3.id3.ReadID3TagRequest;
 import de.kobich.audiosolutions.core.service.mp3.id3.ReadID3TagResponse;
 import de.kobich.audiosolutions.frontend.audio.view.id3.action.PinViewAction;
 import de.kobich.audiosolutions.frontend.audio.view.id3.model.ID3TagItem;
@@ -213,9 +212,7 @@ public class ID3TagView extends ViewPart {
 			ProgressMonitorAdapter progressMonitor = new ProgressMonitorAdapter(monitor);
 			try {
 				IFileID3TagService id3TagService = AudioSolutions.getService(IFileID3TagService.JAUDIO_TAGGER, IFileID3TagService.class);
-				ReadID3TagRequest request = new ReadID3TagRequest(mp3Files);
-				request.setProgressMonitor(progressMonitor);
-				ReadID3TagResponse response = id3TagService.readID3Tags(request);
+				ReadID3TagResponse response = id3TagService.readID3Tags(mp3Files, progressMonitor);
 				
 				Map<FileDescriptor, Map<MP3ID3TagType, String>> succeededFiles = response.getSucceededFiles();
 				List<FileDescriptor> failedFiles = response.getFailedFiles();
