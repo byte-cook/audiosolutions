@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="AudioSolutions" uid="AudioSolutions" id="de.kobich.audiosolutions.product" application="AudioSolutions.application" version="9.0.0.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="AudioSolutions" uid="AudioSolutions" id="de.kobich.audiosolutions.product" application="AudioSolutions.application" version="9.0.1.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/de.kobich.audiosolutions/icons/audiosolutions.png"/>
@@ -61,12 +61,10 @@ I hope you enjoy AudioSolutions.
       </win>
    </launcher>
 
-
    <vm>
       <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</linux>
       <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/OSGi%Minimum-1.0</windows>
    </vm>
-
 
    <plugins>
       <plugin id="com.ibm.icu"/>
