@@ -4,9 +4,15 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
+import org.eclipse.jface.fieldassist.ComboContentAdapter;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -24,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import de.kobich.audiosolutions.frontend.Activator;
+import de.kobich.audiosolutions.frontend.common.util.DecoratorUtils;
 import de.kobich.commons.ui.jface.ComboUtils;
 import de.kobich.commons.ui.jface.JFaceUtils;
 import de.kobich.commons.ui.jface.MementoUtils;
@@ -131,6 +138,21 @@ public class ModifyImportDirectoryDialog extends TitleAreaDialog implements IMem
 				}
 			}
 		});
+		
+		if (!importDirs.isEmpty()) {
+			try {
+				String[] proposals = importDirs.stream().map(File::getAbsolutePath).toArray(String[]::new);
+				SimpleContentProposalProvider proposalProvider = new SimpleContentProposalProvider(proposals);
+				proposalProvider.setFiltering(true);
+				KeyStroke keyStroke = KeyStroke.getInstance("Ctrl+Space");
+				DecoratorUtils.createDecorator(importDirectoryCombo, "Press Ctrl+Space to see proposals", FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
+				ContentProposalAdapter adapter = new ContentProposalAdapter(importDirectoryCombo, new ComboContentAdapter(), proposalProvider, keyStroke, null);
+				adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+			}
+			catch (ParseException exc) {
+			}
+
+		}
 		
 		JFaceUtils.createHorizontalSeparator(parent, 1);
 		restoreState();
