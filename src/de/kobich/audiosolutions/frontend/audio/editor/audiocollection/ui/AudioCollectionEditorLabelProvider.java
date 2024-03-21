@@ -113,7 +113,7 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 			AlbumTreeNode albumNode = (AlbumTreeNode) element;
 			switch (column) {
 				case FILE_NAME:
-					return albumNode.getContent();
+					return albumNode.getLabel();
 				default:
 					return "";
 			}

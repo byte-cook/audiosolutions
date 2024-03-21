@@ -106,7 +106,7 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 			// Determine which column and do the appropriate sort
 			switch (column) {
 				case FILE_NAME:
-					rc = file1.getContent().compareToIgnoreCase(file2.getContent());
+					rc = file1.getLabel().compareToIgnoreCase(file2.getLabel());
 					break;
 				default:
 					rc = 0;
