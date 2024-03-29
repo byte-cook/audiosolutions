@@ -3,7 +3,7 @@ package de.kobich.audiosolutions.frontend.audio.view.mediums.ui;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumItem;
+import de.kobich.audiosolutions.core.service.persist.domain.Medium;
 import de.kobich.commons.collections.NaturalSortStringComparator;
 
 /**
@@ -60,14 +60,11 @@ public class MediumComparator extends ViewerComparator {
 		}
 
 		int rc = 0;
-		if (e1 instanceof MediumItem && e2 instanceof MediumItem) {
-			MediumItem item1 = (MediumItem) e1;
-			MediumItem item2 = (MediumItem) e2;
-
+		if (e1 instanceof Medium item1 && e2 instanceof Medium item2) {
 			// Determine which column and do the appropriate sort
 			switch (column) {
 				case MEDIUM:
-					rc = NaturalSortStringComparator.INSTANCE.compare(item1.getMedium().getName().toLowerCase(), item2.getMedium().getName().toLowerCase());
+					rc = NaturalSortStringComparator.INSTANCE.compare(item1.getName().toLowerCase(), item2.getName().toLowerCase());
 					break;
 				default:
 					break;

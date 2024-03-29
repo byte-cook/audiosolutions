@@ -15,10 +15,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
+import de.kobich.audiosolutions.core.service.persist.domain.Medium;
 import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.MediumsView;
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumItem;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo;
 import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo.MediumSearch;
@@ -43,8 +43,8 @@ public class OpenTracksOfMediumsAction extends AbstractHandler {
 		}
 
 		Set<String> mediumNames = new HashSet<String>();
-		for (MediumItem item : view.getSelectedMediumItems()) {
-			mediumNames.add(item.getMedium().getName());
+		for (Medium item : view.getSelectedMediums()) {
+			mediumNames.add(item.getName());
 		}
 		if (mediumNames.isEmpty()) {
 			return null;

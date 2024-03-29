@@ -2,6 +2,7 @@ package de.kobich.audiosolutions.frontend.audio.view.mediums;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -42,8 +43,6 @@ import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.persist.domain.Medium;
 import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.action.OpenTracksOfMediumsAction;
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumItem;
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumModel;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.ui.MediumColumnType;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.ui.MediumComparator;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.ui.MediumContentProvider;
@@ -176,37 +175,29 @@ public class MediumsView extends ViewPart {
 		});
 	}
 
-	/**
-	 * @return the selected item
-	 */
-	public MediumItem getSelectedMediumItem() {
-		MediumItem lentItem = null;
+	public Optional<Medium> getSelectedMedium() {
 		if (tableViewer.getTable().getSelectionCount() > 0) {
 			TableItem[] selection = tableViewer.getTable().getSelection();
 			Object data = selection[0].getData();
-			if (data instanceof MediumItem) {
-				lentItem = (MediumItem) data;
+			if (data instanceof Medium medium) {
+				return Optional.of(medium);
 			}
 		}
-		return lentItem;
+		return Optional.empty();
 	}
 	
-	/**
-	 * Returns medium items
-	 * @return
-	 */
-	public Set<MediumItem> getSelectedMediumItems() {
-		Set<MediumItem> mediumItems = new HashSet<MediumItem>();
+	public Set<Medium> getSelectedMediums() {
+		Set<Medium> mediums = new HashSet<>();
 		if (tableViewer.getTable().getSelectionCount() > 0) {
 			TableItem[] items = tableViewer.getTable().getSelection();
 			for (TableItem item : items) {
 				Object data = item.getData();
-				if (data instanceof MediumItem) {
-					mediumItems.add((MediumItem) data);
+				if (data instanceof Medium medium) {
+					mediums.add(medium);
 				}
 			}
 		}
-		return mediumItems;
+		return mediums;
 	}
 	
 	/**
@@ -248,21 +239,17 @@ public class MediumsView extends ViewPart {
 		
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
-			AudioSearchService lentMediumService = AudioSolutions.getService(AudioSearchService.class);
-			List<Medium> lentMediums = lentMediumService.searchMediums(filter);
+			AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
+			List<Medium> mediums = searchService.searchMediums(filter);
 			
-			if (lentMediums.isEmpty()) {
+			if (mediums.isEmpty()) {
 				view.asyncSetContentDescription("No mediums available");
 			}
 			else {
-				view.asyncSetContentDescription(lentMediums.size() + " medium(s) found");
+				view.asyncSetContentDescription(mediums.size() + " medium(s) found");
 			}
 			
-			Set<MediumItem> mediumItems = new HashSet<MediumItem>();
-			for (Medium medium : lentMediums) {
-				mediumItems.add(new MediumItem(medium));
-			}
-			MediumModel model = new MediumModel(mediumItems);
+			MediumModel model = new MediumModel(mediums);
 			view.setModel(model);
 			return Status.OK_STATUS;
 		}

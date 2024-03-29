@@ -34,8 +34,8 @@ public class LendMediumAction extends AbstractHandler {
 			}
 
 			LendMediumDialog dialog = LendMediumDialog.createDialog(window.getShell());
-			if (view.getSelectedMediumItem() != null) {
-				dialog.setMediumName(view.getSelectedMediumItem().getMedium().getName());
+			if (view.getSelectedMedium().isPresent()) {
+				dialog.setMediumName(view.getSelectedMedium().get().getName());
 			}
 			int status = dialog.open();
 			if (status == IDialogConstants.OK_ID) {

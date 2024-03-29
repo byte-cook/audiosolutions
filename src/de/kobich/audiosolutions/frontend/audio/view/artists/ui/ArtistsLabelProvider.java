@@ -4,7 +4,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
-import de.kobich.audiosolutions.frontend.audio.view.artists.model.ArtistItem;
+import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 
 public class ArtistsLabelProvider implements ITableLabelProvider {
 	public ArtistsLabelProvider() {}
@@ -16,12 +16,11 @@ public class ArtistsLabelProvider implements ITableLabelProvider {
 
 	@Override
 	public String getColumnText(Object element, int columnIndex) {
-		if (element instanceof ArtistItem) {
-			ArtistItem item = (ArtistItem) element;
+		if (element instanceof Artist artist) {
 			ArtistsColumnType column = ArtistsColumnType.getByIndex(columnIndex);
 			switch (column) {
 				case NAME:
-					return item.getArtist().getName();
+					return artist.getName();
 			}
 		}
 		throw new IllegalStateException("Illegal column index < " + columnIndex + ">, expected<0 - 1>");

@@ -20,8 +20,8 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 import de.kobich.audiosolutions.frontend.audio.view.artists.ArtistsView;
-import de.kobich.audiosolutions.frontend.audio.view.artists.model.ArtistItem;
 import de.kobich.audiosolutions.frontend.common.ui.ProgressDialog;
 import de.kobich.commons.ui.jface.StatusLineUtils;
 
@@ -43,7 +43,7 @@ public class CopyArtistsToClipboardAction extends AbstractHandler {
 			
 			ProgressDialog progressDialog = new ProgressDialog(view.getSite().getShell());
 			RunnableWithProgress progressRunnable = new RunnableWithProgress();
-			progressRunnable.artists = view.getArtistItems();
+			progressRunnable.artists = view.getSelectedArtists();
 			progressRunnable.window = window;
 			progressRunnable.viewPart = view;
 			progressDialog.run(true, false, progressRunnable);
@@ -61,13 +61,13 @@ public class CopyArtistsToClipboardAction extends AbstractHandler {
 	private class RunnableWithProgress implements IRunnableWithProgress {
 		public IWorkbenchWindow window;
 		public IViewPart viewPart;
-		public Set<ArtistItem> artists;
+		public Set<Artist> artists;
 		
 		public void run(IProgressMonitor monitor) {
 			// sort artist names
 			List<String> artistNames = new ArrayList<String>();
-			for (ArtistItem item : artists) {
-				artistNames.add(item.getArtist().getName());
+			for (Artist item : artists) {
+				artistNames.add(item.getName());
 			}
 			Collections.sort(artistNames);
 			// get clipboard content

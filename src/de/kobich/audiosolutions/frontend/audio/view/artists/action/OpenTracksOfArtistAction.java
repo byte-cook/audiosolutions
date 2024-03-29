@@ -15,10 +15,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
+import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.audio.view.artists.ArtistsView;
-import de.kobich.audiosolutions.frontend.audio.view.artists.model.ArtistItem;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo;
 import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo.ArtistSearch;
@@ -43,8 +43,8 @@ public class OpenTracksOfArtistAction extends AbstractHandler {
 		}
 
 		Set<String> artistNames = new HashSet<String>();
-		for (ArtistItem item : view.getSelectedArtistItems()) {
-			artistNames.add(item.getArtist().getName());
+		for (Artist artist : view.getSelectedArtists()) {
+			artistNames.add(artist.getName());
 		}
 		if (artistNames.isEmpty()) {
 			return null;

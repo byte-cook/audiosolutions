@@ -3,7 +3,7 @@ package de.kobich.audiosolutions.frontend.audio.view.mediums.ui;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumModel;
+import de.kobich.audiosolutions.frontend.audio.view.mediums.MediumModel;
 
 public class MediumContentProvider implements IStructuredContentProvider {
 	private MediumModel mediumModel;
@@ -14,7 +14,7 @@ public class MediumContentProvider implements IStructuredContentProvider {
 	public Object[] getElements(Object input) {
 		if (input instanceof MediumModel) {
 			mediumModel = (MediumModel) input;
-			return mediumModel.getMediumItems().toArray();
+			return mediumModel.getMediums().toArray();
 		}
 		throw new IllegalStateException("Illegal input type < " + input.getClass().getName() + ">, expected<" + MediumModel.class.getName() + ">");
 	}

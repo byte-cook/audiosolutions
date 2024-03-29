@@ -14,8 +14,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.medium.MediumResponse;
 import de.kobich.audiosolutions.core.service.medium.MediumService;
+import de.kobich.audiosolutions.core.service.persist.domain.Medium;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.MediumsView;
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumItem;
 
 /**
  * Returns a medium.
@@ -33,11 +33,11 @@ public class ReturnMediumAction extends AbstractHandler {
 				return null;
 			}
 			
-			Set<MediumItem> mediumItems = view.getSelectedMediumItems();
+			Set<Medium> mediums = view.getSelectedMediums();
 			Set<String> mediumNames = new HashSet<String>();
-			for (MediumItem item : mediumItems) {
-				if (item.getMedium().isLent()) {
-					mediumNames.add(item.getMedium().getName());
+			for (Medium item : mediums) {
+				if (item.isLent()) {
+					mediumNames.add(item.getName());
 				}
 			}
 			

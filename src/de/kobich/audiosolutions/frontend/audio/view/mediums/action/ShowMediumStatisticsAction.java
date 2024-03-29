@@ -16,7 +16,6 @@ import de.kobich.audiosolutions.core.service.AudioStatistics;
 import de.kobich.audiosolutions.core.service.medium.MediumService;
 import de.kobich.audiosolutions.core.service.persist.domain.Medium;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.MediumsView;
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumItem;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
 import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
 
@@ -33,7 +32,7 @@ public class ShowMediumStatisticsAction extends AbstractHandler {
 			return null;
 		}
 		
-		final Set<Medium> mediums = view.getSelectedMediumItems().stream().map(MediumItem::getMedium).collect(Collectors.toSet());
+		final Set<Medium> mediums = view.getSelectedMediums().stream().collect(Collectors.toSet());
 		if (mediums.isEmpty()) {
 			return null;
 		}

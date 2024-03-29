@@ -3,7 +3,7 @@ package de.kobich.audiosolutions.frontend.audio.view.artists.ui;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 
-import de.kobich.audiosolutions.frontend.audio.view.artists.model.ArtistItem;
+import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 
 /**
  * Audio files sorter.
@@ -59,14 +59,11 @@ public class ArtistsComparator extends ViewerComparator {
 		}
 
 		int rc = 0;
-		if (e1 instanceof ArtistItem && e2 instanceof ArtistItem) {
-			ArtistItem item1 = (ArtistItem) e1;
-			ArtistItem item2 = (ArtistItem) e2;
-
+		if (e1 instanceof Artist item1 && e2 instanceof Artist item2) {
 			// Determine which column and do the appropriate sort
 			switch (column) {
 				case NAME:
-					rc = item1.getArtist().getName().compareToIgnoreCase(item2.getArtist().getName());
+					rc = item1.getName().compareToIgnoreCase(item2.getName());
 					break;
 				default:
 					break;

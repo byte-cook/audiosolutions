@@ -8,7 +8,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
-import de.kobich.audiosolutions.frontend.audio.view.mediums.model.MediumItem;
+import de.kobich.audiosolutions.core.service.persist.domain.Medium;
 
 public class MediumLabelProvider implements ITableLabelProvider {
 	public MediumLabelProvider() {}
@@ -20,16 +20,15 @@ public class MediumLabelProvider implements ITableLabelProvider {
 
 	@Override
 	public String getColumnText(Object element, int columnIndex) {
-		if (element instanceof MediumItem) {
-			MediumItem item = (MediumItem) element;
+		if (element instanceof Medium item) {
 			MediumColumnType column = MediumColumnType.getByIndex(columnIndex);
 			switch (column) {
 				case MEDIUM:
-					return item.getMedium().getName();
+					return item.getName();
 				case BORROWER:
-					return item.getMedium().getBorrower();
+					return item.getBorrower();
 				case DATE:
-					Date date = item.getMedium().getBorrowingDate();
+					Date date = item.getBorrowingDate();
 					if (date != null) {
 						DateFormat parser = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 						return parser.format(date);

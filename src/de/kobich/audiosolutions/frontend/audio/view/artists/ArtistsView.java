@@ -1,6 +1,5 @@
 package de.kobich.audiosolutions.frontend.audio.view.artists;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,8 +42,6 @@ import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.frontend.audio.view.artists.action.OpenTracksOfArtistAction;
-import de.kobich.audiosolutions.frontend.audio.view.artists.model.ArtistItem;
-import de.kobich.audiosolutions.frontend.audio.view.artists.model.ArtistsModel;
 import de.kobich.audiosolutions.frontend.audio.view.artists.ui.ArtistsColumnType;
 import de.kobich.audiosolutions.frontend.audio.view.artists.ui.ArtistsComparator;
 import de.kobich.audiosolutions.frontend.audio.view.artists.ui.ArtistsContentProvider;
@@ -177,60 +174,19 @@ public class ArtistsView extends ViewPart {
 			job.schedule();
 		});
 	}
-
-	/**
-	 * @return the selected artist
-	 */
-	public ArtistItem getSelectedArtistItem() {
-		ArtistItem artistItem = null;
-		if (tableViewer.getTable().getSelectionCount() > 0) {
-			TableItem[] selection = tableViewer.getTable().getSelection();
-			Object data = selection[0].getData();
-			if (data instanceof ArtistItem) {
-				artistItem = (ArtistItem) data;
-			}
-		}
-		return artistItem;
-	}
 	
-	/**
-	 * Returns medium items
-	 * @return
-	 */
-	public Set<ArtistItem> getSelectedArtistItems() {
-		Set<ArtistItem> artistItems = new HashSet<ArtistItem>();
+	public Set<Artist> getSelectedArtists() {
+		Set<Artist> artists = new HashSet<>();
 		if (tableViewer.getTable().getSelectionCount() > 0) {
 			TableItem[] items = tableViewer.getTable().getSelection();
 			for (TableItem item : items) {
 				Object data = item.getData();
-				if (data instanceof ArtistItem) {
-					artistItems.add((ArtistItem) data);
+				if (data instanceof Artist artist) {
+					artists.add(artist);
 				}
 			}
 		}
-		return artistItems;
-	}
-	
-	/**
-	 * Returns artists 
-	 * @return
-	 */
-	public Set<ArtistItem> getArtistItems() {
-		Set<ArtistItem> artistItems = new HashSet<ArtistItem>();
-		TableItem[] items = new TableItem[0];
-		if (tableViewer.getTable().getSelectionCount() > 0) {
-			items = tableViewer.getTable().getSelection();
-		}
-		else {
-			items = tableViewer.getTable().getItems();
-		}
-		for (TableItem item : items) {
-			Object data = item.getData();
-			if (data instanceof ArtistItem) {
-				artistItems.add((ArtistItem) data);
-			}
-		}
-		return artistItems;
+		return artists;
 	}
 	
 	/**
@@ -283,11 +239,7 @@ public class ArtistsView extends ViewPart {
 				view.asyncSetContentDescription(artists.size() + " artist(s) found");
 			}
 			
-			List<ArtistItem> artistItems = new ArrayList<ArtistItem>();
-			for (Artist artist : artists) {
-				artistItems.add(new ArtistItem(artist));
-			}
-			ArtistsModel model = new ArtistsModel(artistItems);
+			ArtistsModel model = new ArtistsModel(artists);
 			view.setModel(model);
 			return Status.OK_STATUS;
 		}
