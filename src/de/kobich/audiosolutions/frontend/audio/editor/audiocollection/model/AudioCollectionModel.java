@@ -118,9 +118,11 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 		
 		// update all available albums (album's artist could have been changed) 
 		for (AlbumTreeNode albumNode : this.albums) {
-			Album album = this.searchService.searchAlbum(albumNode.getAlbumId()).orElse(null);
-			albumNode.setAlbum(album);
-			uiDeltas.updateItem(albumNode, LayoutType.ALBUM);
+			if (albumNode.getAlbumId().isPresent()) {
+				Album album = this.searchService.searchAlbum(albumNode.getAlbumId().get()).orElse(null);
+				albumNode.setAlbum(album);
+				uiDeltas.updateItem(albumNode, LayoutType.ALBUM);
+			}
 		}
 
 		return uiDeltas;
@@ -299,7 +301,7 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 	}
 	
 	private Optional<AlbumTreeNode> findParentAlbumNode(FileDescriptorTreeNode node, @Nullable Long albumId) {
-		return this.albums.stream().filter(a -> albumId.equals(a.getAlbumId())).findAny();
+		return this.albums.stream().filter(a -> albumId.equals(a.getAlbumId().orElse(null))).findAny();
 	}
 
 	private String getParentPath(FileDescriptor fileDescriptor) {

@@ -114,6 +114,13 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 			switch (column) {
 				case FILE_NAME:
 					return albumNode.getLabel();
+				case ARTIST:
+					return albumNode.getArtistName().orElse(null);
+				case ALBUM:
+					return albumNode.getAlbumName().orElse(null);
+				case ALBUM_PUBLICATION:
+					Date publicationDate = albumNode.getAlbumPublication().orElse(null);
+					return AudioAttributeUtils.convert2String(publicationDate);
 				default:
 					return "";
 			}

@@ -1,6 +1,8 @@
 package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model;
 
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IAdaptable;
@@ -27,7 +29,7 @@ public class AlbumTreeNode extends AbstractTableTreeNode<Long, FileDescriptorTre
 	}
 	
 	public String getLabel() {
-		if (getContent() != null) {
+		if (album != null) {
 			final String artistName = album.getArtist().map(Artist::getName).orElse("Various Artists");
 			return artistName + " - " + album.getName();
 		}
@@ -36,8 +38,29 @@ public class AlbumTreeNode extends AbstractTableTreeNode<Long, FileDescriptorTre
 		}
 	}
 	
-	public Long getAlbumId() {
-		return getContent();
+	public Optional<Long> getAlbumId() {
+		return Optional.ofNullable(getContent());
+	}
+	
+	public Optional<String> getAlbumName() {
+		if (album != null) {
+			return Optional.of(album.getName());
+		}
+		return Optional.empty();
+	}
+	
+	public Optional<String> getArtistName() {
+		if (album != null) {
+			return album.getArtist().map(Artist::getName);
+		}
+		return Optional.empty();
+	}
+	
+	public Optional<Date> getAlbumPublication() {
+		if (album != null) {
+			return Optional.ofNullable(album.getPublication());
+		}
+		return Optional.empty();
 	}
 
 	@Override
@@ -67,6 +90,6 @@ public class AlbumTreeNode extends AbstractTableTreeNode<Long, FileDescriptorTre
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(AlbumTreeNode o) {
-		return this.getLabel().compareToIgnoreCase(o.getLabel());
+		return Long.compare(this.getContent(), o.getContent());
 	}
 }

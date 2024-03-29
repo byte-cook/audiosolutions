@@ -1,5 +1,7 @@
 package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui;
 
+import java.util.Date;
+
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 
@@ -10,6 +12,7 @@ import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.Arti
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
 import de.kobich.commons.collections.NaturalSortStringComparator;
+import de.kobich.commons.utils.CompareUtils;
 
 /**
  * Audio files sorter.
@@ -108,9 +111,25 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 				case FILE_NAME:
 					rc = file1.getLabel().compareToIgnoreCase(file2.getLabel());
 					break;
+				case ARTIST:
+					rc = CompareUtils.compare(file1.getArtistName().orElse(null), file2.getArtistName().orElse(null), true);
+					break;
+				case ALBUM:
+					rc = CompareUtils.compare(file1.getAlbumName().orElse(null), file2.getAlbumName().orElse(null), true);
+					break;
+				case ALBUM_PUBLICATION:
+					Date publicationDate1 = file1.getAlbumPublication().orElse(null);
+					Date publicationDate2 = file2.getAlbumPublication().orElse(null);
+					rc = CompareUtils.compare(publicationDate1, publicationDate2, true);
+					break;
 				default:
 					rc = 0;
 					break;
+			}
+			
+			// by default, filter by name
+			if (rc == 0) {
+				rc = file1.getLabel().compareToIgnoreCase(file2.getLabel());
 			}
 		}
 		else if (e1 instanceof ArtistTreeNode && e2 instanceof ArtistTreeNode) {
@@ -172,10 +191,15 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 				}
 			}
 			else if (file1.getContent().hasMetaData(AudioData.class)) {
-				rc = 1;
+				rc = -1;
 			}
 			else if (file2.getContent().hasMetaData(AudioData.class)) {
-				rc = -1;
+				rc = 1;
+			}
+			
+			// by default, filter by name
+			if (rc == 0) {
+				rc = file1.getContent().getFileName().compareToIgnoreCase(file2.getContent().getFileName());
 			}
 		}
 
@@ -216,10 +240,10 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 			}
 		}
 		else if (audioData1.hasAttribute(attribute)) {
-			rc = 1;
+			rc = -1;
 		}
 		else if (audioData2.hasAttribute(attribute)) {
-			rc = -1;
+			rc = 1;
 		}
 		return rc;
 	}
