@@ -6,9 +6,15 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.RadioState;
 
 import de.kobich.audiosolutions.frontend.audio.action.SetAudioCollectionEditorLayoutAction;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public enum LayoutType {
-	FLAT, HIERARCHICAL, ALBUM, ARTIST;
+	FLAT("Flat Layout"), HIERARCHICAL("Hierarchical Layout"), ALBUM("Album Layout"), ARTIST("Artist Layout");
+	
+	@Getter
+	private final String label;
 	
 	public static LayoutType getLayoutType(String name) {
 		for (LayoutType type : values()) {

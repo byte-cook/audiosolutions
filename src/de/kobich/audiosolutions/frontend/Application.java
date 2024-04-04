@@ -18,7 +18,6 @@ import org.eclipse.ui.internal.misc.Policy;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.AudioSolutionsStatus;
-import de.kobich.audiosolutions.core.AudioSolutionsVersion;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
 import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
 
@@ -62,8 +61,7 @@ public class Application implements IApplication {
 			
 			// init AudioSolutions
 //			String[] args = (String[]) context.getArguments().get(IApplicationContext.APPLICATION_ARGS);
-			final AudioSolutionsVersion CURRENT_VERSION = AudioSolutionsVersion.V9_0;
-			AudioSolutionsStatus state = AudioSolutions.init(CURRENT_VERSION, dataRootDirectory);
+			AudioSolutionsStatus state = AudioSolutions.init(dataRootDirectory);
 			switch (state) {
 			case LOCKED:
 				String lockedMsg = String.format("The data directory is already in use: \n%s \n\nAudioSolutions will exit.", dataRootDirectory.getAbsolutePath());
@@ -75,7 +73,7 @@ public class Application implements IApplication {
 				return IApplication.EXIT_OK;
 			case VERSION_MISMATCH:
 				final String versionFromFile = AudioSolutions.getCurrentVersion().orElse("<Unknown>");
-				String migrationMsg = String.format("The data directory uses a different version: \nAudioSolution Version: %s \nData Directory Version: %s \nData Directory: %s \n\nDo you want to continue?", CURRENT_VERSION.getLabel(), versionFromFile, dataRootDirectory.getAbsolutePath());
+				String migrationMsg = String.format("The data directory uses a different version: \nAudioSolution Version: %s \nData Directory Version: %s \nData Directory: %s \n\nDo you want to continue?", AudioSolutions.CURRENT_VERSION.getLabel(), versionFromFile, dataRootDirectory.getAbsolutePath());
 				boolean startMigration = MessageDialog.openQuestion(null, "Data Directory", migrationMsg);
 				if (startMigration) { 
 					List<RunningState> states = Arrays.asList(RunningState.WORKER_1);
@@ -84,7 +82,7 @@ public class Application implements IApplication {
 						protected void run(RunningState state) throws Exception {
 							switch (state) {
 							case WORKER_1:
-								AudioSolutions.migrate(CURRENT_VERSION, super.getProgressMonitor());
+								AudioSolutions.migrate(super.getProgressMonitor());
 								break;
 							default: 
 								break;

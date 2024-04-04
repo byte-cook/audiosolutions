@@ -107,6 +107,14 @@
             name="Artists"
             restorable="true">
       </view>
+      <view
+            category="org.eclipse.ui.views.AudioSolutions"
+            class="de.kobich.audiosolutions.frontend.audio.view.playlist.PlaylistView"
+            icon="icons/audio/playlist.png"
+            id="de.kobich.audiosolutions.view.audio.playlistsView"
+            name="Playlists"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -422,6 +430,63 @@
             id="de.kobich.audiosolutions.audio.checkFiles"
             name="Check Audio Files">
       </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.view.playlist.action.CreateNewPlaylistAction"
+            id="de.kobich.audiosolutions.commands.view.playlists.createNewPlaylist"
+            name="New Playlist">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.view.playlist.action.OpenPlaylistsAction"
+            id="de.kobich.audiosolutions.commands.view.playlists.openPlaylists"
+            name="Open Playlists">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.view.playlist.action.DeletePlaylistsAction"
+            id="de.kobich.audiosolutions.commands.view.playlists.deletePlaylists"
+            name="Delete Playlists">
+      </command>
+      <command
+            id="de.kobich.audiosolutions.commands.editor.addFilesToPlaylist"
+            name="Add Files To Playlist">
+      </command>
+      <command
+            id="de.kobich.audiosolutions.commands.editor.newPlaylistFolder"
+            name="New Playlist Folder">
+      </command>
+      <command
+            id="de.kobich.audiosolutions.commands.editor.moveToFolder"
+            name="Move To Playlist Folder">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.RemovePlaylistItemsAction"
+            id="de.kobich.audiosolutions.commands.editor.removePlaylistItems"
+            name="Remove Playlist Items">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.CopyFilesToDirectoryAction"
+            id="de.kobich.audiosolutions.commands.editor.copyFilesToDirectory"
+            name="Copy Files To Directory">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.ConfigurePlaylistColumnsAction"
+            id="de.kobich.audiosolutions.commands.editor.configurePlaylistColumns"
+            name="Configure Playlist Columns">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.CollapsePlaylistAction"
+            id="de.kobich.audiosolutions.commands.editor.collapsePlaylist"
+            name="Collapse">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.CopyFilesToAnotherPlaylistAction"
+            id="de.kobich.audiosolutions.commands.editor.copyFilesToAnotherPlaylist"
+            name="Copy Files To Another Playlist">
+      </command>
+      <command
+            defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action.CopyFileDescriptorsToPlaylistAction"
+            id="de.kobich.audiosolutions.commands.editor.copyFileDescriptorsToPlaylist"
+            name="Copy File Descriptors To Playlist">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
@@ -453,6 +518,13 @@
                icon="icons/audio/search.png"
                id="de.kobich.audiosolutions.editor.audioSearchEditor"
                name="Search">
+         </editor>
+         <editor
+               class="de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor"
+               default="false"
+               icon="icons/audio/playlist.png"
+               id="de.kobich.audiosolutions.editor.playlistEditor"
+               name="Playlist">
          </editor>
    </extension>
    <extension
@@ -839,6 +911,15 @@
                     mode="FORCE_TEXT"
                     style="push"
                     tooltip="Set Audio Data By Structure">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.commands.audio.setAudioDataByID3Tags"
@@ -848,6 +929,15 @@
                     mode="FORCE_TEXT"
                     style="push"
                     tooltip="Set Audio Data By ID3 Tags">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.commands.audio.setAudioDataByCDDB"
@@ -856,6 +946,15 @@
                     mode="FORCE_TEXT"
                     style="push"
                     tooltip="Set Audio Data By CDDB">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.commands.audio.setAudioDataByText"
@@ -863,6 +962,15 @@
                     label="Set By Text"
                     mode="FORCE_TEXT"
                     style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.commands.audio.editAudioData"
@@ -872,6 +980,15 @@
                     mode="FORCE_TEXT"
                     style="push"
                     tooltip="Edit Audio Data">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.commands.audio.removeAudioData"
@@ -881,6 +998,15 @@
                     mode="FORCE_TEXT"
                     style="push"
                     tooltip="Remove Audio Data">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
            </toolbar>
            <toolbar
@@ -896,6 +1022,15 @@
                        name="de.kobich.audiosolutions.commands.audio.convertFiles.format"
                        value="mp3">
                  </parameter>
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.audio.normalizeFiles"
@@ -904,6 +1039,15 @@
                     mode="FORCE_TEXT"
                     style="push"
                     tooltip="Normalize Audio Files">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.audio.createFileStructureByAudioData"
@@ -911,6 +1055,15 @@
                     label="Create File Structure"
                     mode="FORCE_TEXT"
                     style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
               <command
                     commandId="de.kobich.audiosolutions.audio.checkFiles"
@@ -918,6 +1071,103 @@
                     label="Check Audio Files"
                     mode="FORCE_TEXT"
                     style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
+              </command>
+           </toolbar>
+           <toolbar
+                 id="de.kobich.audiosolutions.toolbar.playlist"
+                 label="Playlist">
+              <command
+                    commandId="de.kobich.audiosolutions.commands.editor.addFilesToPlaylist"
+                    icon="icons/file/add.png"
+                    label="Add Files..."
+                    mode="FORCE_TEXT"
+                    style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.playlistEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
+              </command>
+              <command
+                    commandId="de.kobich.audiosolutions.commands.editor.newPlaylistFolder"
+                    icon="icons/file/folder.png"
+                    label="New Folder..."
+                    mode="FORCE_TEXT"
+                    style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.playlistEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
+              </command>
+              <command
+                    commandId="de.kobich.audiosolutions.commands.editor.moveToFolder"
+                    icon="icons/file/file-move.png"
+                    label="Move To Folder..."
+                    mode="FORCE_TEXT"
+                    style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.playlistEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
+              </command>
+              <command
+                    commandId="de.kobich.audiosolutions.commands.editor.removePlaylistItems"
+                    icon="icons/file/delete.png"
+                    label="Remove"
+                    mode="FORCE_TEXT"
+                    style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.playlistEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
+              </command>
+              <separator
+                    name="de.kobich.audiosolutions.separator2"
+                    visible="true">
+              </separator>
+              <command
+                    commandId="de.kobich.audiosolutions.commands.editor.copyFilesToDirectory"
+                    icon="icons/file/file-copy.png"
+                    label="Copy Files To Directory"
+                    mode="FORCE_TEXT"
+                    style="push">
+                 <visibleWhen
+                       checkEnabled="false">
+                    <with
+                          variable="activeEditorId">
+                       <equals
+                             value="de.kobich.audiosolutions.editor.playlistEditor">
+                       </equals>
+                    </with>
+                 </visibleWhen>
               </command>
            </toolbar>
 		</menuContribution>
@@ -1031,6 +1281,11 @@
                    visible="true">
              </separator>
              <command
+                   commandId="de.kobich.audiosolutions.commands.editor.copyFileDescriptorsToPlaylist"
+                   label="Copy Files To Playlist"
+                   style="push">
+             </command>
+             <command
                    commandId="de.kobich.audiosolutions.commands.audio.playAudioFile"
                    icon="icons/audio/audio-play.png"
                    label="Play File"
@@ -1042,7 +1297,7 @@
              </command>
              <command
                    commandId="de.kobich.audiosolutions.commands.audio.addFilesToPlayList"
-                   icon="icons/audio/play-list-add.png"
+                   icon="icons/audio/playlist-add.png"
                    label="Add To Playlist"
                    style="push">
              </command>
@@ -1409,13 +1664,13 @@
             locationURI="toolbar:de.kobich.audiosolutions.view.audio.playerView">
          <command
                commandId="de.kobich.audiosolutions.commands.audio.addFilesToPlayList"
-               icon="icons/audio/play-list-add.png"
+               icon="icons/audio/playlist-add.png"
                label="Add Files To Play List"
                style="push">
          </command>
          <command
                commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayList"
-               icon="icons/audio/play-list-remove.png"
+               icon="icons/audio/playlist-remove.png"
                label="Remove Files From Play List"
                style="push">
          </command>
@@ -1466,7 +1721,7 @@
             locationURI="popup:de.kobich.audiosolutions.view.audio.playerView">
          <command
                commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayList"
-               icon="icons/audio/play-list-remove.png"
+               icon="icons/audio/playlist-remove.png"
                label="Remove Files From Play List"
                style="push">
          </command>
@@ -1506,6 +1761,96 @@
                commandId="de.kobich.audiosolutions.commands.view.artists.copyArtistsToClipboard"
                icon="icons/clipboard-add.png"
                label="Copy Artists To Clipboard"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:de.kobich.audiosolutions.view.audio.playlistsView">
+         <command
+               commandId="de.kobich.audiosolutions.commands.view.playlists.createNewPlaylist"
+               icon="icons/audio/playlist-add.png"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:de.kobich.audiosolutions.view.audio.playlistsView">
+         <command
+               commandId="de.kobich.audiosolutions.commands.view.playlists.createNewPlaylist"
+               icon="icons/audio/playlist-add.png"
+               label="New Playlist"
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.view.playlists.openPlaylists"
+               icon="icons/audio/playlist.png"
+               label="Open"
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.view.playlists.deletePlaylists"
+               icon="icons/file/delete.png"
+               label="Delete"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:de.kobich.audiosolutions.editor.playlistEditor">
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.addFilesToPlaylist"
+               icon="icons/file/add.png"
+               label="Add Files..."
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.newPlaylistFolder"
+               icon="icons/file/folder.png"
+               label="New Folder..."
+               mode="FORCE_TEXT"
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.moveToFolder"
+               icon="icons/file/file-move.png"
+               label="Move To Folder..."
+               mode="FORCE_TEXT"
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.removePlaylistItems"
+               icon="icons/file/delete.png"
+               label="Remove"
+               mode="FORCE_TEXT"
+               style="push">
+         </command>
+         <separator
+               name="de.kobich.audiosolutions.separator1"
+               visible="true">
+         </separator>
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.copyFilesToDirectory"
+               icon="icons/file/file-copy.png"
+               label="Copy Files To Directory"
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.copyFilesToAnotherPlaylist"
+               label="Copy Files To Another Playlist"
+               style="push">
+         </command>
+         <separator
+               name="de.kobich.audiosolutions.separator2"
+               visible="true">
+         </separator>
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.configurePlaylistColumns"
+               label="Configure Columns..."
+               mode="FORCE_TEXT"
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.editor.collapsePlaylist"
+               label="Collapse All"
                style="push">
          </command>
       </menuContribution>
@@ -2470,6 +2815,18 @@
             </and>
          </activeWhen>
       </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.AddFilesToPlaylistAction"
+            commandId="de.kobich.audiosolutions.commands.editor.addFilesToPlaylist">
+      </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.NewPlaylistFolderAction"
+            commandId="de.kobich.audiosolutions.commands.editor.newPlaylistFolder">
+      </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.MoveToFolderAction"
+            commandId="de.kobich.audiosolutions.commands.editor.moveToFolder">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.activities">
@@ -2705,7 +3062,7 @@
          </property>
          <property
                name="aboutText"
-               value="AudioSolutions 9&#x0A;Copyright (C) 2024 Christoph Korn&#x0A;&#x0A;AudioSolutions is the software solution for all audio related issues like:&#x0A;- converting to MP3&#x0A;- editing ID3 tags&#x0A;- renaming files&#x0A;- and many more...&#x0A;&#x0A;Moreover, AudioSolutions allows to manage audio files and offers a fast search engine.&#x0A;It can handle thousand files and many more. &#x0A;&#x0A;I hope you enjoy AudioSolutions.">
+               value="AudioSolutions 10&#x0A;Copyright (C) 2024 Christoph Korn&#x0A;&#x0A;AudioSolutions is the software solution for all audio related issues like:&#x0A;- converting to MP3&#x0A;- editing ID3 tags&#x0A;- renaming files&#x0A;- and many more...&#x0A;&#x0A;Moreover, AudioSolutions allows to manage audio files and offers a fast search engine.&#x0A;It can handle thousand files and many more. &#x0A;&#x0A;I hope you enjoy AudioSolutions.">
          </property>
          <property
                name="aboutImage"

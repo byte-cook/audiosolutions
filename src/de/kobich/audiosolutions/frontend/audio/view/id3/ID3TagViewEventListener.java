@@ -40,6 +40,9 @@ public class ID3TagViewEventListener extends EventListenerAdapter {
 				}
 			}
 		}
+		else {
+			view.fireDeselection();
+		}
 	}
 
 	@Override

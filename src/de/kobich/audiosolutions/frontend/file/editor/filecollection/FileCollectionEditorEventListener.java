@@ -59,6 +59,8 @@ public class FileCollectionEditorEventListener extends EventListenerAdapter {
 		case AUDIO_SEARCH:
 			editor.update(event.getAudioDelta());
 			break;
+		default:
+			break;
 		}
 	}
 }

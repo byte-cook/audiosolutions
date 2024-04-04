@@ -108,6 +108,8 @@ public class AudioCollectionEditorEventListener extends EventListenerAdapter imp
 		case AUDIO_SEARCH:
 			editor.update(event.getAudioDelta());
 			break;
+		default:
+			break;
 		}
 	}
 }

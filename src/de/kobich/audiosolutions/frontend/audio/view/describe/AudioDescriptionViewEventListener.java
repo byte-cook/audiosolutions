@@ -56,6 +56,9 @@ public class AudioDescriptionViewEventListener extends EventListenerAdapter {
 				}
 			}
 		}
+		else {
+			view.fireDeselection();
+		}
 	}
 
 	@Override

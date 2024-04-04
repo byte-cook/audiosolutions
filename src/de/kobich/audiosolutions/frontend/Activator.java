@@ -83,6 +83,8 @@ public class Activator extends AbstractUIPlugin {
 		FOLDER("/icons/file/folder.png"),
 		ARTIST("/icons/audio/artist.png"),
 		ALBUM("/icons/audio/album.png"),
+		LAYOUT_FLAT("/icons/file/layout-flat.png"),
+		LAYOUT_HIERARCHICAL("/icons/file/layout-hierarchical.png"),
 		AUDIO_FILE_NEW_WARN("/icons/audio/audio-file-new-warn.png"),
 		AUDIO_FILE_NEW("/icons/audio/audio-file-new.png"),
 		AUDIO_FILE_WARN("/icons/audio/audio-file-warn.png"),
@@ -93,6 +95,8 @@ public class Activator extends AbstractUIPlugin {
 		AUDIO_COLLECTION_EDITOR("/icons/audio/audio-collection-128.png"),
 		AUDIO_SEARCH_EDITOR("/icons/audio/search.png"),
 		FILE_COLLECTION_EDITOR("/icons/file/file-collection-128.png"),
+		PLAYLIST("icons/audio/playlist.png"),
+		PLAYLIST_NEW("icons/audio/playlist-add.png"),
 		;
 		
 		private final String path;

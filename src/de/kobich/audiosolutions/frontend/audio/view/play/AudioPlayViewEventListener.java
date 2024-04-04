@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.common.listener.EventListenerAdapter;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 import de.kobich.component.file.FileDescriptor;
@@ -28,8 +29,7 @@ public class AudioPlayViewEventListener extends EventListenerAdapter {
 	@Override
 	public void selectionChanged(IWorkbenchPart workbenchPart, ISelection selection) {
 		// only check selection of audio collection editor
-		if (workbenchPart instanceof AudioCollectionEditor) {
-			AudioCollectionEditor collectionEditor = (AudioCollectionEditor) workbenchPart;
+		if (workbenchPart instanceof AudioCollectionEditor collectionEditor) {
 			FileDescriptorSelection util = collectionEditor.getFileDescriptorSelection();
 
 			List<FileDescriptor> audioFiles = new ArrayList<FileDescriptor>();
@@ -44,6 +44,9 @@ public class AudioPlayViewEventListener extends EventListenerAdapter {
 			else {
 				view.fireDeselection();
 			}
+		}
+		else if (workbenchPart instanceof PlaylistEditor playlistEditor) {
+			// TODO playlist add selection
 		}
 	}
 

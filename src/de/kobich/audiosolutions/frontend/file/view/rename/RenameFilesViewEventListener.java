@@ -52,6 +52,9 @@ public class RenameFilesViewEventListener extends EventListenerAdapter {
 				view.fireDeselection();
 			}
 		}
+		else {
+			view.fireDeselection();
+		}
 	}
 
 	@Override

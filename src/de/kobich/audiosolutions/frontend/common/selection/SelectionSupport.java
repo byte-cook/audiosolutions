@@ -15,6 +15,8 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.search.AudioSearchEditor;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.FileCollectionEditor;
 import de.kobich.commons.ListenerList;
 
@@ -138,18 +140,28 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 
 	@Override
 	public void partClosed(IWorkbenchPartReference partRef) {
-		if (isCollectionEditor(partRef)) {
+		switch (partRef.getId()) {
+		case AudioCollectionEditor.ID:
+		case FileCollectionEditor.ID:
+		case PlaylistEditor.ID:
+		case AudioSearchEditor.ID:
 			IEditorPart editor = (IEditorPart) partRef.getPart(false);
 			resetActiveEditor(editor);
+			break;
 		}
 	}
 
 	@Override
 	public void partActivated(IWorkbenchPartReference partRef) {
 		// called when partRef gets focus
-		if (isCollectionEditor(partRef)) {
+		switch (partRef.getId()) {
+		case AudioCollectionEditor.ID:
+		case FileCollectionEditor.ID:
+		case PlaylistEditor.ID:
+		case AudioSearchEditor.ID:
 			IEditorPart editor = (IEditorPart) partRef.getPart(false);
 			setActiveEditor(editor);
+			break;
 		}
 	}
 
@@ -257,15 +269,6 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 		for (ISelectionChangedListener l : postSelectionChangedListeners) {
 			l.selectionChanged(event);
 		}
-	}
-	
-	/**
-	 * Indicates if partRef belongs to a collection editor
-	 * @param partRef
-	 * @return
-	 */
-	private boolean isCollectionEditor(IWorkbenchPartReference partRef) {
-		return partRef.getId().equals(AudioCollectionEditor.ID) || partRef.getId().equals(FileCollectionEditor.ID);
 	}
 	
 	/**

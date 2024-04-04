@@ -1,9 +1,7 @@
 package de.kobich.audiosolutions.frontend.audio.editor.search;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -12,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
@@ -21,6 +18,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.TypedEvent;
@@ -33,14 +32,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.forms.events.HyperlinkAdapter;
-import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
@@ -53,22 +50,18 @@ import de.kobich.audiosolutions.core.service.persist.domain.Album;
 import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 import de.kobich.audiosolutions.core.service.persist.domain.Track;
 import de.kobich.audiosolutions.core.service.search.AudioSearchQuery;
-import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.core.service.search.AudioTextSearchService;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.search.action.AddSearchResultsToPlaylistSelectionAdapter;
+import de.kobich.audiosolutions.frontend.audio.editor.search.action.DoSearchHyperlinkAdapter;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
 import de.kobich.audiosolutions.frontend.common.ui.editor.AbstractScrolledFormEditor;
-import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
-import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo;
-import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo.StandardSearch;
 import de.kobich.audiosolutions.frontend.common.util.DecoratorUtils;
 import de.kobich.commons.ui.DelayListener;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
-import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
 import de.kobich.commons.ui.jface.JFaceUtils;
-import de.kobich.component.file.FileDescriptor;
-import lombok.RequiredArgsConstructor;
+import de.kobich.commons.ui.jface.listener.DummySelectionProvider;
 
 public class AudioSearchEditor extends AbstractScrolledFormEditor {
 	public static final String ID = "de.kobich.audiosolutions.editor.audioSearchEditor";
@@ -113,7 +106,6 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		Composite searchComposite = this.toolkit.createComposite(form.getBody(), SWT.NONE);
 		GridLayout informationCompositeGridLayout = new GridLayout();
 		informationCompositeGridLayout.marginHeight = 20;
-		informationCompositeGridLayout.marginWidth = 10;
 		informationCompositeGridLayout.numColumns = 2;
 		searchComposite.setLayout(informationCompositeGridLayout);
 		searchComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -162,6 +154,8 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		artistsComposite = super.createTableWrapSection(this.toolkit, body, "Artists", 3, Section.TITLE_BAR | Section.EXPANDED);
 		albumsComposite = super.createTableWrapSection(this.toolkit, body, "Albums", 4, Section.TITLE_BAR | Section.EXPANDED);
 		tracksComposite = super.createTableWrapSection(this.toolkit, body, "Tracks", 6, Section.TITLE_BAR | Section.EXPANDED);
+		
+		SelectionSupport.INSTANCE.registerEditor(this, DummySelectionProvider.INSTANCE);
 		startSearch();
 	}
 	
@@ -243,51 +237,6 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		super.dispose();
 	}
 	
-	@RequiredArgsConstructor
-	private static class AudioSearchHyperlinkAdapter extends HyperlinkAdapter {
-		private final IWorkbenchWindow window;
-		private final AudioSearchQuery query;
-		
-		@Override
-		public void linkActivated(HyperlinkEvent e) {
-			List<RunningState> states = Arrays.asList(RunningState.UI_1, RunningState.WORKER_1, RunningState.UI_2);
-			JFaceThreadRunner runner = new JFaceThreadRunner("Search Tracks", window.getShell(), states) {
-				private Set<FileDescriptor> fileDescriptors;
-
-				@Override
-				protected void run(RunningState state) throws Exception {
-					switch (state) {
-					case UI_1:
-						break;
-					case WORKER_1:
-						AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
-						fileDescriptors = searchService.search(query, super.getProgressMonitor());
-						break;
-					case UI_2:
-						// open new editor
-						StandardSearch standardSearch = new StandardSearch(query);
-						SearchOpeningInfo openingInfo = new SearchOpeningInfo(standardSearch);
-						FileCollection audioCollection = new FileCollection(openingInfo, fileDescriptors);
-						IWorkbenchPage page = window.getActivePage();
-						page.openEditor(audioCollection, AudioCollectionEditor.ID);
-						break;
-					case UI_ERROR:
-						if (super.getProgressMonitor().isCanceled()) {
-							return;
-						}
-						Exception e = super.getException();
-						logger.error(e.getMessage(), e);
-						MessageDialog.openError(super.getParent(), super.getName(), "Error while searching tracks: \n" + e.getMessage());
-						break;
-					default:
-						break;
-					}
-				}
-			};
-			runner.runProgressMonitorDialog(true, true);
-		}
-	}
-	
 	private static class SearchArtistRunner extends JFaceThreadRunner {
 		private final AudioSearchEditor editor;
 		private final String searchText;
@@ -337,8 +286,18 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			albumCoverLabel.setImage(artistImage);
 
 			Hyperlink link = AudioSearchEditor.this.toolkit.createHyperlink(artistsComposite, artist.getName(), SWT.WRAP);
-			link.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
+			link.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
 			link.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
+			link.addMenuDetectListener(new MenuDetectListener() {
+				@Override
+				public void menuDetected(MenuDetectEvent e) {
+					Menu menu = new Menu(link.getShell(), SWT.POP_UP);
+					MenuItem item = new MenuItem(menu, SWT.NONE);
+					item.setText("Add To Playlist");
+					item.addSelectionListener(new AddSearchResultsToPlaylistSelectionAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
+					menu.setVisible(true);
+				}
+			});
 			
 			Label artistDescriptionText = new Label(artistsComposite, SWT.NONE);
 			artistDescriptionText.setText(StringUtils.defaultString(artist.getDescription()));
@@ -400,13 +359,23 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			
 			Hyperlink link = AudioSearchEditor.this.toolkit.createHyperlink(albumsComposite, album.getName(), SWT.WRAP);
 			link.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
-			link.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(album.getId()).albumName(album.getName()).build()));
+			link.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(album.getId()).albumName(album.getName()).build()));
+			link.addMenuDetectListener(new MenuDetectListener() {
+				@Override
+				public void menuDetected(MenuDetectEvent e) {
+					Menu menu = new Menu(link.getShell(), SWT.POP_UP);
+					MenuItem item = new MenuItem(menu, SWT.NONE);
+					item.setText("Add To Playlist");
+					item.addSelectionListener(new AddSearchResultsToPlaylistSelectionAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(album.getId()).albumName(album.getName()).build()));
+					menu.setVisible(true);
+				}
+			});
 			
 			Optional<Artist> artistOpt = album.getArtist();
 			if (artistOpt.isPresent()) {
 				Hyperlink artistLink = AudioSearchEditor.this.toolkit.createHyperlink(albumsComposite, artistOpt.get().getName(), SWT.WRAP);
 				artistLink.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
-				artistLink.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artistOpt.get().getId()).artistName(artistOpt.get().getName()).build()));
+				artistLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artistOpt.get().getId()).artistName(artistOpt.get().getName()).build()));
 			}
 			else {
 				Label label = AudioSearchEditor.this.toolkit.createLabel(albumsComposite, "Various Artists");
@@ -414,7 +383,7 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			}
 
 			Hyperlink mediumLink = AudioSearchEditor.this.toolkit.createHyperlink(albumsComposite, album.getMedium().getName(), SWT.WRAP);
-			mediumLink.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().mediumId(album.getMedium().getId()).mediumName(album.getMedium().getName()).build()));
+			mediumLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().mediumId(album.getMedium().getId()).mediumName(album.getMedium().getName()).build()));
 
 		}
 		if (albumsComposite.getChildren().length == 0) {
@@ -474,22 +443,32 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 
 			Hyperlink link = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getName(), SWT.WRAP);
 			link.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
-			link.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().trackName(track.getName()).build()));
+			link.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().trackId(track.getId()).trackName(track.getName()).build()));
+			link.addMenuDetectListener(new MenuDetectListener() {
+				@Override
+				public void menuDetected(MenuDetectEvent e) {
+					Menu menu = new Menu(link.getShell(), SWT.POP_UP);
+					MenuItem item = new MenuItem(menu, SWT.NONE);
+					item.setText("Add To Playlist");
+					item.addSelectionListener(new AddSearchResultsToPlaylistSelectionAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().trackId(track.getId()).trackName(track.getName()).build()));
+					menu.setVisible(true);
+				}
+			});
 			
 			Hyperlink artistLink = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getArtist().getName(), SWT.WRAP);
 			artistLink.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
-			artistLink.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(track.getArtist().getId()).artistName(track.getArtist().getName()).build()));
+			artistLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(track.getArtist().getId()).artistName(track.getArtist().getName()).build()));
 			
 			Hyperlink albumLink = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getAlbum().getName(), SWT.WRAP);
 			albumLink.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
-			albumLink.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(track.getAlbum().getId()).albumName(track.getAlbum().getName()).build()));
+			albumLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(track.getAlbum().getId()).albumName(track.getAlbum().getName()).build()));
 
 			Hyperlink genreLink = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getGenre().getName(), SWT.WRAP);
 			genreLink.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 200));
-			genreLink.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().genreId(track.getGenre().getId()).genreName(track.getGenre().getName()).build()));
+			genreLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().genreId(track.getGenre().getId()).genreName(track.getGenre().getName()).build()));
 			
 			Hyperlink mediumLink = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getAlbum().getMedium().getName(), SWT.WRAP);
-			mediumLink.addHyperlinkListener(new AudioSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().mediumId(track.getAlbum().getMedium().getId()).mediumName(track.getAlbum().getMedium().getName()).build()));
+			mediumLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().mediumId(track.getAlbum().getMedium().getId()).mediumName(track.getAlbum().getMedium().getName()).build()));
 		}
 		if (tracksComposite.getChildren().length == 0) {
 			StyledText noResult = AudioSearchEditor.this.createStyledText(tracksComposite, false);

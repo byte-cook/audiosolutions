@@ -1,26 +1,28 @@
 package de.kobich.audiosolutions.frontend.common.listener;
 
-import de.kobich.commons.ListenerList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Support for property change events of editors.
  */
 public class EventSupport {
-	private final ListenerList<IUIEventListener> list;
+	private final Set<IUIEventListener> list;
 	public static EventSupport INSTANCE = new EventSupport();
 	
 	private EventSupport() {
-		this.list = new ListenerList<IUIEventListener>();
+		this.list = new HashSet<>();
 	}
 	
 	public void addListener(IUIEventListener l) {
-		this.list.addListener(l);
+		this.list.add(l);
 	}
 	public void removeListener(IUIEventListener l) {
-		this.list.removeListener(l);
+		this.list.remove(l);
 	}
 	public void fireEvent(UIEvent event) {
-		for (IUIEventListener l : this.list) {
+		Set<IUIEventListener> tmpList = new HashSet<>(this.list);
+		for (IUIEventListener l : tmpList) {
 			l.eventFired(event);
 		}
 	}

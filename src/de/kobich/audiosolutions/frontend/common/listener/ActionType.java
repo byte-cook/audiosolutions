@@ -33,4 +33,12 @@ public enum ActionType {
 	 * add/remove.
 	 */
 	AUDIO_SEARCH,
+	/**
+	 * Used to inform about Playlists which have been saved.
+	 */
+	PLAYLIST_SAVED,
+	/**
+	 * Used to inform about Playlists which have been deleted.
+	 */
+	PLAYLIST_DELETED;
 }

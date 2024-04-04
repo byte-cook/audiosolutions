@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="AudioSolutions" uid="AudioSolutions" id="de.kobich.audiosolutions.product" application="AudioSolutions.application" version="9.0.1.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
+<product name="AudioSolutions" uid="AudioSolutions" id="de.kobich.audiosolutions.product" application="AudioSolutions.application" version="10.0.0.0" type="bundles" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
       <image path="/de.kobich.audiosolutions/icons/audiosolutions.png"/>
       <text>
-         AudioSolutions 9
+         AudioSolutions 10
 Copyright (C) 2024 Christoph Korn
 
 AudioSolutions is the software solution for all audio related issues like:
@@ -60,6 +60,7 @@ I hope you enjoy AudioSolutions.
             winLargeLow="/de.kobich.audiosolutions.ui/icons/logo-48x48-8bit.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
       <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</linux>

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: AudioSolutions
 Bundle-SymbolicName: de.kobich.audiosolutions;singleton:=true
-Bundle-Version: 9.0.0.0
+Bundle-Version: 10.0.0.0
 Bundle-Activator: de.kobich.audiosolutions.frontend.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions;bundle-version="3.4.100",
@@ -34,8 +34,6 @@ Bundle-ClassPath: .,
  lib/target/dependency/commons-lang3-3.13.0.jar,
  lib/target/dependency/commons-logging-1.2.jar,
  lib/target/dependency/commons-text-1.11.0.jar,
- lib/target/dependency/commons-ui-jface-9.0.jar,
- lib/target/dependency/component-file-9.0.jar,
  lib/target/dependency/coverartarchive-api-2.1.0.jar,
  lib/target/dependency/error_prone_annotations-2.21.1.jar,
  lib/target/dependency/failureaccess-1.0.1.jar,
@@ -92,7 +90,9 @@ Bundle-ClassPath: .,
  lib/target/dependency/txw2-3.0.2.jar,
  lib/target/dependency/velocity-engine-core-2.3.jar,
  lib/mp3plugin.jar,
- lib/target/dependency/audiosolutions-core-9.0.jar
+ lib/target/dependency/audiosolutions-core-10.0.jar,
+ lib/target/dependency/component-file-9.1.jar,
+ lib/target/dependency/commons-ui-jface-9.1.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: Christoph Korn
 Automatic-Module-Name: de.kobich.audiosolutions

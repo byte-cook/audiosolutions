@@ -22,6 +22,7 @@ import de.kobich.component.file.FileDescriptor;
 /**
  * Adds file to play list.
  */
+// TODO playlist: rename
 public class AddFilesToPlayListAction extends AbstractHandler {
 	private static final Logger logger = Logger.getLogger(AddFilesToPlayListAction.class);
 	private IWorkbenchWindow window;

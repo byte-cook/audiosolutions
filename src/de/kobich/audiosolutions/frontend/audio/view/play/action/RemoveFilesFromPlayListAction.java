@@ -13,9 +13,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
 import de.kobich.component.file.FileDescriptor;
 
-/**
- * Lends a medium.
- */
+// TODO playlist: rename
 public class RemoveFilesFromPlayListAction extends AbstractHandler {
 	private static final Logger logger = Logger.getLogger(RemoveFilesFromPlayListAction.class);
 	private IWorkbenchWindow window;
