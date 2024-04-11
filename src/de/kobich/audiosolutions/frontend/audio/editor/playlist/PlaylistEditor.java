@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.CellEditor;
@@ -66,9 +67,10 @@ import de.kobich.commons.ui.DelayListener;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
 import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
 import de.kobich.commons.ui.jface.JFaceUtils;
+import de.kobich.commons.ui.jface.MementoUtils;
 import de.kobich.commons.ui.jface.listener.TreeExpandKeyListener;
-import de.kobich.commons.ui.jface.tree.TreeColumnData;
 import de.kobich.commons.ui.jface.tree.TreeColumnLayoutManager;
+import de.kobich.commons.ui.memento.IMementoItem;
 import lombok.Getter;
 
 public class PlaylistEditor extends EditorPart implements PropertyChangeListener, IEditorLayoutSupport {
@@ -87,20 +89,23 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 	private EditablePlaylist playlist;
 	@Getter
 	private TreeColumnLayoutManager columnManager;
-	@Getter
 	private EditorLayoutManager layoutManager;
 	private boolean dirty;
+	private IMementoItem mementoItem;
 
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		setSite(site);
 		setInput(input);
 		if (input instanceof PlaylistEditorInput playlistInput) {
+			IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+			this.mementoItem = MementoUtils.getMementoItemToSave(dialogSettings, ID);
+
 			this.playlist = playlistInput.getEditablePlaylist();
 			this.playlist.getSupport().addPropertyChangeListener(this);
 			this.eventListener = new PlaylistEditorEventListener(this);
 			this.eventListener.register();
-			this.layoutManager = new EditorLayoutManager(this);
+			this.layoutManager = new EditorLayoutManager(this, mementoItem);
 			this.dirty = false;
 			setPartName(this.playlist.getName());
 		}
@@ -163,6 +168,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		filterSection.setLayout(new GridLayout(3, false));
 		filterSection.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		// layout
+		this.layoutManager.restoreState();
 		this.iconFlat = Activator.getDefault().getImage(ImageKey.LAYOUT_FLAT);
 		this.layoutManager.createButton(filterSection, SWT.TOGGLE, LayoutType.FLAT, iconFlat);
 		this.iconHierarchical = Activator.getDefault().getImage(ImageKey.LAYOUT_HIERARCHICAL);
@@ -199,7 +205,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setComparator(new PlaylistEditorComparator(PlaylistEditorColumn.NAME));
 		
-		this.columnManager = new TreeColumnLayoutManager(fileListComposite, treeViewer);
+		this.columnManager = new TreeColumnLayoutManager(fileListComposite, treeViewer, mementoItem);
 		this.columnManager.setTreeColumnProvider(columnData -> {
 			final PlaylistEditorColumn column = (PlaylistEditorColumn) columnData.getElement();
 			
@@ -222,16 +228,9 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		for (PlaylistEditorColumn column : PlaylistEditorColumn.values()) {
 			columnNames.add(column.name());
 			cellEditors.add(new TextCellEditor(tree));
-			
-			TreeColumnData lc = TreeColumnData.builder()
-					.element(column)
-					.text(column.getLabel())
-					.visible(true)
-					.hideable(!PlaylistEditorColumn.NAME.equals(column))
-					.widthShare(column.getWidthShare())
-					.build();
-			columnManager.addColumn(lc);
+			columnManager.addColumn(column.createTreeColumnData());
 		}
+		columnManager.restoreState();
 		columnManager.createColumns();
 		
 		treeViewer.setContentProvider(new PlaylistEditorContentProvider(layoutManager));
@@ -400,6 +399,8 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 	}
 	
 	protected ISelection switchSelection(PlaylistSelection selection, ITreeContentProvider contentProvider, LayoutType layoutType) {
+		layoutManager.saveState();
+		
 		List<Object> elements = new ArrayList<>();
 		Set<EditablePlaylistFile> filesInElements = new HashSet<>();
 		

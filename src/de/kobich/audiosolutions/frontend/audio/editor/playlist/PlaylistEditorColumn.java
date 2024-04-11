@@ -2,6 +2,7 @@ package de.kobich.audiosolutions.frontend.audio.editor.playlist;
 
 import org.eclipse.jface.viewers.ColumnWeightData;
 
+import de.kobich.commons.ui.jface.tree.TreeColumnData;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -15,9 +16,7 @@ public enum PlaylistEditorColumn {
 	
 	@Getter
 	private final String label;
-	@Getter
 	private final int widthShare;
-	@Getter
 	private final int minimumWidth;
 	
 	/**
@@ -32,5 +31,16 @@ public enum PlaylistEditorColumn {
 			}
 		}
 		throw new IndexOutOfBoundsException("No column with name: " + name);
+	}
+	
+	public TreeColumnData createTreeColumnData() {
+		return TreeColumnData.builder()
+				.element(this)
+				.text(this.getLabel())
+				.visible(true)
+				.hideable(!PlaylistEditorColumn.NAME.equals(this))
+				.widthShare(this.widthShare)
+				.minimumWidth(this.minimumWidth)
+				.build();
 	}
 }
