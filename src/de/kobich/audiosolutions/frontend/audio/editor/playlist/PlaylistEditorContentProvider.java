@@ -34,11 +34,7 @@ public class PlaylistEditorContentProvider implements ITreeContentProvider {
 			return model;
 		}
 		else if (input instanceof EditablePlaylistFile file) {
-			for (EditablePlaylistFolder folder : model.getFolders()) {
-				if (folder.getFiles().contains(file)) {
-					return folder;
-				}
-			}
+			return file.getFolder();
 		}
 		return null;
 	}
