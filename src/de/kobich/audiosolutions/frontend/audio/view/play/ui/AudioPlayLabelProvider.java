@@ -1,5 +1,7 @@
 package de.kobich.audiosolutions.frontend.audio.view.play.ui;
 
+import java.io.File;
+
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -9,10 +11,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.services.ISourceProviderService;
 
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayViewSourceProvider;
 import de.kobich.commons.ui.jface.table.ViewerColumn;
-import de.kobich.component.file.FileDescriptor;
 
 public class AudioPlayLabelProvider implements ITableLabelProvider, ITableColorProvider {
 	private final AudioPlayView view;
@@ -31,14 +33,13 @@ public class AudioPlayLabelProvider implements ITableLabelProvider, ITableColorP
 
 	@Override
 	public String getColumnText(Object element, int columnIndex) {
-		if (element instanceof FileDescriptor) {
-			FileDescriptor item = (FileDescriptor) element;
+		if (element instanceof EditablePlaylistFile file) {
 			ViewerColumn column = AudioPlayView.COLUMNS.getByIndex(columnIndex);
 			if (AudioPlayView.COLUMN_TRACK.equals(column)) {
-				return item.getFileName();
+				return file.getFileName();
 			}
 			else if (AudioPlayView.COLUMN_FILE.equals(column)) {
-				return item.getFile().getAbsolutePath();
+				return file.getFile().getAbsolutePath();
 			}
 		}
 		throw new IllegalStateException("Illegal column index < " + columnIndex + ">, expected<0 - 1>");
@@ -60,12 +61,14 @@ public class AudioPlayLabelProvider implements ITableLabelProvider, ITableColorP
 
 	@Override
 	public Color getForeground(Object element, int columnIndex) {
-		if (element instanceof FileDescriptor) {
-			FileDescriptor item = (FileDescriptor) element;
-			FileDescriptor currentFile = view.getPlayList().getCurrentFile().orElse(null);
+		if (element instanceof EditablePlaylistFile file) {
+			File currentFile = view.getPlaylist().getCurrentFile().orElse(null);
 			boolean playing = (Boolean) provider.getCurrentState().get(AudioPlayViewSourceProvider.PLAYING_STATE);
-			if (playing && currentFile != null && currentFile.equals(item)) {
+			if (playing && currentFile != null && currentFile.equals(file.getFile())) {
 				return Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_BACKGROUND); 
+			}
+			else if (!file.getFile().exists()) {
+				return Display.getCurrent().getSystemColor(SWT.COLOR_GRAY);
 			}
 		}
 		return null;

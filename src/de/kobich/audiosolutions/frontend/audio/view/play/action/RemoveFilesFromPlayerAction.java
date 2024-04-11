@@ -10,12 +10,11 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
-import de.kobich.component.file.FileDescriptor;
 
-// TODO playlist: rename
-public class RemoveFilesFromPlayListAction extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(RemoveFilesFromPlayListAction.class);
+public class RemoveFilesFromPlayerAction extends AbstractHandler {
+	private static final Logger logger = Logger.getLogger(RemoveFilesFromPlayerAction.class);
 	private IWorkbenchWindow window;
 
 	@Override
@@ -24,15 +23,15 @@ public class RemoveFilesFromPlayListAction extends AbstractHandler {
 		try {
 			AudioPlayView audioPlayView = (AudioPlayView) window.getActivePage().findView(AudioPlayView.ID);
 			if (audioPlayView != null) {
-				List<FileDescriptor> files2Remove = audioPlayView.getSelectedPlayItems();
+				List<EditablePlaylistFile> files2Remove = audioPlayView.getSelectedPlayItems();
 				if (files2Remove.isEmpty()) {
-					files2Remove = audioPlayView.getPlayList().getFiles();
+					files2Remove = audioPlayView.getPlaylist().getSortedFiles();
 					boolean confirmed = MessageDialog.openQuestion(window.getShell(), "Delete Play List", "Do you want to delete the complete play list?");
 					if (!confirmed) {
 						return null;
 					}
 				}
-				audioPlayView.removeFilesFromPlayList(files2Remove);
+				audioPlayView.removeFiles(files2Remove);
 				audioPlayView.refresh();
 			}
 		}

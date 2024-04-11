@@ -1,8 +1,10 @@
 package de.kobich.audiosolutions.frontend.audio.view.play.action;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
@@ -13,8 +15,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.kobich.audiosolutions.core.service.AudioFileDescriptorComparator;
+import de.kobich.audiosolutions.core.service.AudioException;
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFileComparator;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
 import de.kobich.audiosolutions.frontend.common.util.PlatformUtil;
 import de.kobich.component.file.FileDescriptor;
@@ -36,25 +41,22 @@ public class PlayAudioFileAction extends AbstractHandler {
 				return null;
 			}
 			
-			if (AUDIO_VIEW_CALLER_VALUE.equals(caller) && !audioPlayView.getPlayList().getFiles().isEmpty()) {
-				FileDescriptor startFile = null;
-				List<FileDescriptor> files = audioPlayView.getSelectedPlayItems();
+			if (AUDIO_VIEW_CALLER_VALUE.equals(caller) && !audioPlayView.getPlaylist().getSortedFiles().isEmpty()) {
+				List<EditablePlaylistFile> files = audioPlayView.getSelectedPlayItems();
 				if (!files.isEmpty()) {
-					startFile = files.get(0);
+					files.sort(EditablePlaylistFileComparator.INSTANCE);
+					audioPlayView.startPlaying(files.get(0));
 				}
-				audioPlayView.startPlaying(startFile);
 			}
 			else {
 				IEditorPart editorPart = window.getActivePage().getActiveEditor();
-				if (editorPart instanceof AudioCollectionEditor) {
-					AudioCollectionEditor audioCollectionEditor = (AudioCollectionEditor) editorPart;
-					List<FileDescriptor> fileDescriptors = new ArrayList<FileDescriptor>();
-					fileDescriptors.addAll(audioCollectionEditor.getFileDescriptorSelection().getFileDescriptors());
-					Collections.sort(fileDescriptors, new AudioFileDescriptorComparator());
-					
-					audioPlayView.addFilesToPlayList(fileDescriptors);
-					FileDescriptor startFile = !fileDescriptors.isEmpty() ? fileDescriptors.get(0) : null;
-					audioPlayView.startPlaying(startFile);
+				if (editorPart instanceof AudioCollectionEditor audioCollectionEditor) {
+					Set<File> files = audioCollectionEditor.getFileDescriptorSelection().getExistingFiles().stream().map(FileDescriptor::getFile).collect(Collectors.toSet());
+					appendFilesAndPlay(audioPlayView, files);
+				}
+				else if (editorPart instanceof PlaylistEditor playlistEditor) {
+					Set<File> files = playlistEditor.getSelection().getExistingFiles().stream().map(EditablePlaylistFile::getFile).collect(Collectors.toSet());
+					appendFilesAndPlay(audioPlayView, files);
 				}
 			}
 		}
@@ -66,4 +68,11 @@ public class PlayAudioFileAction extends AbstractHandler {
 		return null;
 	}
 	
+	private void appendFilesAndPlay(AudioPlayView audioPlayView, Set<File> files) throws AudioException {
+		List<EditablePlaylistFile> appendedFiles = new ArrayList<>(audioPlayView.appendFiles(files));
+		if (!appendedFiles.isEmpty()) {
+			appendedFiles.sort(EditablePlaylistFileComparator.INSTANCE);
+			audioPlayView.startPlaying(appendedFiles.get(0));
+		}
+	}
 }

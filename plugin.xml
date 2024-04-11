@@ -344,13 +344,13 @@
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
-            id="de.kobich.audiosolutions.commands.audio.addFilesToPlayList"
-            name="Add Files To Play List">
+            id="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
+            name="Append Files To Player">
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
-            id="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayList"
-            name="Remove Files From Play List">
+            id="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer"
+            name="Remove Files From Player">
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
@@ -485,7 +485,7 @@
       <command
             defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action.CopyFileDescriptorsToPlaylistAction"
             id="de.kobich.audiosolutions.commands.editor.copyFileDescriptorsToPlaylist"
-            name="Copy File Descriptors To Playlist">
+            name="Copy Files To Another Playlist">
       </command>
    </extension>
    <extension
@@ -1281,14 +1281,9 @@
                    visible="true">
              </separator>
              <command
-                   commandId="de.kobich.audiosolutions.commands.editor.copyFileDescriptorsToPlaylist"
-                   label="Copy Files To Playlist"
-                   style="push">
-             </command>
-             <command
                    commandId="de.kobich.audiosolutions.commands.audio.playAudioFile"
                    icon="icons/audio/audio-play.png"
-                   label="Play File"
+                   label="Play"
                    style="push">
                 <parameter
                       name="de.kobich.audiosolutions.commands.audio.playAudioFile.caller"
@@ -1296,9 +1291,15 @@
                 </parameter>
              </command>
              <command
-                   commandId="de.kobich.audiosolutions.commands.audio.addFilesToPlayList"
-                   icon="icons/audio/playlist-add.png"
-                   label="Add To Playlist"
+                   commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
+                   icon="icons/audio/audio-play-add.png"
+                   label="Append To Player"
+                   style="push">
+             </command>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.editor.copyFileDescriptorsToPlaylist"
+                   icon="icons/audio/playlist.png"
+                   label="Copy Files To Another Playlist"
                    style="push">
              </command>
              <command
@@ -1663,15 +1664,15 @@
       <menuContribution
             locationURI="toolbar:de.kobich.audiosolutions.view.audio.playerView">
          <command
-               commandId="de.kobich.audiosolutions.commands.audio.addFilesToPlayList"
-               icon="icons/audio/playlist-add.png"
-               label="Add Files To Play List"
+               commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
+               icon="icons/audio/audio-play-add.png"
+               label="Append Files To Player"
                style="push">
          </command>
          <command
-               commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayList"
-               icon="icons/audio/playlist-remove.png"
-               label="Remove Files From Play List"
+               commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer"
+               icon="icons/audio/audio-play-remove.png"
+               label="Remove Files From Player"
                style="push">
          </command>
          <separator
@@ -1720,9 +1721,9 @@
       <menuContribution
             locationURI="popup:de.kobich.audiosolutions.view.audio.playerView">
          <command
-               commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayList"
-               icon="icons/audio/playlist-remove.png"
-               label="Remove Files From Play List"
+               commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer"
+               icon="icons/audio/audio-play-remove.png"
+               label="Remove Files From Player"
                style="push">
          </command>
       </menuContribution>
@@ -1828,6 +1829,22 @@
                visible="true">
          </separator>
          <command
+               commandId="de.kobich.audiosolutions.commands.audio.playAudioFile"
+               icon="icons/audio/audio-play.png"
+               label="Play"
+               style="push">
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
+               icon="icons/audio/audio-play-add.png"
+               label="Append Files To Player"
+               style="push">
+         </command>
+         <separator
+               name="de.kobich.audiosolutions.separator2"
+               visible="true">
+         </separator>
+         <command
                commandId="de.kobich.audiosolutions.commands.editor.copyFilesToDirectory"
                icon="icons/file/file-copy.png"
                label="Copy Files To Directory"
@@ -1835,11 +1852,12 @@
          </command>
          <command
                commandId="de.kobich.audiosolutions.commands.editor.copyFilesToAnotherPlaylist"
+               icon="icons/audio/playlist.png"
                label="Copy Files To Another Playlist"
                style="push">
          </command>
          <separator
-               name="de.kobich.audiosolutions.separator2"
+               name="de.kobich.audiosolutions.separator3"
                visible="true">
          </separator>
          <command
@@ -2514,55 +2532,6 @@
          </activeWhen>
       </handler>
       <handler
-            commandId="de.kobich.audiosolutions.commands.audio.addFilesToPlayList">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.AddFilesToPlayListAction">
-         </class>
-         <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <test
-                           property="fileDescriptor.exists"
-                           value="true">
-                     </test>
-                  </iterate>
-               </with>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayList">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.RemoveFilesFromPlayListAction">
-         </class>
-         <activeWhen>
-         	<and>
-         		<with
-                     variable="activePartId">
-                  <equals
-                        value="de.kobich.audiosolutions.view.audio.playerView">
-                  </equals>
-               </with>
-           <with
-                 variable="audioPlayView.playListEmpty">
-              <equals
-                    value="false">
-              </equals>
-           </with>
-	        </and>
-         </activeWhen>
-      </handler>
-      <handler
             commandId="de.kobich.audiosolutions.commands.audio.playAudioFile">
          <class
                class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction">
@@ -2610,6 +2579,79 @@
               </with>
            </and>
             </activeWhen>
+      </handler>
+      <handler
+            commandId="de.kobich.audiosolutions.commands.audio.playAudioFile">
+         <class
+               class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction">
+         </class>
+         <activeWhen>
+            <and>
+               <with
+                     variable="activeEditorId">
+                  <equals
+                        value="de.kobich.audiosolutions.editor.playlistEditor">
+                  </equals>
+               </with>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer">
+         <class
+               class="de.kobich.audiosolutions.frontend.audio.view.play.action.AppendFilesToPlayerAction">
+         </class>
+         <activeWhen>
+            <and>
+               <with
+                     variable="activeCollectionEditor">
+                  <instanceof
+                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
+                  </instanceof>
+               </with>
+               <with
+                     variable="fileDescriptorSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <test
+                           property="fileDescriptor.exists"
+                           value="true">
+                     </test>
+                  </iterate>
+               </with>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer">
+         <class
+               class="de.kobich.audiosolutions.frontend.audio.view.play.action.AppendFilesToPlayerAction">
+         </class>
+         <activeWhen>
+            <and>
+               <with
+                     variable="activeEditorId">
+                  <equals
+                        value="de.kobich.audiosolutions.editor.playlistEditor">
+                  </equals>
+               </with>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer">
+         <class
+               class="de.kobich.audiosolutions.frontend.audio.view.play.action.RemoveFilesFromPlayerAction">
+         </class>
+         <activeWhen>
+            <with
+                  variable="audioPlayView.playListEmpty">
+               <equals
+                     value="false">
+               </equals>
+            </with>
+         </activeWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.PauseAudioFile">

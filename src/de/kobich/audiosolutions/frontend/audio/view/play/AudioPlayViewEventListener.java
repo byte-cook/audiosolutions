@@ -1,16 +1,17 @@
 package de.kobich.audiosolutions.frontend.audio.view.play;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistSelection;
 import de.kobich.audiosolutions.frontend.common.listener.EventListenerAdapter;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 import de.kobich.component.file.FileDescriptor;
@@ -28,18 +29,11 @@ public class AudioPlayViewEventListener extends EventListenerAdapter {
 	 */
 	@Override
 	public void selectionChanged(IWorkbenchPart workbenchPart, ISelection selection) {
-		// only check selection of audio collection editor
 		if (workbenchPart instanceof AudioCollectionEditor collectionEditor) {
-			FileDescriptorSelection util = collectionEditor.getFileDescriptorSelection();
-
-			List<FileDescriptor> audioFiles = new ArrayList<FileDescriptor>();
-			Set<FileDescriptor> fileDescriptors = util.getFileDescriptors();
-			for (FileDescriptor fileDescriptor : fileDescriptors) {
-				audioFiles.add(fileDescriptor);
-			}
-	
-			if (!audioFiles.isEmpty()) {
-				view.fireSelection(audioFiles);
+			FileDescriptorSelection fileDescriptorSelection = collectionEditor.getFileDescriptorSelection();
+			List<File> files = fileDescriptorSelection.getExistingFiles().stream().map(FileDescriptor::getFile).toList();
+			if (!files.isEmpty()) {
+				view.fireSelection(files);
 			}
 			else {
 				view.fireDeselection();
@@ -47,6 +41,14 @@ public class AudioPlayViewEventListener extends EventListenerAdapter {
 		}
 		else if (workbenchPart instanceof PlaylistEditor playlistEditor) {
 			// TODO playlist add selection
+			PlaylistSelection playlistSelection = playlistEditor.getSelection();
+			List<File> files = playlistSelection.getExistingFiles().stream().map(EditablePlaylistFile::getFile).toList();
+			if (!files.isEmpty()) {
+				view.fireSelection(files);
+			}
+			else {
+				view.fireDeselection();
+			}
 		}
 	}
 

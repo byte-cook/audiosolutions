@@ -6,9 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.MenuManager;
@@ -37,22 +37,27 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.AudioException;
-import de.kobich.audiosolutions.core.service.play.AudioPlayList;
 import de.kobich.audiosolutions.core.service.play.AudioPlayerClient;
 import de.kobich.audiosolutions.core.service.play.IAudioPlayingService;
+import de.kobich.audiosolutions.core.service.play.PersistableAudioPlayingList;
 import de.kobich.audiosolutions.core.service.play.player.IAudioPlayerListener;
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylist;
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
+import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFileComparator;
+import de.kobich.audiosolutions.core.service.playlist.PlaylistService;
+import de.kobich.audiosolutions.core.service.playlist.repository.Playlist;
 import de.kobich.audiosolutions.frontend.audio.view.play.action.PauseAudioFileAction;
 import de.kobich.audiosolutions.frontend.audio.view.play.ui.AudioPlayContentProvider;
 import de.kobich.audiosolutions.frontend.audio.view.play.ui.AudioPlayLabelProvider;
 import de.kobich.audiosolutions.frontend.common.selection.PostSelectionAdapter;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.JFaceUtils;
 import de.kobich.commons.ui.jface.MementoUtils;
 import de.kobich.commons.ui.jface.table.ViewerColumn;
 import de.kobich.commons.ui.jface.table.ViewerColumnManager;
-import de.kobich.commons.ui.memento.FileListSerializer;
 import de.kobich.commons.ui.memento.IMementoItem;
 import de.kobich.commons.ui.memento.IMementoItemSerializable;
-import de.kobich.component.file.FileDescriptor;
+import lombok.Getter;
 
 /**
  * Audio play view.
@@ -60,13 +65,14 @@ import de.kobich.component.file.FileDescriptor;
 public class AudioPlayView extends ViewPart implements IMementoItemSerializable { 
 	public static final Logger logger = Logger.getLogger(AudioPlayView.class);
 	public static final String ID = "de.kobich.audiosolutions.view.audio.playerView";
-	private static final String STATE_PLAY_LIST_FILES = "playListFiles";
+	private static final String PLAYLIST_NAME = "audiosolutions_player";
 	public static ViewerColumn COLUMN_TRACK = new ViewerColumn("Track", 40);
 	public static ViewerColumn COLUMN_FILE = new ViewerColumn("File", 60);
 	public static ViewerColumnManager COLUMNS = new ViewerColumnManager(COLUMN_TRACK, COLUMN_FILE);
 	
 	private AudioPlayViewEventListener eventListener;
-	private AudioPlayList playList;
+	@Getter
+	private PersistableAudioPlayingList playlist;
 	private AudioPlayerListener playerListener;
 	private AudioPlayerClient playerClient;
 	private Composite infoGroup;
@@ -137,7 +143,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 				try {
 					long beginMillis = progressScale.getSelection();
 					IAudioPlayingService audioPlayService = AudioSolutions.getService(IAudioPlayingService.JAVA_ZOOM_PLAYER, IAudioPlayingService.class);
-					audioPlayService.skip(getPlayerClient(), beginMillis);
+					audioPlayService.rewind(getPlayerClient(), beginMillis);
 					PauseAudioFileAction.setState(AudioPlayView.this.getSite(), Boolean.FALSE);
 				}
 				catch (AudioException exc) {
@@ -172,6 +178,21 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		table.setLayoutData(new GridData(GridData.FILL_BOTH));
 		table.setHeaderVisible(false);
 		table.setLinesVisible(true);
+		table.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				try {
+					List<EditablePlaylistFile> selection = getSelectedPlayItems();
+					if (!selection.isEmpty()) {
+						selection.sort(EditablePlaylistFileComparator.INSTANCE);
+						startPlaying(selection.get(0));
+					}
+				}
+				catch (Exception exc) {
+					MessageDialog.openError(getSite().getShell(), getSite().getShell().getText(), exc.getMessage());
+				}
+			}
+		});
 		
 		// enable context menu
 		MenuManager menuManager = new MenuManager();
@@ -179,8 +200,8 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		table.setMenu(menuFlat);
 		getSite().registerContextMenu(menuManager, tableViewer);
 		
-		// load play list
-		loadPlayList();
+		// load playlist
+		loadPlaylist();
 
 		setContentDescription("Please select one or more audio files.");
 		
@@ -189,54 +210,60 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		eventListener.register();
 	}
 
-	private void loadPlayList() {
-		this.playList = new AudioPlayList();
-
-		// restore state
-		restoreState();
-		
-		this.tableViewer.setInput(playList);
-	}
-
-	public AudioPlayList getPlayList() {
-		return this.playList;
-	}
-	
-	public void addFilesToPlayList(List<FileDescriptor> fileDescriptors) {
-		getPlayList().addFiles(fileDescriptors);
-		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, getPlayList().getFiles().isEmpty());
-		refresh();
-	}
-	
-	public void removeFilesFromPlayList(List<FileDescriptor> fileDescriptors) {
-		getPlayList().removeFiles(fileDescriptors);
-		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, getPlayList().getFiles().isEmpty());
-		refresh();
+	private void loadPlaylist() {
+		JFaceExec.builder(getSite().getShell(), "Opening Playlist")
+			.worker(ctx -> {
+				EditablePlaylist editablePlaylist;
+				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
+				Playlist systemPlaylist = playlistService.getSystemPlaylist(PLAYLIST_NAME).orElse(null);
+				if (systemPlaylist == null) {
+					editablePlaylist = playlistService.createNewPlaylist(PLAYLIST_NAME, true);
+				}
+				else {
+					editablePlaylist = playlistService.openPlaylist(systemPlaylist, null);
+				}
+				this.playlist = new PersistableAudioPlayingList(editablePlaylist);
+			})
+			.ui(ctx -> {
+				restoreState();
+				this.tableViewer.setInput(playlist);
+			})
+			.exceptionalDialog("Cannot open playlist")
+			.runBackgroundJob(200, false, true, null);
 	}
 	
-	public void startPlaying(FileDescriptor startFile) throws AudioException {
-		if (startFile != null && startFile.getFile().exists()) {
-			this.getPlayList().setStartFile(startFile);
+	public void startPlaying(EditablePlaylistFile startFile) throws AudioException {
+		if (startFile != null) {
+			this.playlist.setStartFile(startFile);
 		}
-		else {
-			this.getPlayList().setFirstStartFile();
-		}
-		
 		IAudioPlayingService audioPlayService = AudioSolutions.getService(IAudioPlayingService.JAVA_ZOOM_PLAYER, IAudioPlayingService.class);
-		audioPlayService.play(this.getPlayerClient(), this.getPlayList());
+		audioPlayService.play(this.getPlayerClient(), this.getPlaylist());
+	}
+	
+	public Set<EditablePlaylistFile> appendFiles(Set<File> files) {
+		Set<EditablePlaylistFile> appendedFiles = this.playlist.appendFiles(files);
+		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, this.playlist.getSortedFiles().isEmpty());
+		refresh();
+		return appendedFiles;
+	}
+	
+	public void removeFiles(List<EditablePlaylistFile> files) {
+		this.playlist.removeFiles(files);
+		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, this.playlist.getSortedFiles().isEmpty());
+		refresh();
 	}
 	
 	/**
 	 * @return the selected file
 	 */
-	public List<FileDescriptor> getSelectedPlayItems() {
-		List<FileDescriptor> playItems = new ArrayList<>();
+	public List<EditablePlaylistFile> getSelectedPlayItems() {
+		List<EditablePlaylistFile> playItems = new ArrayList<>();
 		if (tableViewer.getTable().getSelectionCount() > 0) {
 			TableItem[] selection = tableViewer.getTable().getSelection();
 			for (TableItem selectionItem : selection) {
 				Object data = selectionItem.getData();
-				if (data instanceof FileDescriptor) {
-					playItems.add((FileDescriptor) data);
+				if (data instanceof EditablePlaylistFile file) {
+					playItems.add(file);
 				}
 			}
 		}
@@ -250,10 +277,6 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		tableViewer.getTable().setFocus();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.ViewPart#saveState(org.eclipse.ui.IMemento)
-	 */
 	@Override
 	public void saveState(IMemento memento) {
 		super.saveState(memento);
@@ -267,9 +290,17 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		if (mementoItem == null) {
 			return;
 		}
-		List<File> files = getPlayList().getFiles().stream().map(f -> f.getFile()).collect(Collectors.toList());
-		FileListSerializer playItemsMemento = new FileListSerializer(STATE_PLAY_LIST_FILES);
-		playItemsMemento.save(files, mementoItem);
+//		List<File> files = getPlayList().getSortedFiles();
+//		FileListSerializer playItemsMemento = new FileListSerializer(STATE_PLAY_LIST_FILES);
+//		playItemsMemento.save(files, mementoItem);
+		
+		JFaceExec.builder(getSite().getShell())
+			.worker(ctx -> {
+				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
+				playlistService.savePlaylist(this.playlist.getPlaylist(), null);
+			})
+			.exceptionalDialog("Could not save playing list")
+			.runBackgroundJob(0, false, true, null);
 	}
 	
 	@Override
@@ -278,14 +309,8 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		if (mementoItem == null) {
 			return;
 		}
-		FileListSerializer playItemsMemento = new FileListSerializer(STATE_PLAY_LIST_FILES);
-
-		List<File> files = playItemsMemento.restore(mementoItem);
-		for (File file : files) {
-			FileDescriptor fileDescriptor = new FileDescriptor(file, file.getName());
-			getPlayList().addFile(fileDescriptor);
-		}
-		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, getPlayList().getFiles().isEmpty());
+		// TODO playlist
+		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, this.playlist.getSortedFiles().isEmpty());
 	}
 
 	/*
@@ -316,33 +341,12 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		super.dispose();
 	}
 
-	/**
-	 * Called if no files are selected
-	 */
 	public void fireDeselection() {
-		getViewSite().getShell().getDisplay().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				setContentDescription("Please select one or more audio files.");
-			}
-		});
+		getViewSite().getShell().getDisplay().asyncExec(() -> setContentDescription("Please select one or more audio files."));
 	}
 
-	/**
-	 * Called if files are selected
-	 */
-	public void fireSelection(final List<FileDescriptor> audioFiles) {
-		getViewSite().getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				try {
-					String text = audioFiles.size() + " file(s) selected";
-					setContentDescription(text);
-				} 
-				catch (Exception exc) {
-					logger.error("Audio file could not be read", exc);
-				}
-			}
-		});
+	public void fireSelection(final List<File> files) {
+		getViewSite().getShell().getDisplay().asyncExec(() -> setContentDescription(files.size() + " file(s) selected"));
 	}
 	
 	/**
@@ -432,7 +436,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		}
 
 		@Override
-		public void resume(final File file) {
+		public void resume() {
 		}
 
 		@Override
@@ -488,17 +492,6 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 			}
 			view.timeLabel.setText(time + completeTime);
 			view.timeLabel.setEnabled(true);
-		}
-
-		@Override
-		public void playListModified() {
-			view.provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, view.getPlayList().getFiles().isEmpty());
-			view.getViewSite().getShell().getDisplay().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					view.refresh();
-				}
-			});
 		}
 	}
 }

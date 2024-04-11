@@ -3,20 +3,18 @@ package de.kobich.audiosolutions.frontend.audio.view.play.ui;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import de.kobich.audiosolutions.core.service.play.AudioPlayList;
+import de.kobich.audiosolutions.core.service.play.PersistableAudioPlayingList;
 
 public class AudioPlayContentProvider implements IStructuredContentProvider {
-	private AudioPlayList mediumModel;
 
 	public AudioPlayContentProvider() {}
 
 	@Override
 	public Object[] getElements(Object input) {
-		if (input instanceof AudioPlayList) {
-			mediumModel = (AudioPlayList) input;
-			return mediumModel.getFiles().toArray();
+		if (input instanceof PersistableAudioPlayingList model) {
+			return model.getSortedFiles().toArray();
 		}
-		throw new IllegalStateException("Illegal input type < " + input.getClass().getName() + ">, expected<" + AudioPlayList.class.getName() + ">");
+		throw new IllegalStateException("Illegal input type < " + input.getClass().getName() + ">, expected<" + PersistableAudioPlayingList.class.getName() + ">");
 	}
 
 	@Override
