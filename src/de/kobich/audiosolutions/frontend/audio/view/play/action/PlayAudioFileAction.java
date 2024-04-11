@@ -42,11 +42,13 @@ public class PlayAudioFileAction extends AbstractHandler {
 			}
 			
 			if (AUDIO_VIEW_CALLER_VALUE.equals(caller) && !audioPlayView.getPlaylist().getSortedFiles().isEmpty()) {
+				EditablePlaylistFile startFile = null;
 				List<EditablePlaylistFile> files = audioPlayView.getSelectedPlayItems();
 				if (!files.isEmpty()) {
 					files.sort(EditablePlaylistFileComparator.INSTANCE);
-					audioPlayView.startPlaying(files.get(0));
+					startFile = files.get(0);
 				}
+				audioPlayView.startPlaying(startFile);
 			}
 			else {
 				IEditorPart editorPart = window.getActivePage().getActiveEditor();
