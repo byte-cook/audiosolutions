@@ -27,7 +27,6 @@ Bundle-ClassPath: .,
  lib/target/dependency/byte-buddy-1.12.18.jar,
  lib/target/dependency/checker-qual-3.37.0.jar,
  lib/target/dependency/classmate-1.5.1.jar,
- lib/target/dependency/commons-9.0.jar,
  lib/target/dependency/commons-codec-1.6.jar,
  lib/target/dependency/commons-collections4-4.4.jar,
  lib/target/dependency/commons-io-2.15.0.jar,
@@ -92,7 +91,8 @@ Bundle-ClassPath: .,
  lib/mp3plugin.jar,
  lib/target/dependency/audiosolutions-core-10.0.jar,
  lib/target/dependency/component-file-9.1.jar,
- lib/target/dependency/commons-ui-jface-9.1.jar
+ lib/target/dependency/commons-ui-jface-9.1.jar,
+ lib/target/dependency/commons-10.0.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: Christoph Korn
 Automatic-Module-Name: de.kobich.audiosolutions
