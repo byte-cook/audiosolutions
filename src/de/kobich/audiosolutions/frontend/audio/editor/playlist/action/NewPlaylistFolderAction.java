@@ -1,15 +1,12 @@
 package de.kobich.audiosolutions.frontend.audio.editor.playlist.action;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -18,11 +15,10 @@ import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFolder;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistSelection;
-import de.kobich.commons.ui.jface.JFaceThreadRunner;
-import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 
 public class NewPlaylistFolderAction extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(NewPlaylistFolderAction.class);
 	public static final String ID = "de.kobich.audiosolutions.commands.editor.newPlaylistFolder";
 
 	@Override
@@ -40,40 +36,29 @@ public class NewPlaylistFolderAction extends AbstractHandler {
 			final NewPlaylistFolderDialog dialog = new NewPlaylistFolderDialog(window.getShell(), proposals);
 			int status = dialog.open();
 			if (status == IDialogConstants.OK_ID) {
-				JFaceThreadRunner runner = new JFaceThreadRunner("New Folder", window.getShell(), List.of(RunningState.UI_1, RunningState.WORKER_1, RunningState.UI_2)) {
-					private PlaylistSelection selection;
-					private EditablePlaylistFolder folder;
-
-					@Override
-					protected void run(RunningState state) throws Exception {
-						switch (state) {
-						case UI_1:
-							selection = playlistEditor.getSelection();
-							break;
-						case WORKER_1:
-							this.folder = playlistEditor.getPlaylist().createOrGetFolder(dialog.getFolderName());
-							if (!selection.isEmpty() && dialog.isMoveToEnabled()) {
-								playlistEditor.getPlaylist().moveToFolder(selection.getFolders(), selection.getFiles(), folder);
+				Wrapper<PlaylistSelection> selection = Wrapper.empty();
+				Wrapper<EditablePlaylistFolder> folder = Wrapper.empty();
+				JFaceExec.builder(window.getShell(), "New Folder")
+					// get current selection
+					.ui(ctx -> selection.set(playlistEditor.getSelection()))
+					// create folder
+					.worker(ctx -> {
+						folder.set(playlistEditor.getPlaylist().createOrGetFolder(dialog.getFolderName()));
+						
+						selection.ifPresent(sel -> {
+							if (!sel.isEmpty() && dialog.isMoveToEnabled()) {
+								playlistEditor.getPlaylist().moveToFolder(sel.getFolders(), sel.getFiles(), folder.get());
 							}
-							break;
-						case UI_2:
-							playlistEditor.refresh();
-							playlistEditor.setSelection(new Object[] {folder});
-							break;
-						case UI_ERROR:
-							Exception e = super.getException();
-							logger.error(e.getMessage(), e);
-							String msg = "Create new folder failed: " + e.getMessage();
-							MessageDialog.openError(window.getShell(), super.getName(), msg);
-							break;
-						default:
-							break;
-						}
-					}
-				};
-				runner.runProgressMonitorDialog(true, false);
+						});
+					})
+					// refresh and select new folder
+					.ui(ctx -> {
+						playlistEditor.refresh();
+						playlistEditor.setSelection(new Object[] {folder.get()});
+					})
+					.exceptionalDialog("Create new folder failed")
+					.runProgressMonitorDialog(true, false);
 			}
-			
 		}
 		return null;
 	}
