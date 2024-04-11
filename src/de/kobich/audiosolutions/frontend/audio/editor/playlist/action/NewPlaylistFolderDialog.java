@@ -119,7 +119,7 @@ public class NewPlaylistFolderDialog extends TitleAreaDialog implements IMemento
 		}
 
 		this.folderName = folderNameText.getText();
-		this.moveToEnabled = moveToEnabledButton.getSelection();
+		this.moveToEnabled = moveToEnabledButton.getSelection() && !proposals.isEmpty();
 		saveState();
 		super.okPressed();
 	}
