@@ -2654,10 +2654,8 @@
          </activeWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.PauseAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.PauseAudioFile">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.PauseAudioFileAction">
-         </class>
          <activeWhen>
             <or>
                <with

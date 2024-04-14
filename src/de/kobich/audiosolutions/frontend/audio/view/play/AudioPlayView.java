@@ -33,7 +33,6 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.AudioException;
@@ -81,6 +80,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	private Label timeLabel;
 	private TableViewer tableViewer;
 	private IMemento memento;
+	@Getter
 	private AudioPlayViewSourceProvider provider;
 	private boolean disposedCalled;
 	
@@ -91,8 +91,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		this.playerListener = new AudioPlayerListener(this);
 		this.playerClient = new AudioPlayerClient("audio-player");
 		this.playerClient.getListenerList().addListener(playerListener);
-		ISourceProviderService sourceProviderService = (ISourceProviderService) site.getService(ISourceProviderService.class);
-		this.provider = (AudioPlayViewSourceProvider) sourceProviderService.getSourceProvider(AudioPlayViewSourceProvider.PLAYING_STATE);
+		this.provider = AudioPlayViewSourceProvider.getInstance(site);
 		this.disposedCalled = false;
 	}
 
@@ -122,11 +121,10 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 			public void widgetSelected(SelectionEvent event) {
 				try {
 					long beginMillis = progressScale.getSelection();
-					String time = getPlayerListener().getTimeString(beginMillis);
-					getPlayerListener().setTime(time);
+					String time = playerListener.getTimeString(beginMillis);
+					playerListener.setTime(time);
 	
-					boolean pause = (Boolean) provider.getCurrentState().get(AudioPlayViewSourceProvider.PAUSE_STATE);
-					if (!pause) {
+					if (!provider.isPaused()) {
 						IAudioPlayingService audioPlayService = AudioSolutions.getService(IAudioPlayingService.JAVA_ZOOM_PLAYER, IAudioPlayingService.class);
 						audioPlayService.pause(getPlayerClient());
 						PauseAudioFileAction.setState(AudioPlayView.this.getSite(), Boolean.TRUE);
@@ -212,6 +210,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 
 	private void loadPlaylist() {
 		JFaceExec.builder(getSite().getShell(), "Opening Playlist")
+			.ui(ctx -> setContentDescription("Loading playlist..."))
 			.worker(ctx -> {
 				EditablePlaylist editablePlaylist;
 				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
@@ -227,6 +226,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 			.ui(ctx -> {
 				restoreState();
 				this.tableViewer.setInput(playlist);
+				fireDeselection();
 			})
 			.exceptionalDialog("Cannot open playlist")
 			.runBackgroundJob(200, false, true, null);
@@ -242,14 +242,14 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	
 	public Set<EditablePlaylistFile> appendFiles(Set<File> files) {
 		Set<EditablePlaylistFile> appendedFiles = this.playlist.appendFiles(files);
-		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, this.playlist.getSortedFiles().isEmpty());
+		provider.setPlaylistEmpty(this.playlist.getSortedFiles().isEmpty());
 		refresh();
 		return appendedFiles;
 	}
 	
 	public void removeFiles(List<EditablePlaylistFile> files) {
 		this.playlist.removeFiles(files);
-		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, this.playlist.getSortedFiles().isEmpty());
+		provider.setPlaylistEmpty(this.playlist.getSortedFiles().isEmpty());
 		refresh();
 	}
 	
@@ -310,7 +310,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 			return;
 		}
 		// TODO playlist
-		provider.changeState(AudioPlayViewSourceProvider.PLAYLIST_EMPTY_STATE, this.playlist.getSortedFiles().isEmpty());
+		provider.setPlaylistEmpty(this.playlist.getSortedFiles().isEmpty());
 	}
 
 	/*
@@ -355,13 +355,6 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	public void refresh() {
 		tableViewer.refresh();
 	}
-	
-	/**
-	 * @return the playerListener
-	 */
-	public AudioPlayerListener getPlayerListener() {
-		return playerListener;
-	}
 
 	public AudioPlayerClient getPlayerClient() {
 		return playerClient;
@@ -382,8 +375,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 
 		@Override
 		public void paused() {
-			// no-op
-			view.provider.changeState(AudioPlayViewSourceProvider.PAUSE_STATE, Boolean.TRUE);
+			view.provider.setPaused(true);
 		}
 		
 		@Override
@@ -413,9 +405,9 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 				@Override
 				public void run() {
 					if (!isViewDisposed()) {
-						// fire event
-						view.provider.changeState(AudioPlayViewSourceProvider.PLAYING_STATE, Boolean.TRUE);
-						view.provider.changeState(AudioPlayViewSourceProvider.PAUSE_STATE, Boolean.FALSE);
+						// fire events
+						view.provider.setPlaying(true);
+						view.provider.setPaused(false);
 						PauseAudioFileAction.setState(view.getSite(), Boolean.FALSE);
 						
 						if (completeTrackMillis != IAudioPlayerListener.TOTAL_MILLIS_UNDEFINED) {
@@ -446,8 +438,8 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 				public void run() {
 					if (!isViewDisposed()) {
 						// fire event
-						view.provider.changeState(AudioPlayViewSourceProvider.PLAYING_STATE, Boolean.FALSE);
-						view.provider.changeState(AudioPlayViewSourceProvider.PAUSE_STATE, Boolean.FALSE);
+						view.provider.setPlaying(false);
+						view.provider.setPaused(false);
 						PauseAudioFileAction.setState(view.getSite(), Boolean.FALSE);
 
 						view.trackText.setText("");

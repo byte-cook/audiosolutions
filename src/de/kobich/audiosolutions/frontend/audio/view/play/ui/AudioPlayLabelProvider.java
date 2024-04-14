@@ -9,21 +9,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
-import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayViewSourceProvider;
 import de.kobich.commons.ui.jface.table.ViewerColumn;
 
 public class AudioPlayLabelProvider implements ITableLabelProvider, ITableColorProvider {
 	private final AudioPlayView view;
-	private final AudioPlayViewSourceProvider provider;
 	
 	public AudioPlayLabelProvider(AudioPlayView view) {
 		this.view = view;
-		ISourceProviderService sourceProviderService = (ISourceProviderService) view.getSite().getService(ISourceProviderService.class);
-		this.provider = (AudioPlayViewSourceProvider) sourceProviderService.getSourceProvider(AudioPlayViewSourceProvider.PLAYING_STATE);
 	}
 
 	@Override
@@ -63,8 +58,7 @@ public class AudioPlayLabelProvider implements ITableLabelProvider, ITableColorP
 	public Color getForeground(Object element, int columnIndex) {
 		if (element instanceof EditablePlaylistFile file) {
 			File currentFile = view.getPlaylist().getCurrentFile().orElse(null);
-			boolean playing = (Boolean) provider.getCurrentState().get(AudioPlayViewSourceProvider.PLAYING_STATE);
-			if (playing && currentFile != null && currentFile.equals(file.getFile())) {
+			if (view.getProvider().isPlaying() && currentFile != null && currentFile.equals(file.getFile())) {
 				return Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_BACKGROUND); 
 			}
 			else if (!file.getFile().exists()) {
