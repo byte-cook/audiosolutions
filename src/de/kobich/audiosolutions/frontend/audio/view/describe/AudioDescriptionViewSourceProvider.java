@@ -5,21 +5,27 @@ import java.util.Map;
 
 import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.ISources;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IServiceLocator;
+import org.eclipse.ui.services.ISourceProviderService;
 
 /**
  * Audio description view source provider.
  */
 public class AudioDescriptionViewSourceProvider extends AbstractSourceProvider {
-	private static Map<String, Boolean> map;
-	private static String[] sourceNames;
-	// variables
-	public static final String MODIFIED_STATE = "audioDescriptionView.modified";
+	private static final String MODIFIED_STATE = "audioDescriptionView.modified";
+	private static final String[] PROVIDED_SOURCE_NAMES = new String[] { MODIFIED_STATE };
+	
+	private boolean modified;
+	
+	public static AudioDescriptionViewSourceProvider getInstance() {
+		ISourceProviderService sourceProviderService = (ISourceProviderService) PlatformUI.getWorkbench().getService(ISourceProviderService.class);
+		return (AudioDescriptionViewSourceProvider) sourceProviderService.getSourceProvider(MODIFIED_STATE);
+	}
 	
 	@Override
 	public void initialize(final IServiceLocator locator) {
-		map = new HashMap<String, Boolean>();
-		map.put(MODIFIED_STATE, Boolean.FALSE);
+		this.modified = false;
 	}
 	
 	@Override
@@ -28,15 +34,14 @@ public class AudioDescriptionViewSourceProvider extends AbstractSourceProvider {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Map getCurrentState() {
-		return getMap();
+		Map<String, Boolean> map = new HashMap<>();
+		map.put(MODIFIED_STATE, this.modified);
+		return map;
 	}
 
 	@Override
 	public String[] getProvidedSourceNames() {
-		if (sourceNames == null) {
-			sourceNames = new String[] {MODIFIED_STATE };
-		}
-		return sourceNames;
+		return PROVIDED_SOURCE_NAMES;
 	}
 
 	/**
@@ -44,16 +49,9 @@ public class AudioDescriptionViewSourceProvider extends AbstractSourceProvider {
 	 * @param state
 	 * @param value
 	 */
-	public void changeState(String state, Boolean value) {
-		getMap().put(state, value);
-		fireSourceChanged(ISources.WORKBENCH, state, value);
+	public void setModified(boolean value) {
+		this.modified = value;
+		fireSourceChanged(ISources.WORKBENCH, MODIFIED_STATE, value);
 	}
 	
-	/**
-	 * Returns the state map
-	 * @return
-	 */
-	protected static Map<String, Boolean> getMap() {
-		return map;
-	}
 }

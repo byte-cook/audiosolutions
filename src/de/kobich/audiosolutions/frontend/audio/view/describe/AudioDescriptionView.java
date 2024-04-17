@@ -16,7 +16,6 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.describe.AudioDescriptionService;
@@ -171,9 +170,7 @@ public class AudioDescriptionView extends ViewPart {
 //			return;
 //		}
 		// fire event
-		ISourceProviderService sourceProviderService = (ISourceProviderService) getSite().getService(ISourceProviderService.class);
-		AudioDescriptionViewSourceProvider p = (AudioDescriptionViewSourceProvider) sourceProviderService.getSourceProvider(AudioDescriptionViewSourceProvider.MODIFIED_STATE);
-		p.changeState(AudioDescriptionViewSourceProvider.MODIFIED_STATE, Boolean.FALSE);
+		AudioDescriptionViewSourceProvider.getInstance().setModified(false);
 
 		getViewSite().getShell().getDisplay().asyncExec(new Runnable() {
 			@Override
@@ -220,12 +217,7 @@ public class AudioDescriptionView extends ViewPart {
 		public void run() {
 			try {
 				// fire event
-				ISourceProviderService sourceProviderService = (ISourceProviderService) getSite().getService(ISourceProviderService.class);
-				if (sourceProviderService == null) {
-					return;
-				}
-				AudioDescriptionViewSourceProvider p = (AudioDescriptionViewSourceProvider) sourceProviderService.getSourceProvider(AudioDescriptionViewSourceProvider.MODIFIED_STATE);
-				p.changeState(AudioDescriptionViewSourceProvider.MODIFIED_STATE, Boolean.TRUE);
+				AudioDescriptionViewSourceProvider.getInstance().setModified(true);
 
 				AudioDescriptionView.this.fileDescriptors = fileDescriptors;
 				FileDescriptor fileDescriptor = fileDescriptors.get(0);
