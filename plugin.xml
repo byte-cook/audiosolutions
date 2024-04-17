@@ -346,6 +346,11 @@
             categoryId="AudioSolutions.AudioCategory"
             id="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
             name="Append Files To Player">
+         <commandParameter
+               id="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.playAsNext"
+               name="playAsNext"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
@@ -385,6 +390,14 @@
             categoryId="AudioSolutions.AudioCategory"
             id="de.kobich.audiosolutions.commands.audio.NextAudioFile"
             name="Next Audio File">
+      </command>
+      <command
+            id="de.kobich.audiosolutions.commands.audio.toggleLoopEnabled"
+            name="Toggle Loop Enabled">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState">
+         </state>
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
@@ -1721,6 +1734,11 @@
       <menuContribution
             locationURI="popup:de.kobich.audiosolutions.view.audio.playerView">
          <command
+               commandId="de.kobich.audiosolutions.commands.audio.toggleLoopEnabled"
+               label="Toggle Loop"
+               style="toggle">
+         </command>
+         <command
                commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer"
                icon="icons/audio/audio-play-remove.png"
                label="Remove Files From Player"
@@ -2193,60 +2211,51 @@
          </activeWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.file.view.rename.action.RenamePreviewAction"
             commandId="de.kobich.audiosolutions.commands.view.rename.renamePreview">
-         <class
-               class="de.kobich.audiosolutions.frontend.file.view.rename.action.RenamePreviewAction">
-         </class>
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="rename.tabEnabled">
                <equals
                      value="true">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.file.view.rename.action.ResetPreviewAction"
             commandId="de.kobich.audiosolutions.commands.view.rename.resetRenamePreview">
-         <class
-               class="de.kobich.audiosolutions.frontend.file.view.rename.action.ResetPreviewAction">
-         </class>
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="rename.previewRenamed">
                <equals
                      value="true">
                </equals>
-            </with>
-         </activeWhen>
+            </with></enabledWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.file.view.rename.action.RenameFilesAction"
             commandId="de.kobich.audiosolutions.commands.view.rename.renameFiles">
-         <class
-               class="de.kobich.audiosolutions.frontend.file.view.rename.action.RenameFilesAction">
-         </class>
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="rename.tabEnabled">
                <equals
                      value="true">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.file.view.rename.action.ResetViewAction"
             commandId="de.kobich.audiosolutions.commands.view.rename.resetRenameView">
-         <class
-               class="de.kobich.audiosolutions.frontend.file.view.rename.action.ResetViewAction">
-         </class>
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="rename.tabEnabled">
                <equals
                      value="true">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.openAudioCollectionEditor">
@@ -2532,32 +2541,22 @@
          </activeWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.playAudioFile">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction">
-         </class>
-         <activeWhen>
-           <and>
-               <with
-                     variable="activePartId">
-                  <equals
-                        value="de.kobich.audiosolutions.view.audio.playerView">
-                  </equals>
-               </with>
+         <enabledWhen>
+            <and>
                <with
                      variable="audioPlayView.playListEmpty">
                   <equals
                         value="false">
                   </equals>
                </with>
-           </and>
-            </activeWhen>
+            </and>
+         </enabledWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.playAudioFile">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction">
-         </class>
          <activeWhen>
            <and>
               <with
@@ -2581,10 +2580,8 @@
             </activeWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.playAudioFile">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction">
-         </class>
          <activeWhen>
             <and>
                <with
@@ -2656,7 +2653,7 @@
       <handler
             class="de.kobich.audiosolutions.frontend.audio.view.play.action.PauseAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.PauseAudioFile">
-         <activeWhen>
+         <enabledWhen>
             <or>
                <with
                      variable="audioPlayView.playing">
@@ -2671,14 +2668,12 @@
                   </equals>
                </with>
             </or>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.StopAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.StopAudioFile">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.StopAudioFileAction">
-         </class>
-         <activeWhen>
+         <enabledWhen>
             <or>
                <with
                      variable="audioPlayView.playing">
@@ -2693,13 +2688,11 @@
                   </equals>
                </with>
             </or>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.PreviousAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.PreviousAudioFile">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.PreviousAudioFileAction">
-         </class>
          <activeWhen>
             <with
                   variable="audioPlayView.playing">
@@ -2710,10 +2703,8 @@
          </activeWhen>
       </handler>
       <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.NextAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.NextAudioFile">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.NextAudioFileAction">
-         </class>
          <activeWhen>
             <with
                   variable="audioPlayView.playing">
@@ -2722,6 +2713,10 @@
                </equals>
             </with>
          </activeWhen>
+      </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.ToggleLoopEnabledAction"
+            commandId="de.kobich.audiosolutions.commands.audio.toggleLoopEnabled">
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.setDescription">
