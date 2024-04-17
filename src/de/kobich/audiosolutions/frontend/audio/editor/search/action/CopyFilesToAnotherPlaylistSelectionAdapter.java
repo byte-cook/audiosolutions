@@ -2,7 +2,6 @@ package de.kobich.audiosolutions.frontend.audio.editor.search.action;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,13 +26,13 @@ import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditorInput;
 import de.kobich.audiosolutions.frontend.common.AudioSolutionsConstant;
-import de.kobich.commons.ui.jface.JFaceThreadRunner;
-import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.component.file.FileDescriptor;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class AddSearchResultsToPlaylistSelectionAdapter extends SelectionAdapter {
+public class CopyFilesToAnotherPlaylistSelectionAdapter extends SelectionAdapter {
 	private static final Image PLAYLIST_NEW_IMAGE = Activator.getDefault().getImage(ImageKey.PLAYLIST_NEW);
 	private static final Image PLAYLIST_IMAGE = Activator.getDefault().getImage(ImageKey.PLAYLIST);
 	private final IWorkbenchWindow window;
@@ -55,46 +54,37 @@ public class AddSearchResultsToPlaylistSelectionAdapter extends SelectionAdapter
 		int status = dialog.open();
 		if (status == IDialogConstants.OK_ID) {
 			final Playlist targetPlaylist = (Playlist) dialog.getFirstResult();
-			
-			List<RunningState> states = Arrays.asList(RunningState.UI_1, RunningState.WORKER_1, RunningState.UI_2);
-			JFaceThreadRunner runner = new JFaceThreadRunner("Copy Files To Playlist", window.getShell(), states) {
-				private PlaylistEditor editor;
-				private Set<EditablePlaylistFile> addedFiles;
 
-				@Override
-				protected void run(RunningState state) throws Exception {
-					switch (state) {
-					case UI_1:
-						// open playlist editor
-						EditablePlaylist editablePlaylist;
-						if (targetPlaylist.equals(AudioSolutionsConstant.NEW_PLAYLIST)) {
-							editablePlaylist = playlistService.createNewPlaylist("", false);
-						}
-						else {
-							editablePlaylist = playlistService.openPlaylist(targetPlaylist, super.getProgressMonitor());
-						}
-						PlaylistEditorInput input = new PlaylistEditorInput(editablePlaylist);
-						editor = (PlaylistEditor) window.getActivePage().openEditor(input, PlaylistEditor.ID);
-						break;
-					case WORKER_1:
-						AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
-						Set<FileDescriptor> fileDescriptors = searchService.search(query, super.getProgressMonitor());
-						Set<File> files = fileDescriptors.stream().map(FileDescriptor::getFile).collect(Collectors.toSet());
-						addedFiles = editor.getPlaylist().addFiles(files, null);
-						break;
-					case UI_2:
-						editor.refresh();
-						editor.setSelection(addedFiles.toArray());
-						break;
-					default: 
-						break;
+			final Wrapper<PlaylistEditor> editor = Wrapper.empty();
+			final Wrapper<Set<EditablePlaylistFile>> addedFiles = Wrapper.empty();
+			JFaceExec.builder(window.getShell(), "Copy Files To Playlist")
+				.ui(ctx -> {
+					// open playlist editor
+					EditablePlaylist editablePlaylist;
+					if (targetPlaylist.equals(AudioSolutionsConstant.NEW_PLAYLIST)) {
+						editablePlaylist = playlistService.createNewPlaylist("", false);
 					}
-				}
-			};
-			runner.runProgressMonitorDialog(true, false);
+					else {
+						editablePlaylist = playlistService.openPlaylist(targetPlaylist, ctx.getProgressMonitor());
+					}
+					PlaylistEditorInput input = new PlaylistEditorInput(editablePlaylist);
+					editor.set((PlaylistEditor) window.getActivePage().openEditor(input, PlaylistEditor.ID));
+				})
+				.worker(ctx -> {
+					AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
+					Set<FileDescriptor> fileDescriptors = searchService.search(query, ctx.getProgressMonitor());
+					Set<File> files = fileDescriptors.stream().map(FileDescriptor::getFile).collect(Collectors.toSet());
+					addedFiles.set(editor.get().getPlaylist().addFiles(files, null));
+				})
+				.ui(ctx -> {
+					editor.ifPresent(pe -> {
+						pe.refresh();
+						pe.setSelection(addedFiles.orElse(Set.of()).toArray());
+					});
+				})
+				.exceptionalDialog("Cannot copy files to playlist")
+				.runProgressMonitorDialog(true, false);
 			
 		}
-
-		
 	}
 }

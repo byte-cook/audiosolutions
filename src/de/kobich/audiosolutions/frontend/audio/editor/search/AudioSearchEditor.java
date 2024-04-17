@@ -18,8 +18,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.MenuDetectEvent;
-import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.TypedEvent;
@@ -32,8 +30,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -41,6 +37,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
+import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
@@ -53,8 +50,8 @@ import de.kobich.audiosolutions.core.service.search.AudioSearchQuery;
 import de.kobich.audiosolutions.core.service.search.AudioTextSearchService;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
-import de.kobich.audiosolutions.frontend.audio.editor.search.action.AddSearchResultsToPlaylistSelectionAdapter;
 import de.kobich.audiosolutions.frontend.audio.editor.search.action.DoSearchHyperlinkAdapter;
+import de.kobich.audiosolutions.frontend.audio.editor.search.action.OpenMenuHyperlinkAdapter;
 import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
 import de.kobich.audiosolutions.frontend.common.ui.editor.AbstractScrolledFormEditor;
 import de.kobich.audiosolutions.frontend.common.util.DecoratorUtils;
@@ -66,7 +63,6 @@ import de.kobich.commons.ui.jface.listener.DummySelectionProvider;
 public class AudioSearchEditor extends AbstractScrolledFormEditor {
 	public static final String ID = "de.kobich.audiosolutions.editor.audioSearchEditor";
 	private static final Logger logger = Logger.getLogger(AudioSearchEditor.class);
-	private static final Point SIZE_16 = new Point(16, 16);
 	private AudioSearchEditorEventListener eventListener;
 	private FormToolkit toolkit;
 	private Form form;
@@ -281,23 +277,15 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			c.dispose();
 		}
 		for (Artist artist : artists) {
-			Image artistImage = Activator.getDefault().getImage(ImageKey.ARTIST);
-			Label albumCoverLabel = createLogo(AudioSearchEditor.this.toolkit, artistsComposite, SIZE_16);
-			albumCoverLabel.setImage(artistImage);
+			ImageHyperlink menuLink = AudioSearchEditor.this.toolkit.createImageHyperlink(artistsComposite, SWT.WRAP);
+			menuLink.setImage(Activator.getDefault().getImage(ImageKey.OPEN_MENU));
+			menuLink.addHyperlinkListener(new OpenMenuHyperlinkAdapter(menuLink.getShell(), getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
 
-			Hyperlink link = AudioSearchEditor.this.toolkit.createHyperlink(artistsComposite, artist.getName(), SWT.WRAP);
+			ImageHyperlink link = AudioSearchEditor.this.toolkit.createImageHyperlink(artistsComposite, SWT.WRAP);
+			link.setText(artist.getName());
+			link.setImage(Activator.getDefault().getImage(ImageKey.ARTIST));
 			link.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
 			link.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
-			link.addMenuDetectListener(new MenuDetectListener() {
-				@Override
-				public void menuDetected(MenuDetectEvent e) {
-					Menu menu = new Menu(link.getShell(), SWT.POP_UP);
-					MenuItem item = new MenuItem(menu, SWT.NONE);
-					item.setText("Add To Playlist");
-					item.addSelectionListener(new AddSearchResultsToPlaylistSelectionAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
-					menu.setVisible(true);
-				}
-			});
 			
 			Label artistDescriptionText = new Label(artistsComposite, SWT.NONE);
 			artistDescriptionText.setText(StringUtils.defaultString(artist.getDescription()));
@@ -353,23 +341,15 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			c.dispose();
 		}
 		for (Album album : albums) {
-			Image albumImage = Activator.getDefault().getImage(ImageKey.ALBUM);
-			Label albumCoverLabel = createLogo(AudioSearchEditor.this.toolkit, albumsComposite, SIZE_16);
-			albumCoverLabel.setImage(albumImage);
-			
-			Hyperlink link = AudioSearchEditor.this.toolkit.createHyperlink(albumsComposite, album.getName(), SWT.WRAP);
+			ImageHyperlink menuLink = AudioSearchEditor.this.toolkit.createImageHyperlink(albumsComposite, SWT.WRAP);
+			menuLink.setImage(Activator.getDefault().getImage(ImageKey.OPEN_MENU));
+			menuLink.addHyperlinkListener(new OpenMenuHyperlinkAdapter(menuLink.getShell(), getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(album.getId()).albumName(album.getName()).build()));
+
+			ImageHyperlink link = AudioSearchEditor.this.toolkit.createImageHyperlink(albumsComposite, SWT.WRAP);
+			link.setText(album.getName());
+			link.setImage(Activator.getDefault().getImage(ImageKey.ALBUM));
 			link.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
 			link.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(album.getId()).albumName(album.getName()).build()));
-			link.addMenuDetectListener(new MenuDetectListener() {
-				@Override
-				public void menuDetected(MenuDetectEvent e) {
-					Menu menu = new Menu(link.getShell(), SWT.POP_UP);
-					MenuItem item = new MenuItem(menu, SWT.NONE);
-					item.setText("Add To Playlist");
-					item.addSelectionListener(new AddSearchResultsToPlaylistSelectionAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().albumId(album.getId()).albumName(album.getName()).build()));
-					menu.setVisible(true);
-				}
-			});
 			
 			Optional<Artist> artistOpt = album.getArtist();
 			if (artistOpt.isPresent()) {
@@ -437,23 +417,15 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			c.dispose();
 		}
 		for (Track track : tracks) {
-			Image audioFileImage = Activator.getDefault().getImage(ImageKey.AUDIO_FILE);
-			Label albumCoverLabel = createLogo(AudioSearchEditor.this.toolkit, tracksComposite, SIZE_16);
-			albumCoverLabel.setImage(audioFileImage);
+			ImageHyperlink menuLink = AudioSearchEditor.this.toolkit.createImageHyperlink(tracksComposite, SWT.WRAP);
+			menuLink.setImage(Activator.getDefault().getImage(ImageKey.OPEN_MENU));
+			menuLink.addHyperlinkListener(new OpenMenuHyperlinkAdapter(menuLink.getShell(), getSite().getWorkbenchWindow(), AudioSearchQuery.builder().trackId(track.getId()).trackName(track.getName()).build()));
 
-			Hyperlink link = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getName(), SWT.WRAP);
+			ImageHyperlink link = AudioSearchEditor.this.toolkit.createImageHyperlink(tracksComposite, SWT.WRAP);
+			link.setText(track.getName());
+			link.setImage(Activator.getDefault().getImage(ImageKey.AUDIO_FILE));
 			link.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
 			link.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().trackId(track.getId()).trackName(track.getName()).build()));
-			link.addMenuDetectListener(new MenuDetectListener() {
-				@Override
-				public void menuDetected(MenuDetectEvent e) {
-					Menu menu = new Menu(link.getShell(), SWT.POP_UP);
-					MenuItem item = new MenuItem(menu, SWT.NONE);
-					item.setText("Add To Playlist");
-					item.addSelectionListener(new AddSearchResultsToPlaylistSelectionAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().trackId(track.getId()).trackName(track.getName()).build()));
-					menu.setVisible(true);
-				}
-			});
 			
 			Hyperlink artistLink = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getArtist().getName(), SWT.WRAP);
 			artistLink.setLayoutData(JFaceUtils.createGridDataWithWidth(SWT.NONE, 300));
