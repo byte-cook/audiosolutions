@@ -6,12 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
@@ -29,11 +27,10 @@ import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditorInput;
 import de.kobich.audiosolutions.frontend.common.AudioSolutionsConstant;
-import de.kobich.commons.ui.jface.JFaceThreadRunner;
-import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 
 public class CopyFilesToAnotherPlaylistAction extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(CopyFilesToAnotherPlaylistAction.class);
 	private static final Image PLAYLIST_NEW_IMAGE = Activator.getDefault().getImage(ImageKey.PLAYLIST_NEW);
 	private static final Image PLAYLIST_IMAGE = Activator.getDefault().getImage(ImageKey.PLAYLIST);
 	public static final String ID = "de.kobich.audiosolutions.commands.editor.copyFilesToAnotherPlaylist";
@@ -65,42 +62,25 @@ public class CopyFilesToAnotherPlaylistAction extends AbstractHandler {
 				final Playlist targetPlaylist = (Playlist) dialog.getFirstResult();
 				final Set<EditablePlaylistFile> filesFinal = new HashSet<>(files);
 				
-				JFaceThreadRunner runner = new JFaceThreadRunner("Copy Files To Playlist", window.getShell(), List.of(RunningState.UI_1, RunningState.WORKER_1, RunningState.UI_2)) {
-					private PlaylistEditor editor;
-					
-					@Override
-					protected void run(RunningState state) throws Exception {
-						switch (state) {
-						case UI_1:
-							// open playlist editor
-							EditablePlaylist editablePlaylist;
-							if (targetPlaylist.equals(AudioSolutionsConstant.NEW_PLAYLIST)) {
-								editablePlaylist = playlistService.createNewPlaylist("", false);
-							}
-							else {
-								editablePlaylist = playlistService.openPlaylist(targetPlaylist, super.getProgressMonitor());
-							}
-							PlaylistEditorInput input = new PlaylistEditorInput(editablePlaylist);
-							editor = (PlaylistEditor) window.getActivePage().openEditor(input, PlaylistEditor.ID);
-							break;
-						case WORKER_1:
-							editor.getPlaylist().copyFiles(filesFinal);
-							break;
-						case UI_2:
-							editor.refresh();
-							break;
-						case UI_ERROR:
-							Exception e = super.getException();
-							logger.error(e.getMessage(), e);
-							String msg = "Add files to playlist failed: " + e.getMessage();
-							MessageDialog.openError(window.getShell(), super.getName(), msg);
-							break;
-						default:
-							break;
+				final Wrapper<PlaylistEditor> editor = Wrapper.empty();
+				JFaceExec.builder(window.getShell(), "Copy Files To Playlist")
+					.ui(ctx -> {
+						// open playlist editor
+						EditablePlaylist editablePlaylist;
+						if (targetPlaylist.equals(AudioSolutionsConstant.NEW_PLAYLIST)) {
+							editablePlaylist = playlistService.createNewPlaylist("", false);
 						}
-					}
-				};
-				runner.runProgressMonitorDialog(true, false);
+						else {
+							editablePlaylist = playlistService.openPlaylist(targetPlaylist, ctx.getProgressMonitor());
+						}
+						PlaylistEditorInput input = new PlaylistEditorInput(editablePlaylist);
+						editor.set((PlaylistEditor) window.getActivePage().openEditor(input, PlaylistEditor.ID));
+					})
+					.worker(ctx -> editor.get().getPlaylist().copyFiles(filesFinal))
+					.ui(ctx -> editor.get().refresh())
+					.exceptionalDialog("Add files to playlist failed")
+					.runProgressMonitorDialog(true, false);
+				
 			}
 		}
 		return null;

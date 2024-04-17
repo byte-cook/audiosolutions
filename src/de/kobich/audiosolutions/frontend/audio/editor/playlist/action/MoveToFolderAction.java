@@ -1,9 +1,7 @@
 package de.kobich.audiosolutions.frontend.audio.editor.playlist.action;
 
-import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -22,11 +20,10 @@ import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistSelection;
-import de.kobich.commons.ui.jface.JFaceThreadRunner;
-import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 
 public class MoveToFolderAction extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(MoveToFolderAction.class);
 	public static final String ID = "de.kobich.audiosolutions.commands.editor.moveToFolder";
 	private static final Image FOLDER_IMAGE = Activator.getDefault().getImage(ImageKey.FOLDER);
 
@@ -50,37 +47,21 @@ public class MoveToFolderAction extends AbstractHandler {
 			dialog.setElements(folders.toArray());
 			int status = dialog.open();
 			if (status == IDialogConstants.OK_ID) {
-				JFaceThreadRunner runner = new JFaceThreadRunner("Move To Folder", window.getShell(), List.of(RunningState.UI_1, RunningState.WORKER_1, RunningState.UI_2)) {
-					private PlaylistSelection selection;
-					private Set<EditablePlaylistFile> movedFiles;
-
-					@Override
-					protected void run(RunningState state) throws Exception {
-						switch (state) {
-						case UI_1:
-							selection = playlistEditor.getSelection();
-							break;
-						case WORKER_1:
-							EditablePlaylistFolder folder = (EditablePlaylistFolder) dialog.getFirstResult();
-							movedFiles = playlistEditor.getPlaylist().moveToFolder(selection.getFolders(), selection.getFiles(), folder);
-							break;
-						case UI_2:
-							playlistEditor.refresh();
-							playlistEditor.setSelection(movedFiles.toArray());
-							break;
-						case UI_ERROR:
-							Exception e = super.getException();
-							logger.error(e.getMessage(), e);
-							MessageDialog.openError(window.getShell(), super.getName(), e.getMessage());
-							break;
-						default:
-							break;
-						}
-					}
-				};
-				runner.runProgressMonitorDialog(true, false);
+				final Wrapper<PlaylistSelection> selection = Wrapper.empty();
+				final Wrapper<Set<EditablePlaylistFile>> movedFiles = Wrapper.empty();
+				JFaceExec.builder(window.getShell(), "Move To Folder")
+					.ui(ctx -> selection.set(playlistEditor.getSelection()))
+					.worker(ctx -> {
+						EditablePlaylistFolder folder = (EditablePlaylistFolder) dialog.getFirstResult();
+						movedFiles.set(playlistEditor.getPlaylist().moveToFolder(selection.orElse(PlaylistSelection.EMPTY).getFolders(), selection.orElse(PlaylistSelection.EMPTY).getFiles(), folder));
+					})
+					.ui(ctx -> {
+						playlistEditor.refresh();
+						playlistEditor.setSelection(movedFiles.orElse(Set.of()).toArray());
+					})
+					.exceptionalDialog("Cannot move folder")
+					.runProgressMonitorDialog(true, false);
 			}
-			
 		}
 		return null;
 	}
