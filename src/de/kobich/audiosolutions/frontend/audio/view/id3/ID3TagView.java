@@ -28,7 +28,6 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.mp3.id3.IFileID3TagService;
@@ -171,9 +170,8 @@ public class ID3TagView extends ViewPart {
 					tableViewer.setInput(new ID3TagModel(new HashSet<FileDescriptor>(), new ArrayList<ID3TagItem>()));
 					
 					// fire event
-					ISourceProviderService sourceProviderService = (ISourceProviderService) getSite().getService(ISourceProviderService.class);
-					ID3TagViewSourceProvider p = (ID3TagViewSourceProvider) sourceProviderService.getSourceProvider(ID3TagViewSourceProvider.FILE_SELECTED_STATE);
-					p.changeState(ID3TagViewSourceProvider.FILE_SELECTED_STATE, Boolean.FALSE);
+					ID3TagViewSourceProvider p = ID3TagViewSourceProvider.getInstance();
+					p.setFileSelected(false);
 				}
 			}
 		});
@@ -247,9 +245,8 @@ public class ID3TagView extends ViewPart {
 							tableViewer.setInput(new ID3TagModel(mp3Files, audioDataItems));
 							
 							// fire event
-							ISourceProviderService sourceProviderService = (ISourceProviderService) getSite().getService(ISourceProviderService.class);
-							ID3TagViewSourceProvider p = (ID3TagViewSourceProvider) sourceProviderService.getSourceProvider(ID3TagViewSourceProvider.FILE_SELECTED_STATE);
-							p.changeState(ID3TagViewSourceProvider.FILE_SELECTED_STATE, Boolean.TRUE);
+							ID3TagViewSourceProvider p = ID3TagViewSourceProvider.getInstance();
+							p.setFileSelected(true);
 						}
 					});
 				}
