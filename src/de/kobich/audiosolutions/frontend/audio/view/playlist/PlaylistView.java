@@ -6,10 +6,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -46,7 +42,9 @@ import de.kobich.audiosolutions.frontend.audio.view.playlist.ui.PlaylistColumnTy
 import de.kobich.audiosolutions.frontend.audio.view.playlist.ui.PlaylistComparator;
 import de.kobich.audiosolutions.frontend.audio.view.playlist.ui.PlaylistContentProvider;
 import de.kobich.audiosolutions.frontend.audio.view.playlist.ui.PlaylistLabelProvider;
+import de.kobich.commons.type.Wrapper;
 import de.kobich.commons.ui.DelayListener;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.JFaceUtils;
 
 public class PlaylistView extends ViewPart {
@@ -72,13 +70,7 @@ public class PlaylistView extends ViewPart {
 		DelayListener<TypedEvent> delayListener = new DelayListener<>(500, TimeUnit.MILLISECONDS) {
 			@Override
 			public void handleEvent(List<TypedEvent> events) {
-				Display.getDefault().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						PlaylistView.this.refresh();
-						System.out.println("called");
-					}
-				});
+				Display.getDefault().asyncExec(() -> PlaylistView.this.refresh());
 			}
 		};
 		
@@ -178,10 +170,27 @@ public class PlaylistView extends ViewPart {
 	 * Refreshes this view
 	 */
 	public void refresh() {
-		Job job = new LoadingJob(this);
-		job.setUser(false);
-		job.setSystem(true);
-		job.schedule();
+		final String filter = StringUtils.isNotBlank(filterText.getText()) ? "*" + filterText.getText() + "*" : null;
+		final Wrapper<List<Playlist>> playlists = Wrapper.empty();
+		JFaceExec.builder(getSite().getShell(), "Loading Playlists")
+			.ui(ctx -> setContentDescription("Loading..."))
+			.worker(ctx -> {
+				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
+				playlists.set(playlistService.getPlaylists(filter));
+			})
+			.ui(ctx -> {
+				List<Playlist> p = playlists.orElse(List.of());
+				if (p.isEmpty()) {
+					setContentDescription("No playlist available");
+				}
+				else {
+					setContentDescription(p.size() + " playlist(s) found");
+				}
+				
+				PlaylistModel model = new PlaylistModel(p);
+				setModel(model);
+			})
+			.runBackgroundJob(100, false, true, null);
 	}
 	
 	public Set<Playlist> getSelectedPlaylists() {
@@ -224,43 +233,4 @@ public class PlaylistView extends ViewPart {
 		});
 	}
 
-	/**
-	 * LoadingJob
-	 */
-	private class LoadingJob extends Job {
-		private PlaylistView view;
-		private String filter;
-		
-		public LoadingJob(PlaylistView view) {
-			super("Load Artists");
-			this.view = view;
-			getSite().getShell().getDisplay().syncExec(new Runnable() {
-				public void run() {
-					if (StringUtils.isNotBlank(filterText.getText())) {
-						LoadingJob.this.filter = "*" + filterText.getText() + "*";
-					}
-					else {
-						LoadingJob.this.filter = null;
-					}
-				}
-			});
-		}
-		
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
-			List<Playlist> playlists = playlistService.getPlaylists(filter);
-			
-			if (playlists.isEmpty()) {
-				view.asyncSetContentDescription("No playlist available");
-			}
-			else {
-				view.asyncSetContentDescription(playlists.size() + " playlist(s) found");
-			}
-			
-			PlaylistModel model = new PlaylistModel(playlists);
-			view.setModel(model);
-			return Status.OK_STATUS;
-		}
-	}
 }

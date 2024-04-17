@@ -1,10 +1,7 @@
 package de.kobich.audiosolutions.frontend.audio.view.playlist.action;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -19,11 +16,9 @@ import de.kobich.audiosolutions.frontend.audio.view.playlist.PlaylistView;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.commons.ui.jface.JFaceThreadRunner;
-import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
+import de.kobich.commons.ui.jface.JFaceExec;
 
 public class DeletePlaylistsAction extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(DeletePlaylistsAction.class);
 	public static final String ID = "de.kobich.audiosolutions.commands.view.playlists.deletePlaylists";
 
 	@Override
@@ -47,35 +42,20 @@ public class DeletePlaylistsAction extends AbstractHandler {
 		if (!confirmDelete) {
 			return null;
 		}
+		
+		JFaceExec.builder(window.getShell(), "Delete Playlist")
+			.worker(ctx -> {
+				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
+				playlistService.deletePlaylists(playlists, ctx.getProgressMonitor());
+			})
+			.ui(ctx -> {
+				UIEvent uiEvent = new UIEvent(ActionType.PLAYLIST_DELETED);
+				playlists.forEach(p -> uiEvent.getPlaylistDelta().getPlaylistIds().add(p.getId()));
+				EventSupport.INSTANCE.fireEvent(uiEvent);
+			})
+			.exceptionalDialog("Error while deleting playlist")
+			.runProgressMonitorDialog(true, true);
 
-		List<RunningState> states = Arrays.asList(RunningState.WORKER_1, RunningState.UI_2);
-		JFaceThreadRunner runner = new JFaceThreadRunner("Delete Playlist", window.getShell(), states) {
-			@Override
-			protected void run(RunningState state) throws Exception {
-				switch (state) {
-				case WORKER_1:
-					PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
-					playlistService.deletePlaylists(playlists, super.getProgressMonitor());
-					break;
-				case UI_2:
-					UIEvent event = new UIEvent(ActionType.PLAYLIST_DELETED);
-					playlists.forEach(p -> event.getPlaylistDelta().getPlaylistIds().add(p.getId()));
-					EventSupport.INSTANCE.fireEvent(event);
-					break;
-				case UI_ERROR:
-					if (super.getProgressMonitor().isCanceled()) {
-						return;
-					}
-					Exception e = super.getException();
-					logger.error(e.getMessage(), e);
-					MessageDialog.openError(super.getParent(), super.getName(), "Error while openinig playlist: \n" + e.getMessage());
-					break;
-				default: 
-					break;
-				}
-			}
-		};
-		runner.runProgressMonitorDialog(true, true);
 		return null;
 	}
 

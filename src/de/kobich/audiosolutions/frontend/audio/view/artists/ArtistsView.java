@@ -6,10 +6,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -46,7 +42,9 @@ import de.kobich.audiosolutions.frontend.audio.view.artists.ui.ArtistsColumnType
 import de.kobich.audiosolutions.frontend.audio.view.artists.ui.ArtistsComparator;
 import de.kobich.audiosolutions.frontend.audio.view.artists.ui.ArtistsContentProvider;
 import de.kobich.audiosolutions.frontend.audio.view.artists.ui.ArtistsLabelProvider;
+import de.kobich.commons.type.Wrapper;
 import de.kobich.commons.ui.DelayListener;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.JFaceUtils;
 
 /**
@@ -75,7 +73,7 @@ public class ArtistsView extends ViewPart {
 		DelayListener<TypedEvent> delayListener = new DelayListener<>(500, TimeUnit.MILLISECONDS) {
 			@Override
 			public void handleEvent(List<TypedEvent> events) {
-				ArtistsView.this.refresh();
+				Display.getDefault().asyncExec(() -> ArtistsView.this.refresh());
 			}
 		};
 		filterText = new Text(parent, SWT.BORDER | SWT.SEARCH);
@@ -167,12 +165,28 @@ public class ArtistsView extends ViewPart {
 	 * Refreshes this view
 	 */
 	public void refresh() {
-		Display.getDefault().asyncExec(() -> {
-			Job job = new LoadingJob(this, filterText.getText());
-			job.setUser(false);
-			job.setSystem(true);
-			job.schedule();
-		});
+		final String filter = StringUtils.isNotBlank(filterText.getText()) ? "*" + filterText.getText() + "*" : null;
+		final Wrapper<List<Artist>> artists = Wrapper.empty();
+		JFaceExec.builder(getSite().getShell(), "Loading Artists")
+			.ui(ctx -> setContentDescription("Loading..."))
+			.worker(ctx -> {
+				AudioSearchService audioSearchService = AudioSolutions.getService(AudioSearchService.class);
+				artists.set(audioSearchService.searchArtists(filter));
+			})
+			.ui(ctx -> {
+				List<Artist> a = artists.orElse(List.of());
+				if (a.isEmpty()) {
+					setContentDescription("No artists available");
+				}
+				else {
+					setContentDescription(a.size() + " artist(s) found");
+				}
+				
+				ArtistsModel model = new ArtistsModel(a);
+				tableViewer.setInput(model);
+				tableViewer.refresh();
+			})
+			.runBackgroundJob(100, false, true, null);
 	}
 	
 	public Set<Artist> getSelectedArtists() {
@@ -189,59 +203,4 @@ public class ArtistsView extends ViewPart {
 		return artists;
 	}
 	
-	/**
-	 * @param model the model to set
-	 */
-	public void setModel(final ArtistsModel model) {
-		getSite().getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				if (!ArtistsView.this.tableViewer.getTable().isDisposed()) {
-					ArtistsView.this.tableViewer.setInput(model);
-					ArtistsView.this.tableViewer.refresh();
-				}
-			}
-		});
-	}
-	
-	/**
-	 * Sets content description asynchrony
-	 * @param contentDescription
-	 */
-	public void asyncSetContentDescription(final String contentDescription) {
-		getSite().getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				ArtistsView.this.setContentDescription(contentDescription);
-			}
-		});
-	}
-
-	/**
-	 * LoadingJob
-	 */
-	private class LoadingJob extends Job {
-		private final ArtistsView view;
-		private final String filter;
-		
-		public LoadingJob(ArtistsView view, String filter) {
-			super("Load Artists");
-			this.view = view;
-			this.filter = StringUtils.isNotBlank(filter) ? "*" + filter + "*" : null;
-		}
-		
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			AudioSearchService audioSearchService = AudioSolutions.getService(AudioSearchService.class);
-			List<Artist> artists = audioSearchService.searchArtists(filter);
-			if (artists.isEmpty()) {
-				view.asyncSetContentDescription("No artists available");
-			}
-			else {
-				view.asyncSetContentDescription(artists.size() + " artist(s) found");
-			}
-			
-			ArtistsModel model = new ArtistsModel(artists);
-			view.setModel(model);
-			return Status.OK_STATUS;
-		}
-	}
 }

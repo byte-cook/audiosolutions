@@ -7,10 +7,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -47,7 +43,9 @@ import de.kobich.audiosolutions.frontend.audio.view.mediums.ui.MediumColumnType;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.ui.MediumComparator;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.ui.MediumContentProvider;
 import de.kobich.audiosolutions.frontend.audio.view.mediums.ui.MediumLabelProvider;
+import de.kobich.commons.type.Wrapper;
 import de.kobich.commons.ui.DelayListener;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.JFaceUtils;
 
 /**
@@ -76,7 +74,7 @@ public class MediumsView extends ViewPart {
 		DelayListener<TypedEvent> delayListener = new DelayListener<>(500, TimeUnit.MILLISECONDS) {
 			@Override
 			public void handleEvent(List<TypedEvent> events) {
-				MediumsView.this.refresh();
+				Display.getDefault().asyncExec(() -> MediumsView.this.refresh());
 			}
 		};
 		filterText = new Text(parent, SWT.BORDER | SWT.SEARCH);
@@ -167,14 +165,30 @@ public class MediumsView extends ViewPart {
 	 * Refreshes this view
 	 */
 	public void refresh() {
-		Display.getDefault().asyncExec(() -> {
-			Job job = new LoadingJob(this, filterText.getText());
-			job.setUser(false);
-			job.setSystem(true);
-			job.schedule();
-		});
+		final String filter = StringUtils.isNotBlank(filterText.getText()) ? "*" + filterText.getText() + "*" : null;
+		final Wrapper<List<Medium>> mediums = Wrapper.empty();
+		JFaceExec.builder(getSite().getShell(), "Loading Mediums")
+			.ui(ctx -> setContentDescription("Loading..."))
+			.worker(ctx -> {
+				AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
+				 mediums.set(searchService.searchMediums(filter));
+			})
+			.ui(ctx -> {
+				List<Medium> m = mediums.orElse(List.of());
+				if (mediums.isEmpty()) {
+					setContentDescription("No mediums available");
+				}
+				else {
+					setContentDescription(m.size() + " medium(s) found");
+				}
+				
+				MediumModel model = new MediumModel(m);
+				tableViewer.setInput(model);
+				tableViewer.refresh();
+			})
+			.runBackgroundJob(100, false, true, null);
 	}
-
+	
 	public Optional<Medium> getSelectedMedium() {
 		if (tableViewer.getTable().getSelectionCount() > 0) {
 			TableItem[] selection = tableViewer.getTable().getSelection();
@@ -200,58 +214,4 @@ public class MediumsView extends ViewPart {
 		return mediums;
 	}
 	
-	/**
-	 * @param model the model to set
-	 */
-	public void setModel(final MediumModel model) {
-		getSite().getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				MediumsView.this.tableViewer.setInput(model);
-				MediumsView.this.tableViewer.refresh();
-			}
-		});
-	}
-	
-	/**
-	 * Sets content description asynchrony
-	 * @param contentDescription
-	 */
-	public void asyncSetContentDescription(final String contentDescription) {
-		getSite().getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				MediumsView.this.setContentDescription(contentDescription);
-			}
-		});
-	}
-
-	/**
-	 * LoadingJob
-	 */
-	private class LoadingJob extends Job {
-		private final MediumsView view;
-		private final String filter;
-		
-		public LoadingJob(MediumsView view, String filter) {
-			super("Load Mediums");
-			this.view = view;
-			this.filter = StringUtils.isNotBlank(filter) ? "*" + filter + "*" : null;
-		}
-		
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
-			List<Medium> mediums = searchService.searchMediums(filter);
-			
-			if (mediums.isEmpty()) {
-				view.asyncSetContentDescription("No mediums available");
-			}
-			else {
-				view.asyncSetContentDescription(mediums.size() + " medium(s) found");
-			}
-			
-			MediumModel model = new MediumModel(mediums);
-			view.setModel(model);
-			return Status.OK_STATUS;
-		}
-	}
 }
