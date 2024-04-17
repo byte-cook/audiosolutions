@@ -48,7 +48,7 @@ public class PlaylistEditorViewerFilter extends ViewerFilter {
 			return true;
 		}
 		
-		return FilenameUtils.wildcardMatch(file.getFileName(), search, IOCase.INSENSITIVE) || FilenameUtils.wildcardMatch(file.getFile().getAbsolutePath(), search, IOCase.INSENSITIVE);
+		return FilenameUtils.wildcardMatch(file.getName(), search, IOCase.INSENSITIVE) || FilenameUtils.wildcardMatch(file.getFile().getAbsolutePath(), search, IOCase.INSENSITIVE);
 	}
 	
 	public boolean isFilterProperty(Object element, String property) {

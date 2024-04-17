@@ -10,6 +10,7 @@ import lombok.Getter;
 
 @Getter
 public class PlaylistSelection {
+	public static final PlaylistSelection EMPTY = new PlaylistSelection(List.of(), List.of());
 	private final List<EditablePlaylistFile> files;
 	private final List<EditablePlaylistFolder> folders;
 	private final List<EditablePlaylistFile> allFiles;

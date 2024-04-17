@@ -89,7 +89,7 @@ public class PlaylistEditorComparator extends ViewerComparator {
 			// Determine which column and do the appropriate sort
 			switch (column) {
 				case NAME:
-					rc = file1.getFileName().compareToIgnoreCase(file2.getFileName());
+					rc = file1.getName().compareToIgnoreCase(file2.getName());
 					break;
 				case FOLDER:
 					rc = file1.getFolder().getPath().compareToIgnoreCase(file2.getFolder().getPath());

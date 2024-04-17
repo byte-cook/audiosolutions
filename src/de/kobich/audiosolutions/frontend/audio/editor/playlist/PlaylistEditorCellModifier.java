@@ -33,7 +33,7 @@ public class PlaylistEditorCellModifier implements ICellModifier {
 		switch (column) {
 			case NAME:
 				if (element instanceof EditablePlaylistFile file) {
-					return file.getFileName();
+					return file.getName();
 				}
 				if (element instanceof EditablePlaylistFolder folder) {
 					return folder.getPath();

@@ -51,7 +51,7 @@ public class PlaylistEditorLabelProvider implements ITableLabelProvider {
 		else if (element instanceof EditablePlaylistFile file) {
 			switch (column) {
 				case NAME:
-					return file.getFileName();
+					return file.getName();
 				case FILE_EXISTS: 
 					return String.valueOf(file.getFile().exists());
 				case FOLDER:
