@@ -301,6 +301,9 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 	}
 	
 	private Optional<AlbumTreeNode> findParentAlbumNode(FileDescriptorTreeNode node, @Nullable Long albumId) {
+		if (albumId == null) {
+			return this.albums.stream().filter(a -> a.getAlbumId().isEmpty()).findAny();
+		}
 		return this.albums.stream().filter(a -> albumId.equals(a.getAlbumId().orElse(null))).findAny();
 	}
 
