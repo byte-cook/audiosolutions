@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.ISources;
-import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.services.ISourceProviderService;
 
@@ -25,9 +25,9 @@ public class AudioPlayViewSourceProvider extends AbstractSourceProvider {
 	private boolean paused;
 	private boolean playlistEmpty;
 	
-	public static AudioPlayViewSourceProvider getInstance(IViewSite site) {
-		ISourceProviderService sourceProviderService = (ISourceProviderService) site.getService(ISourceProviderService.class);
-		return (AudioPlayViewSourceProvider) sourceProviderService.getSourceProvider(AudioPlayViewSourceProvider.PLAYING_STATE);
+	public static AudioPlayViewSourceProvider getInstance() {
+		ISourceProviderService sourceProviderService = (ISourceProviderService) PlatformUI.getWorkbench().getService(ISourceProviderService.class);
+		return (AudioPlayViewSourceProvider) sourceProviderService.getSourceProvider(PLAYING_STATE);
 	}
 	
 	@Override

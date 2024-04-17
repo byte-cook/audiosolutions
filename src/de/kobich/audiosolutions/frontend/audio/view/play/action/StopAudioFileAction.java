@@ -22,16 +22,7 @@ public class StopAudioFileAction extends AbstractHandler {
 			AudioPlayView audioPlayView = (AudioPlayView) window.getActivePage().findView(AudioPlayView.ID);
 			if (audioPlayView != null) {
 				IAudioPlayingService audioPlayService = AudioSolutions.getService(IAudioPlayingService.JAVA_ZOOM_PLAYER, IAudioPlayingService.class);
-				
-				// stop old context
 				audioPlayService.stop(audioPlayView.getPlayerClient());
-				
-				// fire event
-//				ISourceProviderService sourceProviderService = (ISourceProviderService) audioPlayView.getSite().getService(ISourceProviderService.class);
-//				AudioPlayViewSourceProvider p = (AudioPlayViewSourceProvider) sourceProviderService.getSourceProvider(AudioPlayViewSourceProvider.FILE_SELECTED_STATE);
-//				p.changeState(AudioPlayViewSourceProvider.PLAYING_STATE, Boolean.FALSE);
-//				p.changeState(AudioPlayViewSourceProvider.PAUSE_STATE, Boolean.FALSE);
-//				PauseAudioFileAction.setState(audioPlayView.getSite(), Boolean.FALSE);
 			}
 		}
 		catch (Exception e) {
