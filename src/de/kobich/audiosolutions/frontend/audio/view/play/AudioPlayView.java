@@ -46,6 +46,7 @@ import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFileCompar
 import de.kobich.audiosolutions.core.service.playlist.PlaylistService;
 import de.kobich.audiosolutions.core.service.playlist.repository.Playlist;
 import de.kobich.audiosolutions.frontend.audio.view.play.action.PauseAudioFileAction;
+import de.kobich.audiosolutions.frontend.audio.view.play.action.ToggleLoopEnabledAction;
 import de.kobich.audiosolutions.frontend.audio.view.play.ui.AudioPlayContentProvider;
 import de.kobich.audiosolutions.frontend.audio.view.play.ui.AudioPlayLabelProvider;
 import de.kobich.audiosolutions.frontend.common.selection.PostSelectionAdapter;
@@ -73,6 +74,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	@Getter
 	private PersistableAudioPlayingList playlist;
 	private AudioPlayerListener playerListener;
+	@Getter
 	private AudioPlayerClient playerClient;
 	private Composite infoGroup;
 	private Text trackText;
@@ -91,7 +93,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		this.playerListener = new AudioPlayerListener(this);
 		this.playerClient = new AudioPlayerClient("audio-player");
 		this.playerClient.getListenerList().addListener(playerListener);
-		this.provider = AudioPlayViewSourceProvider.getInstance(site);
+		this.provider = AudioPlayViewSourceProvider.getInstance();
 		this.disposedCalled = false;
 	}
 
@@ -200,7 +202,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		
 		// load playlist
 		loadPlaylist();
-
+		
 		setContentDescription("Please select one or more audio files.");
 		
 		// register for events
@@ -210,7 +212,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 
 	private void loadPlaylist() {
 		JFaceExec.builder(getSite().getShell(), "Opening Playlist")
-			.ui(ctx -> setContentDescription("Loading playlist..."))
+			.ui(ctx -> setContentDescription("Loading..."))
 			.worker(ctx -> {
 				EditablePlaylist editablePlaylist;
 				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
@@ -225,6 +227,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 			})
 			.ui(ctx -> {
 				restoreState();
+				this.playlist.setLoopEnabled(ToggleLoopEnabledAction.getInitialValue());
 				this.tableViewer.setInput(playlist);
 				fireDeselection();
 			})
@@ -240,16 +243,24 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		audioPlayService.play(this.getPlayerClient(), this.getPlaylist());
 	}
 	
-	public Set<EditablePlaylistFile> appendFiles(Set<File> files) {
-		Set<EditablePlaylistFile> appendedFiles = this.playlist.appendFiles(files);
-		provider.setPlaylistEmpty(this.playlist.getSortedFiles().isEmpty());
+	public Set<EditablePlaylistFile> appendFiles(Set<File> files, boolean playAsNext) {
+		Set<EditablePlaylistFile> appendedFiles = playAsNext ? playlist.appendFilesAfterCurrent(files) : playlist.appendFiles(files);
+		provider.setPlaylistEmpty(this.playlist.isEmpty());
 		refresh();
 		return appendedFiles;
 	}
 	
+	public void appendFilesAndPlay(Set<File> files) throws AudioException {
+		List<EditablePlaylistFile> appendedFiles = new ArrayList<>(appendFiles(files, false));
+		if (!appendedFiles.isEmpty()) {
+			appendedFiles.sort(EditablePlaylistFileComparator.INSTANCE);
+			startPlaying(appendedFiles.get(0));
+		}
+	}
+	
 	public void removeFiles(List<EditablePlaylistFile> files) {
 		this.playlist.removeFiles(files);
-		provider.setPlaylistEmpty(this.playlist.getSortedFiles().isEmpty());
+		provider.setPlaylistEmpty(this.playlist.isEmpty());
 		refresh();
 	}
 	
@@ -294,6 +305,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 //		FileListSerializer playItemsMemento = new FileListSerializer(STATE_PLAY_LIST_FILES);
 //		playItemsMemento.save(files, mementoItem);
 		
+		// TODO playlist only save if required
 		JFaceExec.builder(getSite().getShell())
 			.worker(ctx -> {
 				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
@@ -310,7 +322,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 			return;
 		}
 		// TODO playlist
-		provider.setPlaylistEmpty(this.playlist.getSortedFiles().isEmpty());
+		provider.setPlaylistEmpty(this.playlist.isEmpty());
 	}
 
 	/*
@@ -355,9 +367,9 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	public void refresh() {
 		tableViewer.refresh();
 	}
-
-	public AudioPlayerClient getPlayerClient() {
-		return playerClient;
+	
+	public void setLoopEnabled(boolean newValue) {
+		this.playlist.setLoopEnabled(newValue);
 	}
 
 	/**

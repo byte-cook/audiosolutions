@@ -12,7 +12,7 @@ public class AudioPlayContentProvider implements IStructuredContentProvider {
 	@Override
 	public Object[] getElements(Object input) {
 		if (input instanceof PersistableAudioPlayingList model) {
-			return model.getSortedFiles().toArray();
+			return model.getFilesSorted().toArray();
 		}
 		throw new IllegalStateException("Illegal input type < " + input.getClass().getName() + ">, expected<" + PersistableAudioPlayingList.class.getName() + ">");
 	}

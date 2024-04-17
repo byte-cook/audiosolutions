@@ -25,7 +25,7 @@ public class RemoveFilesFromPlayerAction extends AbstractHandler {
 			if (audioPlayView != null) {
 				List<EditablePlaylistFile> files2Remove = audioPlayView.getSelectedPlayItems();
 				if (files2Remove.isEmpty()) {
-					files2Remove = audioPlayView.getPlaylist().getSortedFiles();
+					files2Remove = audioPlayView.getPlaylist().getFilesSorted();
 					boolean confirmed = MessageDialog.openQuestion(window.getShell(), "Delete Play List", "Do you want to delete the complete play list?");
 					if (!confirmed) {
 						return null;

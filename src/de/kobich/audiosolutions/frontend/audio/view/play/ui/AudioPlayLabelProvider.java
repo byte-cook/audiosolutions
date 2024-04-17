@@ -31,7 +31,7 @@ public class AudioPlayLabelProvider implements ITableLabelProvider, ITableColorP
 		if (element instanceof EditablePlaylistFile file) {
 			ViewerColumn column = AudioPlayView.COLUMNS.getByIndex(columnIndex);
 			if (AudioPlayView.COLUMN_TRACK.equals(column)) {
-				return file.getFileName();
+				return file.getName();
 			}
 			else if (AudioPlayView.COLUMN_FILE.equals(column)) {
 				return file.getFile().getAbsolutePath();

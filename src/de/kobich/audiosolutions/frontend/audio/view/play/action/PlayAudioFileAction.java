@@ -1,7 +1,6 @@
 package de.kobich.audiosolutions.frontend.audio.view.play.action;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,7 +14,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.kobich.audiosolutions.core.service.AudioException;
 import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFileComparator;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
@@ -41,7 +39,7 @@ public class PlayAudioFileAction extends AbstractHandler {
 				return null;
 			}
 			
-			if (AUDIO_VIEW_CALLER_VALUE.equals(caller) && !audioPlayView.getPlaylist().getSortedFiles().isEmpty()) {
+			if (AUDIO_VIEW_CALLER_VALUE.equals(caller) && !audioPlayView.getPlaylist().isEmpty()) {
 				EditablePlaylistFile startFile = null;
 				List<EditablePlaylistFile> files = audioPlayView.getSelectedPlayItems();
 				if (!files.isEmpty()) {
@@ -54,11 +52,11 @@ public class PlayAudioFileAction extends AbstractHandler {
 				IEditorPart editorPart = window.getActivePage().getActiveEditor();
 				if (editorPart instanceof AudioCollectionEditor audioCollectionEditor) {
 					Set<File> files = audioCollectionEditor.getFileDescriptorSelection().getExistingFiles().stream().map(FileDescriptor::getFile).collect(Collectors.toSet());
-					appendFilesAndPlay(audioPlayView, files);
+					audioPlayView.appendFilesAndPlay(files);
 				}
 				else if (editorPart instanceof PlaylistEditor playlistEditor) {
 					Set<File> files = playlistEditor.getSelection().getExistingFiles().stream().map(EditablePlaylistFile::getFile).collect(Collectors.toSet());
-					appendFilesAndPlay(audioPlayView, files);
+					audioPlayView.appendFilesAndPlay(files);
 				}
 			}
 		}
@@ -70,11 +68,4 @@ public class PlayAudioFileAction extends AbstractHandler {
 		return null;
 	}
 	
-	private void appendFilesAndPlay(AudioPlayView audioPlayView, Set<File> files) throws AudioException {
-		List<EditablePlaylistFile> appendedFiles = new ArrayList<>(audioPlayView.appendFiles(files));
-		if (!appendedFiles.isEmpty()) {
-			appendedFiles.sort(EditablePlaylistFileComparator.INSTANCE);
-			audioPlayView.startPlaying(appendedFiles.get(0));
-		}
-	}
 }
