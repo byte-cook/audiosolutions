@@ -14,6 +14,8 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.frontend.common.listener.IUIEventListener;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
@@ -23,15 +25,22 @@ import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 import de.kobich.component.file.FileDescriptor;
 
 public class FileDescriptorSourceProvider extends AbstractSourceProvider implements ISelectionListener, IUIEventListener, ISelectionChangedListener, IPartListener2 {
-	public static final String FILE_DESCRIPTOR_SELECTION = "fileDescriptorSelection";
-	public static final String ACTIVE_COLLECTION_EDITOR = "activeCollectionEditor";
+	private static final String FILE_DESCRIPTOR_SELECTION = "fileDescriptorSelection";
+	private static final String ACTIVE_COLLECTION_EDITOR = "activeCollectionEditor";
+	private static final String[] PROVIDED_SOURCE_NAMES = new String[] { FILE_DESCRIPTOR_SELECTION, ACTIVE_COLLECTION_EDITOR };
+	
 	private Set<FileDescriptor> fileDescriptors;
 	private IWorkbenchPart activeCollectionEditor;
+	
+	public static FileDescriptorSourceProvider getInstance() {
+		ISourceProviderService sourceProviderService = (ISourceProviderService) PlatformUI.getWorkbench().getService(ISourceProviderService.class);
+		return (FileDescriptorSourceProvider) sourceProviderService.getSourceProvider(FILE_DESCRIPTOR_SELECTION);
+	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Map getCurrentState() {
-		Map map = new HashMap(1);
+		Map<String, Object> map = new HashMap<>();
 		map.put(FILE_DESCRIPTOR_SELECTION, this.fileDescriptors);
 		map.put(ACTIVE_COLLECTION_EDITOR, this.activeCollectionEditor);
 		return map;
@@ -39,7 +48,7 @@ public class FileDescriptorSourceProvider extends AbstractSourceProvider impleme
 
 	@Override
 	public String[] getProvidedSourceNames() {
-		return new String[] { FILE_DESCRIPTOR_SELECTION, ACTIVE_COLLECTION_EDITOR };
+		return PROVIDED_SOURCE_NAMES;
 	}
 
 	@Override

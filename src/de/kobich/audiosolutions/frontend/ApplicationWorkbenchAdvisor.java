@@ -12,7 +12,6 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.frontend.common.FileDescriptorSourceProvider;
@@ -121,8 +120,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			// SelectionSupport
 			window.getActivePage().addPartListener(SelectionSupport.INSTANCE);
 			// SourceProvider
-			ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(ISourceProviderService.class);
-			FileDescriptorSourceProvider sourceProvider = (FileDescriptorSourceProvider) sourceProviderService.getSourceProvider(FileDescriptorSourceProvider.FILE_DESCRIPTOR_SELECTION);
+			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
 			window.getActivePage().addPartListener(sourceProvider);
 			SelectionSupport.INSTANCE.addSelectionChangedListener(sourceProvider);
 			EventSupport.INSTANCE.addListener(sourceProvider);
@@ -135,8 +133,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			window.removePageListener(PageListener.INSTANCE);
 
 			// SourceProvider
-			ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(ISourceProviderService.class);
-			FileDescriptorSourceProvider sourceProvider = (FileDescriptorSourceProvider) sourceProviderService.getSourceProvider(FileDescriptorSourceProvider.FILE_DESCRIPTOR_SELECTION);
+			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
 			SelectionSupport.INSTANCE.removeSelectionChangedListener(sourceProvider);
 			EventSupport.INSTANCE.removeListener(sourceProvider);
 			// StatusLineEventListener
@@ -166,8 +163,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			// SelectionSupport
 			page.removePartListener(SelectionSupport.INSTANCE);
 			// SourceProvider
-			ISourceProviderService sourceProviderService = (ISourceProviderService) page.getWorkbenchWindow().getService(ISourceProviderService.class);
-			FileDescriptorSourceProvider sourceProvider = (FileDescriptorSourceProvider) sourceProviderService.getSourceProvider(FileDescriptorSourceProvider.FILE_DESCRIPTOR_SELECTION);
+			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
 			page.removePartListener(sourceProvider);
 		}
 
