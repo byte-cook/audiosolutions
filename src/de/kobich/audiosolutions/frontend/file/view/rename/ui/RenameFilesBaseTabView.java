@@ -13,8 +13,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesViewSourceProvider;
 import de.kobich.commons.misc.rename.rule.IRenameRule;
@@ -173,16 +171,15 @@ public abstract class RenameFilesBaseTabView {
 		}
 		
 		// fire event
-		ISourceProviderService sourceProviderService = (ISourceProviderService) PlatformUI.getWorkbench().getService(ISourceProviderService.class);
-		RenameFilesViewSourceProvider sourceProvider = (RenameFilesViewSourceProvider) sourceProviderService.getSourceProvider(RenameFilesViewSourceProvider.RENAME_TAB_ENABLED_STATE);
+		RenameFilesViewSourceProvider p = RenameFilesViewSourceProvider.getInstance();
 		if (enabledTabCount == 0) {
-			sourceProvider.changeState(RenameFilesViewSourceProvider.RENAME_TAB_ENABLED_STATE, Boolean.FALSE);
+			p.setTabEnabled(false);
 		}
 		else if (enabledTabCount > 0) {
-			sourceProvider.changeState(RenameFilesViewSourceProvider.RENAME_TAB_ENABLED_STATE, Boolean.TRUE);
+			p.setTabEnabled(true);
 		}
 		else if (enabledTabCount < 0) {
-			sourceProvider.changeState(RenameFilesViewSourceProvider.RENAME_TAB_ENABLED_STATE, Boolean.FALSE);
+			p.setTabEnabled(false);
 			enabledTabCount = 0;
 			logger.error("Enabled tab count is negative");
 		}

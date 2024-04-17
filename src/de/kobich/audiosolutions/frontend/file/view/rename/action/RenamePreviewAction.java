@@ -11,7 +11,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesView;
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesViewSourceProvider;
@@ -52,9 +51,8 @@ public class RenamePreviewAction extends AbstractHandler {
 					view.refreshPreview();
 					
 					// fire event
-					ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(ISourceProviderService.class);
-					RenameFilesViewSourceProvider p = (RenameFilesViewSourceProvider) sourceProviderService.getSourceProvider(RenameFilesViewSourceProvider.RENAME_TAB_ENABLED_STATE);
-					p.changeState(RenameFilesViewSourceProvider.RENAME_PREVIEW_STATE, Boolean.TRUE);
+					RenameFilesViewSourceProvider p = RenameFilesViewSourceProvider.getInstance();
+					p.setPreviewRenamed(true);
 					break;
 				case UI_ERROR:
 					Exception exc = super.getException();

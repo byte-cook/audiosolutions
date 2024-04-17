@@ -12,7 +12,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
@@ -115,11 +114,9 @@ public class RenameFilesAction extends AbstractHandler {
 					EventSupport.INSTANCE.fireEvent(uiEvent);
 					
 					// update view's state
-					ISourceProviderService sourceProviderService = (ISourceProviderService) window.getService(ISourceProviderService.class);
-					RenameFilesViewSourceProvider p = (RenameFilesViewSourceProvider) sourceProviderService
-							.getSourceProvider(RenameFilesViewSourceProvider.RENAME_TAB_ENABLED_STATE);
-					p.changeState(RenameFilesViewSourceProvider.RENAME_FILE_STATE, Boolean.TRUE);
-					p.changeState(RenameFilesViewSourceProvider.RENAME_PREVIEW_STATE, Boolean.FALSE);
+					RenameFilesViewSourceProvider p = RenameFilesViewSourceProvider.getInstance();
+					p.setFileRenamed(true);
+					p.setPreviewRenamed(false);
 
 					StatusLineUtils.setStatusLineMessage(view, "Files renamed", false);
 					break;
