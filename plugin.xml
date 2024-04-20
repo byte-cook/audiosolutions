@@ -344,11 +344,16 @@
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
-            id="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
+            id="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
             name="Append Files To Player">
          <commandParameter
                id="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.playAsNext"
                name="playAsNext"
+               optional="true">
+         </commandParameter>
+         <commandParameter
+               id="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.play"
+               name="play"
                optional="true">
          </commandParameter>
       </command>
@@ -361,11 +366,6 @@
             categoryId="AudioSolutions.AudioCategory"
             id="de.kobich.audiosolutions.commands.audio.playAudioFile"
             name="Play Audio File">
-         <commandParameter
-               id="de.kobich.audiosolutions.commands.audio.playAudioFile.caller"
-               name="name"
-               optional="true">
-         </commandParameter>
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
@@ -1294,17 +1294,27 @@
                    visible="true">
              </separator>
              <command
-                   commandId="de.kobich.audiosolutions.commands.audio.playAudioFile"
+                   commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
                    icon="icons/audio/audio-play.png"
                    label="Play"
                    style="push">
                 <parameter
-                      name="de.kobich.audiosolutions.commands.audio.playAudioFile.caller"
-                      value="editor">
+                      name="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.play"
+                      value="true">
                 </parameter>
              </command>
              <command
-                   commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
+                   commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
+                   icon="icons/audio/audio-play-as-next.png"
+                   label="Play As Next"
+                   style="push">
+                <parameter
+                      name="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.playAsNext"
+                      value="true">
+                </parameter>
+             </command>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
                    icon="icons/audio/audio-play-add.png"
                    label="Append To Player"
                    style="push">
@@ -1677,30 +1687,10 @@
       <menuContribution
             locationURI="toolbar:de.kobich.audiosolutions.view.audio.playerView">
          <command
-               commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
-               icon="icons/audio/audio-play-add.png"
-               label="Append Files To Player"
-               style="push">
-         </command>
-         <command
-               commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer"
-               icon="icons/audio/audio-play-remove.png"
-               label="Remove Files From Player"
-               style="push">
-         </command>
-         <separator
-               name="de.kobich.audiosolutions.ui.audio.separator1"
-               visible="true">
-         </separator>
-         <command
                commandId="de.kobich.audiosolutions.commands.audio.playAudioFile"
                icon="icons/audio/audio-play.png"
                label="Play"
                style="push">
-            <parameter
-                  name="de.kobich.audiosolutions.commands.audio.playAudioFile.caller"
-                  value="playerView">
-            </parameter>
          </command>
          <command
                commandId="de.kobich.audiosolutions.commands.audio.PauseAudioFile"
@@ -1728,6 +1718,16 @@
                commandId="de.kobich.audiosolutions.commands.audio.NextAudioFile"
                icon="icons/audio/audio-next-track.png"
                label="Next"
+               style="push">
+         </command>
+         <separator
+               name="de.kobich.audiosolutions.ui.audio.separator1"
+               visible="true">
+         </separator>
+         <command
+               commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer"
+               icon="icons/audio/audio-play-remove.png"
+               label="Remove Files From Player"
                style="push">
          </command>
       </menuContribution>
@@ -1847,13 +1847,27 @@
                visible="true">
          </separator>
          <command
-               commandId="de.kobich.audiosolutions.commands.audio.playAudioFile"
+               commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
                icon="icons/audio/audio-play.png"
                label="Play"
                style="push">
+            <parameter
+                  name="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.play"
+                  value="true">
+            </parameter>
          </command>
          <command
-               commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer"
+               commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
+               icon="icons/audio/audio-play-as-next.png"
+               label="Play As Next"
+               style="push">
+            <parameter
+                  name="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.playAsNext"
+                  value="true">
+            </parameter>
+         </command>
+         <command
+               commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
                icon="icons/audio/audio-play-add.png"
                label="Append Files To Player"
                style="push">
@@ -2555,86 +2569,37 @@
          </enabledWhen>
       </handler>
       <handler
-            class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction"
-            commandId="de.kobich.audiosolutions.commands.audio.playAudioFile">
-         <activeWhen>
-           <and>
-              <with
-                    variable="activeCollectionEditor">
-                 <instanceof
-                       value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                 </instanceof>
-              </with>
-              <with
-                    variable="fileDescriptorSelection">
-                 <iterate
-                       ifEmpty="false"
-                       operator="or">
-                    <test
-                          property="fileDescriptor.exists"
-                          value="true">
-                    </test>
-                 </iterate>
-              </with>
-           </and>
-            </activeWhen>
-      </handler>
-      <handler
-            class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction"
-            commandId="de.kobich.audiosolutions.commands.audio.playAudioFile">
-         <activeWhen>
-            <and>
+            class="de.kobich.audiosolutions.frontend.audio.view.play.action.AppendAndPlayFilesAction"
+            commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles">
+         <enabledWhen>
+            <or>
+               <and>
+                  <with
+                        variable="activeEditorId">
+                     <equals
+                           value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+                     </equals>
+                  </with>
+                  <with
+                        variable="fileDescriptorSelection">
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <test
+                              property="fileDescriptor.exists"
+                              value="true">
+                        </test>
+                     </iterate>
+                  </with>
+               </and>
                <with
                      variable="activeEditorId">
                   <equals
                         value="de.kobich.audiosolutions.editor.playlistEditor">
                   </equals>
                </with>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.AppendFilesToPlayerAction">
-         </class>
-         <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <test
-                           property="fileDescriptor.exists"
-                           value="true">
-                     </test>
-                  </iterate>
-               </with>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            commandId="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.play.action.AppendFilesToPlayerAction">
-         </class>
-         <activeWhen>
-            <and>
-               <with
-                     variable="activeEditorId">
-                  <equals
-                        value="de.kobich.audiosolutions.editor.playlistEditor">
-                  </equals>
-               </with>
-            </and>
-         </activeWhen>
+            </or>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.removeFilesFromPlayer">
