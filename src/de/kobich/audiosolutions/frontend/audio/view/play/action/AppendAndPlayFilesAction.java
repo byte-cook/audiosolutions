@@ -23,12 +23,14 @@ import de.kobich.component.file.FileDescriptor;
 /**
  * Adds file to play list.
  */
-public class AppendFilesToPlayerAction extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(AppendFilesToPlayerAction.class);
+public class AppendAndPlayFilesAction extends AbstractHandler {
+	private static final Logger logger = Logger.getLogger(AppendAndPlayFilesAction.class);
+	public static final String PLAY_PARAM = "de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.play";
 	public static final String PLAY_AS_NEXT_PARAM = "de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.playAsNext";
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		boolean play = Boolean.valueOf(event.getParameter(PLAY_PARAM));
 		boolean playAsNext = Boolean.valueOf(event.getParameter(PLAY_AS_NEXT_PARAM));
 		
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
@@ -39,11 +41,21 @@ public class AppendFilesToPlayerAction extends AbstractHandler {
 				IEditorPart editorPart = window.getActivePage().getActiveEditor();
 				if (editorPart instanceof AudioCollectionEditor audioCollectionEditor) {
 					Set<File> files = audioCollectionEditor.getFileDescriptorSelection().getExistingFiles().stream().map(FileDescriptor::getFile).collect(Collectors.toSet());
-					audioPlayView.appendFiles(files, playAsNext);
+					if (play) {
+						audioPlayView.appendFilesAndPlay(files);
+					}
+					else {
+						audioPlayView.appendFiles(files, playAsNext);
+					}
 				}
 				else if (editorPart instanceof PlaylistEditor playlistEditor) {
 					Set<File> files = playlistEditor.getSelection().getExistingFiles().stream().map(EditablePlaylistFile::getFile).collect(Collectors.toSet());
-					audioPlayView.appendFiles(files, playAsNext);
+					if (play) {
+						audioPlayView.appendFilesAndPlay(files);
+					}
+					else {
+						audioPlayView.appendFiles(files, playAsNext);
+					}
 				}
 			}
 		}
