@@ -95,6 +95,7 @@ public class Activator extends AbstractUIPlugin {
 		AUDIO_COLLECTION_EDITOR("/icons/audio/audio-collection-128.png"),
 		AUDIO_SEARCH_EDITOR("/icons/audio/search.png"),
 		AUDIO_PLAY("icons/audio/audio-play.png"),
+		AUDIO_PLAY_AS_NEXT("icons/audio/audio-play-as-next.png"),
 		AUDIO_PLAY_ADD("icons/audio/audio-play-add.png"),
 		FILE_COLLECTION_EDITOR("/icons/file/file-collection-128.png"),
 		PLAYLIST("icons/audio/playlist.png"),
