@@ -70,7 +70,6 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	public static ViewerColumn COLUMN_FILE = new ViewerColumn("File", 60);
 	public static ViewerColumnManager COLUMNS = new ViewerColumnManager(COLUMN_TRACK, COLUMN_FILE);
 	
-	private AudioPlayViewEventListener eventListener;
 	@Getter
 	private PersistableAudioPlayingList playlist;
 	private AudioPlayerListener playerListener;
@@ -89,7 +88,6 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
 		this.memento = memento;
-		this.eventListener = new AudioPlayViewEventListener(this);
 		this.playerListener = new AudioPlayerListener(this);
 		this.playerClient = new AudioPlayerClient("audio-player");
 		this.playerClient.getListenerList().addListener(playerListener);
@@ -207,7 +205,6 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		
 		// register for events
 		getViewSite().setSelectionProvider(tableViewer);
-		eventListener.register();
 	}
 
 	private void loadPlaylist() {
@@ -229,7 +226,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 				restoreState();
 				this.playlist.setLoopEnabled(ToggleLoopEnabledAction.getInitialValue());
 				this.tableViewer.setInput(playlist);
-				fireDeselection();
+				setContentDescription("");
 			})
 			.exceptionalDialog("Cannot open playlist")
 			.runBackgroundJob(200, false, true, null);
@@ -349,16 +346,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		this.progressScale.dispose();
 		this.timeLabel.dispose();
 		this.tableViewer.getTable().dispose();
-		this.eventListener.deregister();
 		super.dispose();
-	}
-
-	public void fireDeselection() {
-		getViewSite().getShell().getDisplay().asyncExec(() -> setContentDescription("Please select one or more audio files."));
-	}
-
-	public void fireSelection(final List<File> files) {
-		getViewSite().getShell().getDisplay().asyncExec(() -> setContentDescription(files.size() + " file(s) selected"));
 	}
 	
 	/**
