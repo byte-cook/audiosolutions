@@ -1289,6 +1289,12 @@
                    label="Save"
                    style="push">
              </command>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.file.openWithSystemEditor"
+                   icon="/icons/file/file.png"
+                   label="Open With System Editor"
+                   style="push">
+             </command>
              <separator
                    name="de.kobich.audiosolutions.separator1"
                    visible="true">
@@ -1323,12 +1329,6 @@
                    commandId="de.kobich.audiosolutions.commands.editor.copyFileDescriptorsToPlaylist"
                    icon="icons/audio/playlist.png"
                    label="Copy Files To Another Playlist"
-                   style="push">
-             </command>
-             <command
-                   commandId="de.kobich.audiosolutions.commands.file.openWithSystemEditor"
-                   icon="/icons/file/file.png"
-                   label="Open With System Editor"
                    style="push">
              </command>
              <separator
