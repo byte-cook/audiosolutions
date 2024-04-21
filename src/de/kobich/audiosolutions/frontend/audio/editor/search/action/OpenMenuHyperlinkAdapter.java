@@ -29,10 +29,10 @@ public class OpenMenuHyperlinkAdapter extends HyperlinkAdapter {
 		playItem.setImage(Activator.getDefault().getImage(ImageKey.AUDIO_PLAY));
 		playItem.addSelectionListener(new PlaySelectionAdapter(window, query));
 		
-		// TODO: play as next
+		// play as next
 		MenuItem playAsNextItem = new MenuItem(menu, SWT.NONE);
 		playAsNextItem.setText("Play As Next");
-		playAsNextItem.setImage(Activator.getDefault().getImage(ImageKey.AUDIO_PLAY));
+		playAsNextItem.setImage(Activator.getDefault().getImage(ImageKey.AUDIO_PLAY_AS_NEXT));
 		playAsNextItem.addSelectionListener(new AppendToPlayerSelectionAdapter(window, query, true));
 		
 		// append to player
