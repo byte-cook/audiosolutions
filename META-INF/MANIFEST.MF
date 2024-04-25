@@ -91,8 +91,8 @@ Bundle-ClassPath: .,
  lib/mp3plugin.jar,
  lib/target/dependency/audiosolutions-core-10.0.jar,
  lib/target/dependency/component-file-9.1.jar,
- lib/target/dependency/commons-ui-jface-9.1.jar,
- lib/target/dependency/commons-10.0.jar
+ lib/target/dependency/commons-10.0.jar,
+ lib/target/dependency/commons-ui-jface-10.0.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: Christoph Korn
 Automatic-Module-Name: de.kobich.audiosolutions
