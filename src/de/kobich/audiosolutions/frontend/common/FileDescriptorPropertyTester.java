@@ -17,26 +17,20 @@ public class FileDescriptorPropertyTester extends PropertyTester {
 
 	@Override
 	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-		FileDescriptor fileDescriptor = (FileDescriptor) receiver;
-		if (HAS_AUDIO_DATA_PROP.equals(property)) {
-			boolean expected = true;
-			if (expectedValue != null) {
-				expected = Boolean.parseBoolean(expectedValue.toString());
+		if (receiver instanceof FileDescriptor fileDescriptor) {
+			if (expectedValue == null) {
+				return false;
 			}
 
-			boolean actual = fileDescriptor.hasMetaData(AudioData.class)
-					&& !((AudioData) fileDescriptor.getMetaData()).getState().equals(AudioState.REMOVED);
-			if (actual == expected) {
-				return true;
+			if (HAS_AUDIO_DATA_PROP.equals(property)) {
+				boolean expected = Boolean.parseBoolean(expectedValue.toString());
+				boolean actual = fileDescriptor.hasMetaData(AudioData.class)
+						&& !((AudioData) fileDescriptor.getMetaData()).getState().equals(AudioState.REMOVED);
+				return actual == expected;
 			}
-		}
-		else if (EXISTS_PROP.equals(property)) {
-			if (expectedValue != null) {
+			else if (EXISTS_PROP.equals(property)) {
 				Boolean expected = Boolean.parseBoolean(expectedValue.toString());
-				boolean test = expected.equals(fileDescriptor.getFile().exists());
-				if (test) {
-					return true;
-				}
+				return expected.equals(fileDescriptor.getFile().exists());
 			}
 		}
 		return false;
