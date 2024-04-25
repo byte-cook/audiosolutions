@@ -1318,6 +1318,15 @@
                       name="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.playAsNext"
                       value="true">
                 </parameter>
+                <visibleWhen
+                      checkEnabled="false">
+                   <with
+                         variable="audioPlayView.playing">
+                      <equals
+                            value="true">
+                      </equals>
+                   </with>
+                </visibleWhen>
              </command>
              <command
                    commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
@@ -1735,6 +1744,7 @@
             locationURI="popup:de.kobich.audiosolutions.view.audio.playerView">
          <command
                commandId="de.kobich.audiosolutions.commands.audio.toggleLoopEnabled"
+               icon="icons/audio/audio-loop.png"
                label="Toggle Loop"
                style="toggle">
          </command>
@@ -1865,6 +1875,15 @@
                   name="de.kobich.audiosolutions.commands.audio.appendFilesToPlayer.playAsNext"
                   value="true">
             </parameter>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="audioPlayView.playing">
+                  <equals
+                        value="true">
+                  </equals>
+               </with>
+            </visibleWhen>
          </command>
          <command
                commandId="de.kobich.audiosolutions.commands.audio.appendAndPlayFiles"
