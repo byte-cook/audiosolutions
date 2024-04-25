@@ -29,7 +29,7 @@ public class RemovePlaylistItemsAction extends AbstractHandler {
 				boolean confirmed = MessageDialog.openQuestion(window.getShell(), "Remove Files/Folders", "Do you want to delete the complete playlist?");
 				if (confirmed) {
 					JFaceExec.builder(window.getShell(), "Remove Files/Folders")
-						.worker(ctx -> playlistEditor.getPlaylist().getFolders().clear())
+						.worker(ctx -> playlistEditor.getPlaylist().removeAll())
 						.ui(ctx -> playlistEditor.refresh())
 						.exceptionalDialog("Removing items failed")
 						.runProgressMonitorDialog(true, false);
