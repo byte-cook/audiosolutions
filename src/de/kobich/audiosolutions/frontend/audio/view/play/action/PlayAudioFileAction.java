@@ -1,7 +1,5 @@
 package de.kobich.audiosolutions.frontend.audio.view.play.action;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -10,10 +8,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
-import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFileComparator;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
 import de.kobich.audiosolutions.frontend.common.util.PlatformUtil;
+import de.kobich.commons.ui.jface.JFaceExec;
 
 public class PlayAudioFileAction extends AbstractHandler {
 	private static final Logger logger = Logger.getLogger(PlayAudioFileAction.class);
@@ -28,13 +25,10 @@ public class PlayAudioFileAction extends AbstractHandler {
 				return null;
 			}
 			
-			EditablePlaylistFile startFile = null;
-			List<EditablePlaylistFile> files = audioPlayView.getSelectedPlayItems();
-			if (!files.isEmpty()) {
-				files.sort(EditablePlaylistFileComparator.INSTANCE);
-				startFile = files.get(0);
-			}
-			audioPlayView.startPlaying(startFile);
+			JFaceExec.builder(window.getShell())
+				.worker(ctx -> audioPlayView.startPlaying(null))
+				.ui(ctx -> audioPlayView.refresh())
+				.runProgressMonitorDialog(true, false);
 		}
 		catch (Exception e) {
 			String msg = "Cannot play file:\n";

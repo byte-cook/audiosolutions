@@ -12,6 +12,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 
 public class RemoveFilesFromPlayerAction extends AbstractHandler {
 	private static final Logger logger = Logger.getLogger(RemoveFilesFromPlayerAction.class);
@@ -23,7 +25,7 @@ public class RemoveFilesFromPlayerAction extends AbstractHandler {
 		try {
 			AudioPlayView audioPlayView = (AudioPlayView) window.getActivePage().findView(AudioPlayView.ID);
 			if (audioPlayView != null) {
-				List<EditablePlaylistFile> files2Remove = audioPlayView.getSelectedPlayItems();
+			 	List<EditablePlaylistFile> files2Remove = audioPlayView.getSelectedPlayItems();
 				if (files2Remove.isEmpty()) {
 					files2Remove = audioPlayView.getPlaylist().getFilesSorted();
 					boolean confirmed = MessageDialog.openQuestion(window.getShell(), "Delete Play List", "Do you want to delete the complete play list?");
@@ -31,8 +33,12 @@ public class RemoveFilesFromPlayerAction extends AbstractHandler {
 						return null;
 					}
 				}
-				audioPlayView.removeFiles(files2Remove);
-				audioPlayView.refresh();
+				
+				Wrapper<List<EditablePlaylistFile>> FILES = Wrapper.of(files2Remove);
+				JFaceExec.builder(window.getShell())
+					.worker(ctx -> audioPlayView.removeFiles(FILES.get()))
+					.ui(ctx -> audioPlayView.refresh())
+					.runProgressMonitorDialog(true, false);
 			}
 		}
 		catch (Exception e) {

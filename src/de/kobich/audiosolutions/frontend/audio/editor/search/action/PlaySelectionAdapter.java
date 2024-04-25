@@ -15,7 +15,6 @@ import de.kobich.audiosolutions.core.service.search.AudioSearchQuery;
 import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
 import de.kobich.audiosolutions.frontend.common.util.PlatformUtil;
-import de.kobich.commons.type.Wrapper;
 import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.component.file.FileDescriptor;
 import lombok.RequiredArgsConstructor;
@@ -35,17 +34,14 @@ public class PlaySelectionAdapter extends SelectionAdapter {
 				return;
 			}
 	
-			final Wrapper<Set<File>> addedFiles = Wrapper.empty();
 			JFaceExec.builder(window.getShell(), "Play Tracks")
 				.worker(ctx -> {
 					AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
 					Set<FileDescriptor> fileDescriptors = searchService.search(query, ctx.getProgressMonitor());
-					addedFiles.set(fileDescriptors.stream().map(FileDescriptor::getFile).collect(Collectors.toSet()));
-				})
-				.ui(ctx -> {
-					Set<File> files = addedFiles.orElse(Set.of());
+					Set<File> files = fileDescriptors.stream().map(FileDescriptor::getFile).collect(Collectors.toSet());
 					audioPlayView.appendFilesAndPlay(files);
 				})
+				.ui(ctx -> audioPlayView.refresh())
 				.exceptionalDialog("Files cannot be played")
 				.runProgressMonitorDialog(true, false);
 		}

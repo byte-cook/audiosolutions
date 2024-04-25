@@ -18,6 +18,8 @@ import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioColle
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
 import de.kobich.audiosolutions.frontend.common.util.PlatformUtil;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.component.file.FileDescriptor;
 
 /**
@@ -38,25 +40,29 @@ public class AppendAndPlayFilesAction extends AbstractHandler {
 			PlatformUtil.showView(AudioPlayView.ID);
 			AudioPlayView audioPlayView = (AudioPlayView) window.getActivePage().findView(AudioPlayView.ID);
 			if (audioPlayView != null) {
-				IEditorPart editorPart = window.getActivePage().getActiveEditor();
-				if (editorPart instanceof AudioCollectionEditor audioCollectionEditor) {
-					Set<File> files = audioCollectionEditor.getFileDescriptorSelection().getExistingFiles().stream().map(FileDescriptor::getFile).collect(Collectors.toSet());
-					if (play) {
-						audioPlayView.appendFilesAndPlay(files);
-					}
-					else {
-						audioPlayView.appendFiles(files, playAsNext);
-					}
-				}
-				else if (editorPart instanceof PlaylistEditor playlistEditor) {
-					Set<File> files = playlistEditor.getSelection().getExistingFiles().stream().map(EditablePlaylistFile::getFile).collect(Collectors.toSet());
-					if (play) {
-						audioPlayView.appendFilesAndPlay(files);
-					}
-					else {
-						audioPlayView.appendFiles(files, playAsNext);
-					}
-				}
+				final Wrapper<Set<File>> FILES = Wrapper.empty();
+				JFaceExec.builder(window.getShell())
+					.ui(ctx -> {
+						IEditorPart editorPart = window.getActivePage().getActiveEditor();
+						if (editorPart instanceof AudioCollectionEditor audioCollectionEditor) {
+							FILES.set(audioCollectionEditor.getFileDescriptorSelection().getExistingFiles().stream().map(FileDescriptor::getFile).collect(Collectors.toSet()));
+						}
+						else if (editorPart instanceof PlaylistEditor playlistEditor) {
+							FILES.set(playlistEditor.getSelection().getExistingFiles().stream().map(EditablePlaylistFile::getFile).collect(Collectors.toSet()));
+						}
+					})
+					.worker(ctx -> {
+						if (FILES.isPresent()) {
+							if (play) {
+								audioPlayView.appendFilesAndPlay(FILES.get());
+							}
+							else {
+								audioPlayView.appendFiles(FILES.get(), playAsNext);
+							}
+						}
+					})
+					.ui(ctx -> audioPlayView.refresh())
+					.runProgressMonitorDialog(true, false);
 			}
 		}
 		catch (Exception e) {

@@ -11,6 +11,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.play.IAudioPlayingService;
 import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayView;
+import de.kobich.commons.ui.jface.JFaceExec;
 
 /**
  * Jump to next audio file.
@@ -24,8 +25,13 @@ public class PreviousAudioFileAction extends AbstractHandler {
 		try {
 			AudioPlayView audioPlayView = (AudioPlayView) window.getActivePage().findView(AudioPlayView.ID);
 			if (audioPlayView != null) {
-				IAudioPlayingService audioPlayService = AudioSolutions.getService(IAudioPlayingService.JAVA_ZOOM_PLAYER, IAudioPlayingService.class);
-				audioPlayService.previous(audioPlayView.getPlayerClient());
+				JFaceExec.builder(window.getShell())
+				.worker(ctx -> {
+					IAudioPlayingService audioPlayService = AudioSolutions.getService(IAudioPlayingService.JAVA_ZOOM_PLAYER, IAudioPlayingService.class);
+					audioPlayService.previous(audioPlayView.getPlayerClient());
+				})
+				.ui(ctx -> audioPlayView.refresh())
+				.runProgressMonitorDialog(true, false);
 			}
 		}
 		catch (Exception e) {
