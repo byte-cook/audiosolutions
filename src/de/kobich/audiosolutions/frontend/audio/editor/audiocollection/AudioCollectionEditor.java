@@ -32,7 +32,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
-import de.kobich.audiosolutions.core.service.AudioAttribute;
 import de.kobich.audiosolutions.core.service.AudioData;
 import de.kobich.audiosolutions.core.service.info.FileInfo;
 import de.kobich.audiosolutions.core.service.persist.AudioPersistenceService;
@@ -420,15 +419,11 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		FileDescriptor fileDescriptor = fileInfo.getFileDescriptor();
 		AudioData audioData = fileDescriptor.getMetaDataOptional(AudioData.class).orElse(null);
 		if (audioData != null) {
-			if (audioData.hasAttribute(AudioAttribute.ALBUM)) {
-				album = audioData.getAttribute(AudioAttribute.ALBUM);
-			}
+			album = audioData.getAlbum().orElse("");
 //			if (audioData.hasAttribute(AudioAttribute.TRACK)) {
 //				track = audioData.getAttribute(AudioAttribute.TRACK);
 //			}
-			if (audioData.hasAttribute(AudioAttribute.ARTIST)) {
-				artist = audioData.getAttribute(AudioAttribute.ARTIST);
-			}
+			artist = audioData.getArtist().orElse("");
 		}
 		
 		StringBuilder info = new StringBuilder();
