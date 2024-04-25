@@ -1,5 +1,7 @@
 package de.kobich.audiosolutions.frontend.audio.view.play;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -10,6 +12,7 @@ import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -50,6 +53,7 @@ import de.kobich.audiosolutions.frontend.audio.view.play.action.ToggleLoopEnable
 import de.kobich.audiosolutions.frontend.audio.view.play.ui.AudioPlayContentProvider;
 import de.kobich.audiosolutions.frontend.audio.view.play.ui.AudioPlayLabelProvider;
 import de.kobich.audiosolutions.frontend.common.selection.PostSelectionAdapter;
+import de.kobich.commons.concurrent.StartupLock;
 import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.JFaceUtils;
 import de.kobich.commons.ui.jface.MementoUtils;
@@ -62,16 +66,19 @@ import lombok.Getter;
 /**
  * Audio play view.
  */
-public class AudioPlayView extends ViewPart implements IMementoItemSerializable { 
+public class AudioPlayView extends ViewPart implements IMementoItemSerializable, PropertyChangeListener { 
 	public static final Logger logger = Logger.getLogger(AudioPlayView.class);
 	public static final String ID = "de.kobich.audiosolutions.view.audio.playerView";
 	private static final String PLAYLIST_NAME = "audiosolutions_player";
+	private static final String STATE_CURRENT_FILE = "audioPlayView.currentFile";
 	public static ViewerColumn COLUMN_TRACK = new ViewerColumn("Track", 40);
 	public static ViewerColumn COLUMN_FILE = new ViewerColumn("File", 60);
 	public static ViewerColumnManager COLUMNS = new ViewerColumnManager(COLUMN_TRACK, COLUMN_FILE);
+	private StartupLock startupLock;
 	
 	@Getter
 	private PersistableAudioPlayingList playlist;
+	private boolean playlistModifed;
 	private AudioPlayerListener playerListener;
 	@Getter
 	private AudioPlayerClient playerClient;
@@ -87,6 +94,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
+		this.startupLock = new StartupLock(1);
 		this.memento = memento;
 		this.playerListener = new AudioPlayerListener(this);
 		this.playerClient = new AudioPlayerClient("audio-player");
@@ -221,18 +229,23 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 					editablePlaylist = playlistService.openPlaylist(systemPlaylist, null);
 				}
 				this.playlist = new PersistableAudioPlayingList(editablePlaylist);
+				this.playlistModifed = false;
+				this.startupLock.release();
 			})
 			.ui(ctx -> {
 				restoreState();
 				this.playlist.setLoopEnabled(ToggleLoopEnabledAction.getInitialValue());
 				this.tableViewer.setInput(playlist);
+				this.refresh();
 				setContentDescription("");
 			})
 			.exceptionalDialog("Cannot open playlist")
-			.runBackgroundJob(200, false, true, null);
+			.runBackgroundJob(0, false, true, null);
 	}
 	
 	public void startPlaying(EditablePlaylistFile startFile) throws AudioException {
+		startupLock.waitForInitialisation();
+		
 		if (startFile != null) {
 			this.playlist.setStartFile(startFile);
 		}
@@ -241,13 +254,15 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	}
 	
 	public Set<EditablePlaylistFile> appendFiles(Set<File> files, boolean playAsNext) {
+		startupLock.waitForInitialisation();
+		
 		Set<EditablePlaylistFile> appendedFiles = playAsNext ? playlist.appendFilesAfterCurrent(files) : playlist.appendFiles(files);
-		provider.setPlaylistEmpty(this.playlist.isEmpty());
-		refresh();
 		return appendedFiles;
 	}
 	
 	public void appendFilesAndPlay(Set<File> files) throws AudioException {
+		startupLock.waitForInitialisation();
+		
 		List<EditablePlaylistFile> appendedFiles = new ArrayList<>(appendFiles(files, false));
 		if (!appendedFiles.isEmpty()) {
 			appendedFiles.sort(EditablePlaylistFileComparator.INSTANCE);
@@ -256,9 +271,9 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	}
 	
 	public void removeFiles(List<EditablePlaylistFile> files) {
+		startupLock.waitForInitialisation();
+
 		this.playlist.removeFiles(files);
-		provider.setPlaylistEmpty(this.playlist.isEmpty());
-		refresh();
 	}
 	
 	/**
@@ -298,18 +313,17 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		if (mementoItem == null) {
 			return;
 		}
-//		List<File> files = getPlayList().getSortedFiles();
-//		FileListSerializer playItemsMemento = new FileListSerializer(STATE_PLAY_LIST_FILES);
-//		playItemsMemento.save(files, mementoItem);
+		mementoItem.putString(STATE_CURRENT_FILE, this.playlist.getCurrentFile().map(File::getAbsolutePath).orElse(""));
 		
-		// TODO playlist only save if required
-		JFaceExec.builder(getSite().getShell())
-			.worker(ctx -> {
-				PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
-				playlistService.savePlaylist(this.playlist.getPlaylist(), null);
-			})
-			.exceptionalDialog("Could not save playing list")
-			.runBackgroundJob(0, false, true, null);
+		if (this.playlistModifed) {
+			JFaceExec.builder(getSite().getShell())
+				.worker(ctx -> {
+					PlaylistService playlistService = AudioSolutions.getService(PlaylistService.class);
+					playlistService.savePlaylist(this.playlist.getPlaylist(), null);
+				})
+				.exceptionalDialog("Could not save playing list")
+				.runBackgroundJob(0, false, true, null);
+		}
 	}
 	
 	@Override
@@ -318,8 +332,14 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 		if (mementoItem == null) {
 			return;
 		}
-		// TODO playlist
+		
+		String currentFilePath = mementoItem.getString(STATE_CURRENT_FILE, "");
+		if (StringUtils.isNoneBlank(currentFilePath)) {
+			this.playlist.getFile(new File(currentFilePath)).ifPresent(f -> this.playlist.setStartFile(f));
+		}
+		
 		provider.setPlaylistEmpty(this.playlist.isEmpty());
+		this.playlist.getPropertyChangeSupport().addPropertyChangeListener(this);
 	}
 
 	/*
@@ -327,6 +347,7 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	 * @see org.eclipse.ui.part.WorkbenchPart#dispose()
 	 */
 	public void dispose() {
+		this.playlist.getPropertyChangeSupport().removePropertyChangeListener(this);
 		this.disposedCalled = true;
 		if (this.playerClient != null && playerListener != null) {
 			this.playerClient.getListenerList().removeListener(playerListener);
@@ -353,6 +374,8 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 	 * Refreshes this view
 	 */
 	public void refresh() {
+		// scroll to current file
+		this.playlist.getCurrentFile().flatMap(f -> this.playlist.getFile(f)).ifPresent(f -> tableViewer.reveal(f));
 		tableViewer.refresh();
 	}
 	
@@ -485,5 +508,11 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable 
 			view.timeLabel.setText(time + completeTime);
 			view.timeLabel.setEnabled(true);
 		}
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent arg0) {
+		provider.setPlaylistEmpty(this.playlist.isEmpty());
+		playlistModifed = true;
 	}
 }
