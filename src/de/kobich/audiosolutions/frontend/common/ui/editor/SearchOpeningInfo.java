@@ -4,14 +4,18 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.kobich.audiosolutions.core.service.AudioAttribute;
 import de.kobich.audiosolutions.core.service.search.AudioSearchQuery;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor.CollectionEditorType;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-
+@Getter
 public class SearchOpeningInfo implements IOpeningInfo {
 	private static final long serialVersionUID = -136426121121508129L;
 	private final String searchText;
 	private StandardSearch standardSearch;
+	private TextSearch textSearch;
 	private ArtistSearch artistSearch;
 	private MediumSearch mediumSearch;
 	
@@ -19,7 +23,12 @@ public class SearchOpeningInfo implements IOpeningInfo {
 		this.standardSearch = standardSearch;
 		this.searchText = standardSearch.searchText;
 	}
-	
+
+	public SearchOpeningInfo(TextSearch textSearch) {
+		this.textSearch = textSearch;
+		this.searchText = textSearch.searchText;
+	}
+
 	public SearchOpeningInfo(ArtistSearch artistSearch) {
 		this.artistSearch = artistSearch;
 		this.searchText = artistSearch.searchText;
@@ -46,18 +55,6 @@ public class SearchOpeningInfo implements IOpeningInfo {
 	public CollectionEditorType getEditorType() {
 		return CollectionEditorType.SEARCH;
 	}
-	
-	public StandardSearch getStandardSearch() {
-		return standardSearch;
-	}
-
-	public ArtistSearch getArtistSearch() {
-		return artistSearch;
-	}
-
-	public MediumSearch getMediumSearch() {
-		return mediumSearch;
-	}
 
 	public static class StandardSearch {
 		public final AudioSearchQuery query;
@@ -79,6 +76,12 @@ public class SearchOpeningInfo implements IOpeningInfo {
 			this.searchText = sb.toString();
 		}
 		
+	}
+	
+	@RequiredArgsConstructor
+	public static class TextSearch {
+		public final String searchText;
+		public final AudioAttribute attribute;
 	}
 	
 	public static class ArtistSearch {

@@ -10,6 +10,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
+import de.kobich.audiosolutions.core.service.AudioException;
 import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.frontend.common.FileDescriptorConverter;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
@@ -19,6 +20,7 @@ import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor.Coll
 import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo.ArtistSearch;
 import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo.MediumSearch;
 import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo.StandardSearch;
+import de.kobich.audiosolutions.frontend.common.ui.editor.SearchOpeningInfo.TextSearch;
 import de.kobich.commons.converter.ConverterUtils;
 import de.kobich.component.file.FileDescriptor;
 import de.kobich.component.file.FileException;
@@ -203,14 +205,24 @@ public class CollectionEditorUpdateManager {
 
 	/**
 	 * Runs the search again
+	 * @throws AudioException 
 	 */
-	private LayoutDelta doSearch(ActionType actionType) {
+	private LayoutDelta doSearch(ActionType actionType) throws AudioException {
 		SearchOpeningInfo openingInfo = this.editor.getFileCollection().getOpeningInfo(SearchOpeningInfo.class);
 		if (openingInfo.getStandardSearch() != null) {
 			StandardSearch search = openingInfo.getStandardSearch();
 
 			AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
 			Set<FileDescriptor> newFileDescriptors = searchService.search(search.query, null);
+
+			CollectionEditorDelta collectionDelta = createEditorDelta(actionType, newFileDescriptors, null);
+			return this.model.updateModel(collectionDelta);
+		}
+		else if (openingInfo.getTextSearch() != null) {
+			TextSearch search = openingInfo.getTextSearch();
+			
+			AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
+			Set<FileDescriptor> newFileDescriptors = searchService.searchByText(search.searchText, search.attribute, null);
 
 			CollectionEditorDelta collectionDelta = createEditorDelta(actionType, newFileDescriptors, null);
 			return this.model.updateModel(collectionDelta);
