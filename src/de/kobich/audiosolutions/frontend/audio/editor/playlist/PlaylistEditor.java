@@ -102,7 +102,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 			this.mementoItem = MementoUtils.getMementoItemToSave(dialogSettings, ID);
 
 			this.playlist = playlistInput.getEditablePlaylist();
-			this.playlist.getSupport().addPropertyChangeListener(this);
+			this.playlist.getPropertyChangeSupport().addPropertyChangeListener(this);
 			this.eventListener = new PlaylistEditorEventListener(this);
 			this.eventListener.register();
 			this.layoutManager = new EditorLayoutManager(this, mementoItem);
@@ -269,7 +269,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 
 	@Override
 	public void dispose() {
-		this.playlist.getSupport().removePropertyChangeListener(this);
+		this.playlist.getPropertyChangeSupport().removePropertyChangeListener(this);
 		this.eventListener.deregister();
 		toolkit.dispose();
 		form.dispose();
