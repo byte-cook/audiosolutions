@@ -320,7 +320,7 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 	private Optional<Long> getAlbumId(FileDescriptor fileDescriptor) {
 		AudioData audioData = fileDescriptor.getMetaDataOptional(AudioData.class).orElse(null);
 		if (audioData != null) {
-			return audioData.getAlbumIdentifier().map(AlbumIdentity::getPersistentId).get();
+			return audioData.getAlbumIdentifier().flatMap(AlbumIdentity::getPersistentId);
 		}
 		return Optional.empty();
 	}
