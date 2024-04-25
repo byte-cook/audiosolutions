@@ -22,7 +22,6 @@ import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
 import de.kobich.audiosolutions.frontend.common.ui.QueryTextDialog;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
-import de.kobich.audiosolutions.frontend.file.view.rename.model.RenameFileDescriptor;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
 import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
 import de.kobich.component.file.DefaultFileDescriptorComparator;
@@ -30,6 +29,7 @@ import de.kobich.component.file.FileDescriptor;
 import de.kobich.component.file.descriptor.FileDescriptorResult;
 import de.kobich.component.file.descriptor.FileDescriptorService;
 import de.kobich.component.file.descriptor.IFileDescriptorRenameable;
+import de.kobich.component.file.descriptor.RenameFileDescriptor;
 
 /**
  * Action to rename file descriptors.

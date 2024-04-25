@@ -13,8 +13,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.kobich.audiosolutions.core.service.descriptor.RenameFileDescriptorAttributeType;
 import de.kobich.audiosolutions.frontend.common.util.DecoratorUtils;
-import de.kobich.audiosolutions.frontend.file.view.rename.model.RenameFileDescriptorAttributeType;
 import de.kobich.commons.misc.rename.rule.AttributeRenameRule;
 import de.kobich.commons.misc.rename.rule.IRenameRule;
 

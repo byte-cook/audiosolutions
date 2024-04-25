@@ -8,7 +8,7 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 
-import de.kobich.audiosolutions.frontend.file.view.rename.model.RenameFileDescriptorAttributeType;
+import de.kobich.audiosolutions.core.service.descriptor.RenameFileDescriptorAttributeType;
 
 public class AttributeContentProposalProvider extends SimpleContentProposalProvider {
 	private List<String> variableNames;

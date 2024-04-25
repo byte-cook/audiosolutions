@@ -6,8 +6,8 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesView;
-import de.kobich.audiosolutions.frontend.file.view.rename.model.RenameFileDescriptor;
 import de.kobich.commons.ui.jface.table.ViewerColumn;
+import de.kobich.component.file.descriptor.RenameFileDescriptor;
 
 /**
  * Label provider for renaming files view.

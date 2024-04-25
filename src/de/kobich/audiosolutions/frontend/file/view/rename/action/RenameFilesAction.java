@@ -23,7 +23,6 @@ import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesView;
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesViewSourceProvider;
 import de.kobich.audiosolutions.frontend.file.view.rename.model.FileModel;
-import de.kobich.audiosolutions.frontend.file.view.rename.model.RenameFileDescriptor;
 import de.kobich.commons.misc.rename.rule.IRenameRule;
 import de.kobich.commons.monitor.progress.IServiceProgressMonitor;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
@@ -32,6 +31,7 @@ import de.kobich.commons.ui.jface.StatusLineUtils;
 import de.kobich.component.file.FileDescriptor;
 import de.kobich.component.file.descriptor.FileDescriptorResult;
 import de.kobich.component.file.descriptor.FileDescriptorService;
+import de.kobich.component.file.descriptor.RenameFileDescriptor;
 
 /**
  * Action to rename files.

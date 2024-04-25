@@ -3,26 +3,27 @@ package de.kobich.audiosolutions.frontend.file.view.rename.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import de.kobich.audiosolutions.core.AudioSolutions;
-import de.kobich.audiosolutions.core.service.mp3.id3.IFileID3TagService;
+import javax.annotation.Nullable;
+
 import de.kobich.component.file.FileDescriptor;
+import de.kobich.component.file.descriptor.IRenameAttributeProvider;
+import de.kobich.component.file.descriptor.RenameFileDescriptor;
+import lombok.Getter;
+import lombok.Setter;
 
 
 /**
  * Model for renaming files view.
  */
 public class FileModel {
-	private Set<RenameFileDescriptor> renameables;
+	@Getter
+	private final Set<RenameFileDescriptor> renameables;
+	@Setter
+	@Nullable
+	private IRenameAttributeProvider attributeProvider;
 	
 	public FileModel() {
 		this.renameables = new HashSet<RenameFileDescriptor>();
-	}
-	
-	/**
-	 * @return the selectedFileProviders
-	 */
-	public Set<RenameFileDescriptor> getRenameables() {
-		return renameables;
 	}
 	
 	/**
@@ -30,15 +31,11 @@ public class FileModel {
 	 * @param file
 	 */
 	public void addFile(FileDescriptor fileDescriptor) {
-		IFileID3TagService id3TagService = AudioSolutions.getService(IFileID3TagService.JAUDIO_TAGGER, IFileID3TagService.class);
-		RenameAttributeProvider attributeProvider = new RenameAttributeProvider(fileDescriptor, id3TagService);
 		RenameFileDescriptor renameable = new RenameFileDescriptor(fileDescriptor, attributeProvider);
 		renameables.add(renameable);
 	}
 	
 	public void removeFile(FileDescriptor fileDescriptor) {
-		IFileID3TagService id3TagService = AudioSolutions.getService(IFileID3TagService.JAUDIO_TAGGER, IFileID3TagService.class);
-		RenameAttributeProvider attributeProvider = new RenameAttributeProvider(fileDescriptor, id3TagService);
 		RenameFileDescriptor renameable = new RenameFileDescriptor(fileDescriptor, attributeProvider);
 		renameables.remove(renameable);
 	}

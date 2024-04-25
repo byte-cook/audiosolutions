@@ -14,11 +14,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesView;
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesViewSourceProvider;
-import de.kobich.audiosolutions.frontend.file.view.rename.model.RenameFileDescriptor;
 import de.kobich.commons.misc.rename.Renamer;
 import de.kobich.commons.misc.rename.rule.IRenameRule;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
 import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
+import de.kobich.component.file.descriptor.RenameFileDescriptor;
 
 /**
  * Action to rename files.

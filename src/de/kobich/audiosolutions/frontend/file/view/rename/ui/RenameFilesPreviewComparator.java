@@ -5,9 +5,9 @@ import java.util.Comparator;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 
-import de.kobich.audiosolutions.frontend.file.view.rename.model.RenameFileDescriptor;
 import de.kobich.commons.misc.rename.DefaultRenameableComparator;
 import de.kobich.commons.misc.rename.IRenameable;
+import de.kobich.component.file.descriptor.RenameFileDescriptor;
 
 /**
  * Preview files comparator.
