@@ -122,10 +122,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			// SourceProvider
 			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
 			window.getActivePage().addPartListener(sourceProvider);
-			SelectionSupport.INSTANCE.addSelectionChangedListener(sourceProvider);
+			SelectionSupport.INSTANCE.addPostSelectionChangedListener(sourceProvider);
 			EventSupport.INSTANCE.addListener(sourceProvider);
 			// StatusLineEventListener
-			SelectionSupport.INSTANCE.addSelectionChangedListener(StatusLineEventListener.INSTANCE);
+			SelectionSupport.INSTANCE.addPostSelectionChangedListener(StatusLineEventListener.INSTANCE);
 		}
 		
 		@Override
@@ -134,10 +134,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 			// SourceProvider
 			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
-			SelectionSupport.INSTANCE.removeSelectionChangedListener(sourceProvider);
+			SelectionSupport.INSTANCE.removePostSelectionChangedListener(sourceProvider);
 			EventSupport.INSTANCE.removeListener(sourceProvider);
 			// StatusLineEventListener
-			SelectionSupport.INSTANCE.removeSelectionChangedListener(StatusLineEventListener.INSTANCE);
+			SelectionSupport.INSTANCE.removePostSelectionChangedListener(StatusLineEventListener.INSTANCE);
 		}
 		
 		@Override

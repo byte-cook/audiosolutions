@@ -19,6 +19,7 @@ import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.search.AudioSearchEditor;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.FileCollectionEditor;
 import de.kobich.commons.ListenerList;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Manages the selection of several collection editors and informs interested listeners about selection changes.
@@ -35,7 +36,6 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	public static final SelectionSupport INSTANCE = new SelectionSupport();
 	private final Map<IEditorPart, PartSelectionDelegator> editorDelegator;
 	private final Map<IEditorPart, PartSelectionDelegator> editorPostDelegator;
-	private final ListenerList<ISelectionChangedListener> selectionChangedListeners;
 	private final ListenerList<ISelectionChangedListener> postSelectionChangedListeners;
 	private final Map<IEditorPart, Long> editorAccessTime;
 	private IEditorPart activeEditor;
@@ -44,7 +44,6 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	private SelectionSupport() {
 		this.editorDelegator = new HashMap<>();
 		this.editorPostDelegator = new HashMap<>();
-		this.selectionChangedListeners = new ListenerList<>();
 		this.postSelectionChangedListeners = new ListenerList<>();
 		this.editorAccessTime = new HashMap<>();
 	}
@@ -54,14 +53,9 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	 * @param editor
 	 * @param selectionProvider
 	 */
-	public void registerEditor(IEditorPart editor, ISelectionProvider selectionProvider) {
-		if (!editorDelegator.containsKey(editor)) {
-			PartSelectionDelegator delegator = new PartSelectionDelegator(editor, this, false);
-			selectionProvider.addSelectionChangedListener(delegator);
-			editorDelegator.put(editor, delegator);
-		}
-		if (!editorPostDelegator.containsKey(editor) && selectionProvider instanceof IPostSelectionProvider) {
-			PartSelectionDelegator postDelegator = new PartSelectionDelegator(editor, this, true);
+	public void registerEditor(IEditorPart editor, IPostSelectionProvider selectionProvider) {
+		if (!editorPostDelegator.containsKey(editor)) {
+			PartSelectionDelegator postDelegator = new PartSelectionDelegator(editor, this);
 			((IPostSelectionProvider) selectionProvider).addPostSelectionChangedListener(postDelegator);
 			editorPostDelegator.put(editor, postDelegator);
 		}
@@ -116,12 +110,10 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 
 	@Override
 	public void addSelectionChangedListener(ISelectionChangedListener listener) {
-		this.selectionChangedListeners.addListener(listener);
 	}
 
 	@Override
 	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-		this.selectionChangedListeners.removeListener(listener);
 	}
 
 	@Override
@@ -195,7 +187,7 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 		}
 		if (editor == null) {
 			this.activeEditor = null;
-			fireSelectionChanged(new SelectionChangedEvent(this, new StructuredSelection()));
+			firePostSelectionChanged(new SelectionChangedEvent(this, new StructuredSelection()));
 			return;
 		}
 		
@@ -205,15 +197,6 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 		logger.info("Active editor: " + activeEditor.getTitle());
 		
 		// send last selection event of the new active editor
-		if (this.editorDelegator.containsKey(this.activeEditor)) {
-			PartSelectionDelegator delegator = this.editorDelegator.get(this.activeEditor);
-			if (delegator.lastEvent != null) {
-				fireSelectionChanged(delegator.lastEvent);
-			}
-			else {
-				fireSelectionChanged(new SelectionChangedEvent(this, StructuredSelection.EMPTY));
-			}
-		}
 		if (this.editorPostDelegator.containsKey(this.activeEditor)) {
 			PartSelectionDelegator postDelegator = this.editorPostDelegator.get(this.activeEditor);
 			if (postDelegator.lastEvent != null) {
@@ -252,15 +235,6 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	 * Informs about selection changes
 	 * @param event
 	 */
-	private void fireSelectionChanged(SelectionChangedEvent event) {
-		// update selection
-		setSelection(event.getSelection());
-		
-		// inform listeners
-		for (ISelectionChangedListener l : selectionChangedListeners) {
-			l.selectionChanged(event);
-		}
-	}
 	private void firePostSelectionChanged(SelectionChangedEvent event) {
 		// update selection
 		setSelection(event.getSelection());
@@ -274,28 +248,17 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	/**
 	 * Helper class to assign a selection event to one unique editor.
 	 */
+	@RequiredArgsConstructor
 	private static class PartSelectionDelegator implements ISelectionChangedListener {
 		private final IEditorPart editor;
 		private final SelectionSupport selectionManager;
-		private final boolean postDelegator;
 		private SelectionChangedEvent lastEvent;
 		
-		public PartSelectionDelegator(IEditorPart editor, SelectionSupport selectionManager, boolean postDelegator) {
-			this.editor = editor;
-			this.selectionManager = selectionManager;
-			this.postDelegator = postDelegator;
-		}
-
 		@Override
 		public void selectionChanged(SelectionChangedEvent event) {
 			this.lastEvent = event;
 			if (selectionManager.activeEditor != null && selectionManager.activeEditor.equals(this.editor)) {
-				if (postDelegator) {
-					selectionManager.firePostSelectionChanged(event);
-				}
-				else {
-					selectionManager.fireSelectionChanged(event);
-				}
+				selectionManager.firePostSelectionChanged(event);
 			}
 		}
 	}
