@@ -236,7 +236,6 @@ public class FileCollectionEditor extends AbstractFormEditor implements ICollect
 		ICollectionEditorLayout hierarchicalLayout = new FileHierarchicalLayout(this, labelProvider);
 		editorLayoutManager.addLayout(LayoutType.HIERARCHICAL, hierarchicalLayout);
 		editorLayoutManager.addLayout(LayoutType.ALBUM, hierarchicalLayout);
-		editorLayoutManager.addLayout(LayoutType.ARTIST, hierarchicalLayout);
 
 		// composite
 		switchComposite = toolkit.createComposite(parent);

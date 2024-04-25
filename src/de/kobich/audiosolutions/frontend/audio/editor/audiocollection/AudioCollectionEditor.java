@@ -38,7 +38,6 @@ import de.kobich.audiosolutions.core.service.persist.AudioPersistenceService;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.layout.AudioAlbumLayout;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.layout.AudioArtistLayout;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.layout.AudioFlatLayout;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.layout.AudioHierarchicalLayout;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AudioCollectionModel;
@@ -289,7 +288,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		editorLayoutManager.addLayout(LayoutType.FLAT, new AudioFlatLayout(this, labelProvider));
 		editorLayoutManager.addLayout(LayoutType.HIERARCHICAL, new AudioHierarchicalLayout(this, labelProvider));
 		editorLayoutManager.addLayout(LayoutType.ALBUM, new AudioAlbumLayout(this, labelProvider));
-		editorLayoutManager.addLayout(LayoutType.ARTIST, new AudioArtistLayout(this, labelProvider));
 
 		// composite
 		switchComposite = toolkit.createComposite(parent);

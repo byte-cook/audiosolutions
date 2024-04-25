@@ -13,7 +13,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.ArtistTreeNode;
 import de.kobich.audiosolutions.frontend.common.ui.AbstractTableTreeNode;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutDelta.AddItem;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutDelta.ReplaceItem;
@@ -52,9 +51,6 @@ public abstract class AbstractCollectionEditorLayout implements ICollectionEdito
 			Object parent = contentProvider.getParent(node);
 			if (parent instanceof RelativePathTreeNode) {
 				parentNode = (RelativePathTreeNode) contentProvider.getParent(node);
-			}
-			else if (parent instanceof ArtistTreeNode) {
-				parentNode = (ArtistTreeNode) contentProvider.getParent(node);
 			}
 			else if (parent instanceof AlbumTreeNode) {
 				parentNode = (AlbumTreeNode) contentProvider.getParent(node);

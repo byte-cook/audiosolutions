@@ -4,7 +4,6 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.ArtistTreeNode;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AudioCollectionModel;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutType;
@@ -30,10 +29,6 @@ public class AudioCollectionContentProvider implements ITreeContentProvider {
 			AlbumTreeNode albumNode = (AlbumTreeNode) input;
 			return albumNode.getChildren().toArray();
 		}
-		else if (input instanceof ArtistTreeNode) {
-			ArtistTreeNode artistNode = (ArtistTreeNode) input;
-			return artistNode.getChildren().toArray();
-		}
 		else if (input instanceof FileDescriptorTreeNode) {
 			FileDescriptorTreeNode pathNode = (FileDescriptorTreeNode) input;
 			return pathNode.getChildren().toArray();
@@ -47,9 +42,6 @@ public class AudioCollectionContentProvider implements ITreeContentProvider {
 			return model;
 		}
 		else if (input instanceof AlbumTreeNode) {
-			return model;
-		}
-		else if (input instanceof ArtistTreeNode) {
 			return model;
 		}
 		else if (input instanceof FileDescriptorTreeNode) {
@@ -68,13 +60,6 @@ public class AudioCollectionContentProvider implements ITreeContentProvider {
 				for (AlbumTreeNode albumNode : model.getAlbums()) {
 					if (albumNode.getChildren().contains(node)) {
 						return albumNode;
-					}
-				}
-				break;
-			case ARTIST:
-				for (ArtistTreeNode artistNode : model.getArtists()) {
-					if (artistNode.getChildren().contains(node)) {
-						return artistNode;
 					}
 				}
 				break;
@@ -100,8 +85,6 @@ public class AudioCollectionContentProvider implements ITreeContentProvider {
 				return model.getPaths().toArray();
 			case ALBUM:
 				return model.getAlbums().toArray();
-			case ARTIST:
-				return model.getArtists().toArray();
 			default:
 				throw new IllegalStateException("Layout unknown");
 			}

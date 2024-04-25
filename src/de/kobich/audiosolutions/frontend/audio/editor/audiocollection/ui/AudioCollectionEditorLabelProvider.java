@@ -14,7 +14,6 @@ import de.kobich.audiosolutions.core.service.AudioState;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.ArtistTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
 import de.kobich.component.file.FileDescriptor;
@@ -23,7 +22,6 @@ import de.kobich.component.file.IMetaData;
 public class AudioCollectionEditorLabelProvider extends LabelProvider implements ITableLabelProvider {
 	private final boolean imageSupport;
 	private Image folderImg;
-	private Image artistImg;
 	private Image albumImg;
 	private Image audioFileNewWarnImg;
 	private Image audioFileNewImg;
@@ -38,7 +36,6 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 		this.imageSupport = imageSupport;
 		if (imageSupport) {
 			this.folderImg = Activator.getDefault().getImage(ImageKey.FOLDER);
-			this.artistImg = Activator.getDefault().getImage(ImageKey.ARTIST);
 			this.albumImg = Activator.getDefault().getImage(ImageKey.ALBUM);
 			this.audioFileNewWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_NEW_WARN);
 			this.audioFileNewImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_NEW);
@@ -63,9 +60,6 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 			}
 			else if (element instanceof AlbumTreeNode) {
 				return albumImg;
-			}
-			else if (element instanceof ArtistTreeNode) {
-				return artistImg;
 			}
 			else if (element instanceof FileDescriptorTreeNode) {
 				FileDescriptorTreeNode audioFile = (FileDescriptorTreeNode) element;
@@ -121,15 +115,6 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 				case ALBUM_PUBLICATION:
 					Date publicationDate = albumNode.getAlbumPublication().orElse(null);
 					return AudioAttributeUtils.convert2String(publicationDate);
-				default:
-					return "";
-			}
-		}
-		else if (element instanceof ArtistTreeNode) {
-			ArtistTreeNode artistNode = (ArtistTreeNode) element;
-			switch (column) {
-				case FILE_NAME:
-					return artistNode.getContent();
 				default:
 					return "";
 			}

@@ -901,17 +901,6 @@
                        value="album">
                  </parameter>
               </command>
-              <command
-                    commandId="de.kobich.audiosolutions.commands.setAudioCollectionEditorLayout"
-                    icon="icons/audio/layout-artist.png"
-                    label="Artist"
-                    style="radio"
-                    tooltip="Artist Layout">
-                 <parameter
-                       name="org.eclipse.ui.commands.radioStateParameter"
-                       value="artist">
-                 </parameter>
-              </command>
            </toolbar>
            <toolbar
                  id="de.kobich.toolbar.audiodata"

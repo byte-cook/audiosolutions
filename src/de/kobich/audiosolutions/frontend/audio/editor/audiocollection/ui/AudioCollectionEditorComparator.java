@@ -8,7 +8,6 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import de.kobich.audiosolutions.core.service.AudioAttribute;
 import de.kobich.audiosolutions.core.service.AudioData;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.ArtistTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
 import de.kobich.commons.collections.NaturalSortStringComparator;
@@ -69,9 +68,6 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 		if (element instanceof AlbumTreeNode) {
 			return 3;
 		}
-		if (element instanceof ArtistTreeNode) {
-			return 4;
-		}
 		return 10;
 	}
 
@@ -130,20 +126,6 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 			// by default, filter by name
 			if (rc == 0) {
 				rc = file1.getLabel().compareToIgnoreCase(file2.getLabel());
-			}
-		}
-		else if (e1 instanceof ArtistTreeNode && e2 instanceof ArtistTreeNode) {
-			ArtistTreeNode file1 = (ArtistTreeNode) e1;
-			ArtistTreeNode file2 = (ArtistTreeNode) e2;
-			
-			// Determine which column and do the appropriate sort
-			switch (column) {
-				case FILE_NAME:
-					rc = file1.getContent().compareToIgnoreCase(file2.getContent());
-					break;
-				default:
-					rc = 0;
-					break;
 			}
 		}
 		else if (e1 instanceof FileDescriptorTreeNode && e2 instanceof FileDescriptorTreeNode) {

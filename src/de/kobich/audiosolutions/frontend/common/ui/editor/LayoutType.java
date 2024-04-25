@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum LayoutType {
-	FLAT("Flat Layout"), HIERARCHICAL("Hierarchical Layout"), ALBUM("Album Layout"), ARTIST("Artist Layout");
+	FLAT("Flat Layout"), HIERARCHICAL("Hierarchical Layout"), ALBUM("Album Layout");
 	
 	@Getter
 	private final String label;
