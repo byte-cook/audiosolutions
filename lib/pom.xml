@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>de.kobich</groupId>
 			<artifactId>commons-ui-jface</artifactId>
-			<version>9.1</version>
+			<version>10.0</version>
 			<exclusions>
 				<exclusion>
 				    <groupId>org.eclipse.platform</groupId>
