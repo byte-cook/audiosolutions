@@ -58,7 +58,7 @@ public class AudioPlayLabelProvider implements ITableLabelProvider, ITableColorP
 	public Color getForeground(Object element, int columnIndex) {
 		if (element instanceof EditablePlaylistFile file) {
 			File currentFile = view.getPlaylist().getCurrentFile().orElse(null);
-			if (view.getProvider().isPlaying() && currentFile != null && currentFile.equals(file.getFile())) {
+			if (currentFile != null && currentFile.equals(file.getFile())) {
 				return Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_BACKGROUND); 
 			}
 			else if (!file.getFile().exists()) {
