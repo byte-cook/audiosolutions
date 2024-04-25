@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -43,6 +44,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
+import de.kobich.audiosolutions.core.service.AudioAttribute;
 import de.kobich.audiosolutions.core.service.persist.domain.Album;
 import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 import de.kobich.audiosolutions.core.service.persist.domain.Track;
@@ -51,18 +53,21 @@ import de.kobich.audiosolutions.core.service.search.AudioTextSearchService;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.search.action.DoSearchHyperlinkAdapter;
+import de.kobich.audiosolutions.frontend.audio.editor.search.action.OpenAllSelectionAdapter;
 import de.kobich.audiosolutions.frontend.audio.editor.search.action.OpenMenuHyperlinkAdapter;
 import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
 import de.kobich.audiosolutions.frontend.common.ui.editor.AbstractScrolledFormEditor;
 import de.kobich.audiosolutions.frontend.common.util.DecoratorUtils;
+import de.kobich.commons.type.Wrapper;
 import de.kobich.commons.ui.DelayListener;
-import de.kobich.commons.ui.jface.JFaceThreadRunner;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.JFaceUtils;
 import de.kobich.commons.ui.jface.listener.DummySelectionProvider;
 
 public class AudioSearchEditor extends AbstractScrolledFormEditor {
 	public static final String ID = "de.kobich.audiosolutions.editor.audioSearchEditor";
 	private static final Logger logger = Logger.getLogger(AudioSearchEditor.class);
+	private static final int DEFAULT_MAX_RESULTS = 20;
 	private AudioSearchEditorEventListener eventListener;
 	private FormToolkit toolkit;
 	private Form form;
@@ -155,48 +160,6 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		startSearch();
 	}
 	
-	public void startSearch() {
-		Display.getDefault().asyncExec(() -> {
-			// use an id to make sure that only the results of the last jobs are visible 
-			currentSearchingId = UUID.randomUUID();
-			setResultsAsLoading();
-			
-			SearchArtistRunner artistRunner = new SearchArtistRunner(this, searchText.getText(), currentSearchingId);
-			artistRunner.runBackgroundJob(0, false, true, null);
-			SearchAlbumRunner albumRunner = new SearchAlbumRunner(AudioSearchEditor.this, searchText.getText(), currentSearchingId);
-			albumRunner.runBackgroundJob(0, false, true, null);
-			SearchTrackRunner trackRunner = new SearchTrackRunner(AudioSearchEditor.this, searchText.getText(), currentSearchingId);
-			trackRunner.runBackgroundJob(0, false, true, null);
-		});
-	}
-	
-	private void setResultsAsLoading() {
-		// artists
-		for (Control c : artistsComposite.getChildren()) {
-			c.dispose();
-		}
-		StyledText artistLoading = AudioSearchEditor.this.createStyledText(artistsComposite, false);
-		artistLoading.setText("Searching for artists...");
-		artistsComposite.layout();
-		
-		// albums
-		for (Control c : albumsComposite.getChildren()) {
-			c.dispose();
-		}
-		StyledText albumLoading = AudioSearchEditor.this.createStyledText(albumsComposite, false);
-		albumLoading.setText("Searching for albums...");
-		albumsComposite.layout();
-		
-		// tracks
-		for (Control c : tracksComposite.getChildren()) {
-			c.dispose();
-		}
-		StyledText trackLoading = AudioSearchEditor.this.createStyledText(tracksComposite, false);
-		trackLoading.setText("Searching for tracks...");
-		tracksComposite.layout();
-		scrolledForm.reflow(true);
-	}
-	
 	@Override
 	public void setFocus() {
 		searchText.setFocus();
@@ -233,41 +196,63 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		super.dispose();
 	}
 	
-	private static class SearchArtistRunner extends JFaceThreadRunner {
-		private final AudioSearchEditor editor;
-		private final String searchText;
-		private final UUID id;
-		private List<Artist> artists;
-		
-		public SearchArtistRunner(AudioSearchEditor editor, String searchText, UUID id) {
-			super("Searching for artists", editor.getSite().getShell(), List.of(RunningState.WORKER_1, RunningState.UI_1));
-			this.editor = editor;
-			this.searchText = searchText;
-			this.id = id;
-		}
-
-		@Override
-		protected void run(RunningState state) throws Exception {
-			switch (state) {
-			case WORKER_1:
-				AudioTextSearchService searchService = AudioSolutions.getService(AudioTextSearchService.class);
-				artists = searchService.searchArtists(searchText, 20, null);
-				break;
-			case UI_1:
-				this.editor.updateArtists(artists, this.id);
-				break;
-			case UI_ERROR:
-				logger.info(super.getException().getMessage(), super.getException());
-				this.editor.updateArtists(List.of(), this.id);
-				break;
-			default:
-				break;
-			}
-		}
-		
+	public void startSearch() {
+		Display.getDefault().asyncExec(() -> {
+			// use an id to make sure that only the results of the last jobs are visible 
+			currentSearchingId = UUID.randomUUID();
+			setResultsAsLoading();
+			
+			startArtistJob();
+			startAlbumJob();
+			startTrackJob();
+		});
 	}
-
-	private void updateArtists(final List<Artist> artists, UUID id) {
+	
+	private void setResultsAsLoading() {
+		// artists
+		for (Control c : artistsComposite.getChildren()) {
+			c.dispose();
+		}
+		StyledText artistLoading = AudioSearchEditor.this.createStyledText(artistsComposite, false);
+		artistLoading.setText("Searching for artists...");
+		artistsComposite.layout();
+		
+		// albums
+		for (Control c : albumsComposite.getChildren()) {
+			c.dispose();
+		}
+		StyledText albumLoading = AudioSearchEditor.this.createStyledText(albumsComposite, false);
+		albumLoading.setText("Searching for albums...");
+		albumsComposite.layout();
+		
+		// tracks
+		for (Control c : tracksComposite.getChildren()) {
+			c.dispose();
+		}
+		StyledText trackLoading = AudioSearchEditor.this.createStyledText(tracksComposite, false);
+		trackLoading.setText("Searching for tracks...");
+		tracksComposite.layout();
+		scrolledForm.reflow(true);
+	}
+	
+	private void startArtistJob() {
+		final String search = searchText.getText();
+		final Wrapper<List<Artist>> ARTISTS = Wrapper.empty();
+		JFaceExec.builder(getSite().getShell(), "Searching for artists")
+			.worker(ctx -> {
+				AudioTextSearchService searchService = AudioSolutions.getService(AudioTextSearchService.class);
+				ARTISTS.set(searchService.searchArtists(search, DEFAULT_MAX_RESULTS));
+			})
+			.ui(ctx -> updateArtists(ARTISTS.get(), this.currentSearchingId, search))
+			.exceptionally((ctx, exc) -> {
+				logger.info(exc.getMessage(), exc);
+				updateArtists(List.of(), this.currentSearchingId, search);
+				ctx.setCancelled(true);
+			})
+			.runBackgroundJob(0, false, true, null);
+	}
+	
+	private void updateArtists(final List<Artist> artists, UUID id, final String searchText) {
 		if (!id.equals(currentSearchingId)) {
 			return;
 		}
@@ -277,11 +262,11 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			c.dispose();
 		}
 		for (Artist artist : artists) {
-			ImageHyperlink menuLink = AudioSearchEditor.this.toolkit.createImageHyperlink(artistsComposite, SWT.WRAP);
+			ImageHyperlink menuLink = this.toolkit.createImageHyperlink(artistsComposite, SWT.WRAP);
 			menuLink.setImage(Activator.getDefault().getImage(ImageKey.OPEN_MENU));
 			menuLink.addHyperlinkListener(new OpenMenuHyperlinkAdapter(menuLink.getShell(), getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
 
-			ImageHyperlink link = AudioSearchEditor.this.toolkit.createImageHyperlink(artistsComposite, SWT.WRAP);
+			ImageHyperlink link = this.toolkit.createImageHyperlink(artistsComposite, SWT.WRAP);
 			link.setText(artist.getName());
 			link.setImage(Activator.getDefault().getImage(ImageKey.ARTIST));
 			link.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().artistId(artist.getId()).artistName(artist.getName()).build()));
@@ -290,6 +275,13 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			Label artistDescriptionText = new Label(artistsComposite, SWT.NONE);
 			artistDescriptionText.setText(StringUtils.defaultString(artist.getDescription()));
 		}
+		if (!artists.isEmpty() && StringUtils.isNoneBlank(searchText)) {
+			this.toolkit.createLabel(artistsComposite, "");
+			
+			Button openAllButton = this.toolkit.createButton(artistsComposite, "Open all artists", SWT.PUSH);
+			openAllButton.addSelectionListener(new OpenAllSelectionAdapter(getSite().getWorkbenchWindow(), searchText, AudioAttribute.ARTIST));
+		}
+		
 		if (artistsComposite.getChildren().length == 0) {
 			StyledText noResult = AudioSearchEditor.this.createStyledText(artistsComposite, false);
 			noResult.setText("No artist found");
@@ -298,40 +290,24 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		scrolledForm.reflow(true);
 	}
 	
-	private static class SearchAlbumRunner extends JFaceThreadRunner {
-		private final AudioSearchEditor editor;
-		private final String searchText;
-		private final UUID id;
-		private List<Album> albums;
-		
-		public SearchAlbumRunner(AudioSearchEditor editor, String searchText, UUID id) {
-			super("Searching for albums", editor.getSite().getShell(), List.of(RunningState.WORKER_1, RunningState.UI_1));
-			this.editor = editor;
-			this.searchText = searchText;
-			this.id = id;
-		}
-
-		@Override
-		protected void run(RunningState state) throws Exception {
-			switch (state) {
-			case WORKER_1:
+	private void startAlbumJob() {
+		final String search = searchText.getText();
+		final Wrapper<List<Album>> ALBUMS = Wrapper.empty();
+		JFaceExec.builder(getSite().getShell(), "Searching for albums")
+			.worker(ctx -> {
 				AudioTextSearchService searchService = AudioSolutions.getService(AudioTextSearchService.class);
-				albums = searchService.searchAlbums(searchText, 20, null);
-				break;
-			case UI_1:
-				this.editor.updateAlbums(albums, this.id);
-				break;
-			case UI_ERROR:
-				logger.info(super.getException().getMessage(), super.getException());
-				this.editor.updateAlbums(List.of(), this.id);
-				break;
-			default:
-				break;
-			}
-		}
+				ALBUMS.set(searchService.searchAlbums(search, DEFAULT_MAX_RESULTS));
+			})
+			.ui(ctx -> updateAlbums(ALBUMS.get(), this.currentSearchingId, search))
+			.exceptionally((ctx, exc) -> {
+				logger.info(exc.getMessage(), exc);
+				updateAlbums(List.of(), this.currentSearchingId, search);
+				ctx.setCancelled(true);
+			})
+			.runBackgroundJob(0, false, true, null);
 	}
 
-	private void updateAlbums(final List<Album> albums, UUID id) {
+	private void updateAlbums(final List<Album> albums, UUID id, final String searchText) {
 		if (!id.equals(currentSearchingId)) {
 			return;
 		}
@@ -364,8 +340,14 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 
 			Hyperlink mediumLink = AudioSearchEditor.this.toolkit.createHyperlink(albumsComposite, album.getMedium().getName(), SWT.WRAP);
 			mediumLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().mediumId(album.getMedium().getId()).mediumName(album.getMedium().getName()).build()));
-
 		}
+		if (!albums.isEmpty() && StringUtils.isNoneBlank(searchText)) {
+			this.toolkit.createLabel(albumsComposite, "");
+			
+			Button openAllButton = this.toolkit.createButton(albumsComposite, "Open all albums", SWT.PUSH);
+			openAllButton.addSelectionListener(new OpenAllSelectionAdapter(getSite().getWorkbenchWindow(), searchText, AudioAttribute.ALBUM));
+		}
+		
 		if (albumsComposite.getChildren().length == 0) {
 			StyledText noResult = AudioSearchEditor.this.createStyledText(albumsComposite, false);
 			noResult.setText("No album found");
@@ -374,40 +356,24 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		scrolledForm.reflow(true);
 	}
 	
-	private static class SearchTrackRunner extends JFaceThreadRunner {
-		private final AudioSearchEditor editor;
-		private final String searchText;
-		private final UUID id;
-		private List<Track> tracks;
-		
-		public SearchTrackRunner(AudioSearchEditor editor, String searchText, UUID id) {
-			super("Searching for tracks", editor.getSite().getShell(), List.of(RunningState.WORKER_1, RunningState.UI_1));
-			this.editor = editor;
-			this.searchText = searchText;
-			this.id = id;
-		}
-
-		@Override
-		protected void run(RunningState state) throws Exception {
-			switch (state) {
-			case WORKER_1:
+	private void startTrackJob() {
+		final String search = searchText.getText();
+		final Wrapper<List<Track>> TRACKS = Wrapper.empty();
+		JFaceExec.builder(getSite().getShell(), "Searching for tracks")
+			.worker(ctx -> {
 				AudioTextSearchService searchService = AudioSolutions.getService(AudioTextSearchService.class);
-				tracks = searchService.searchTracks(searchText, 20, null);
-				break;
-			case UI_1:
-				this.editor.updateTracks(tracks, this.id);
-				break;
-			case UI_ERROR:
-				logger.info(super.getException().getMessage(), super.getException());
-				this.editor.updateTracks(List.of(), this.id);
-				break;
-			default:
-				break;
-			}
-		}
+				TRACKS.set(searchService.searchTracks(search, DEFAULT_MAX_RESULTS));
+			})
+			.ui(ctx -> updateTracks(TRACKS.get(), this.currentSearchingId, search))
+			.exceptionally((ctx, exc) -> {
+				logger.info(exc.getMessage(), exc);
+				updateTracks(List.of(), this.currentSearchingId, search);
+				ctx.setCancelled(true);
+			})
+			.runBackgroundJob(0, false, true, null);
 	}
 	
-	private void updateTracks(final List<Track> tracks, UUID id) {
+	private void updateTracks(final List<Track> tracks, UUID id, final String searchText) {
 		if (!id.equals(currentSearchingId)) {
 			return;
 		}
@@ -442,6 +408,13 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 			Hyperlink mediumLink = AudioSearchEditor.this.toolkit.createHyperlink(tracksComposite, track.getAlbum().getMedium().getName(), SWT.WRAP);
 			mediumLink.addHyperlinkListener(new DoSearchHyperlinkAdapter(getSite().getWorkbenchWindow(), AudioSearchQuery.builder().mediumId(track.getAlbum().getMedium().getId()).mediumName(track.getAlbum().getMedium().getName()).build()));
 		}
+		if (!tracks.isEmpty() && StringUtils.isNoneBlank(searchText)) {
+			this.toolkit.createLabel(tracksComposite, "");
+			
+			Button openAllButton = this.toolkit.createButton(tracksComposite, "Open all tracks", SWT.PUSH);
+			openAllButton.addSelectionListener(new OpenAllSelectionAdapter(getSite().getWorkbenchWindow(), searchText, AudioAttribute.TRACK));
+		}
+		
 		if (tracksComposite.getChildren().length == 0) {
 			StyledText noResult = AudioSearchEditor.this.createStyledText(tracksComposite, false);
 			noResult.setText("No track found");
