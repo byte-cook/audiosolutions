@@ -11,6 +11,7 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import de.kobich.audiosolutions.core.service.search.AudioSearchQuery;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
+import de.kobich.audiosolutions.frontend.audio.view.play.AudioPlayViewSourceProvider;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -30,10 +31,12 @@ public class OpenMenuHyperlinkAdapter extends HyperlinkAdapter {
 		playItem.addSelectionListener(new PlaySelectionAdapter(window, query));
 		
 		// play as next
-		MenuItem playAsNextItem = new MenuItem(menu, SWT.NONE);
-		playAsNextItem.setText("Play As Next");
-		playAsNextItem.setImage(Activator.getDefault().getImage(ImageKey.AUDIO_PLAY_AS_NEXT));
-		playAsNextItem.addSelectionListener(new AppendToPlayerSelectionAdapter(window, query, true));
+		if (AudioPlayViewSourceProvider.getInstance().isPlaying()) {
+			MenuItem playAsNextItem = new MenuItem(menu, SWT.NONE);
+			playAsNextItem.setText("Play As Next");
+			playAsNextItem.setImage(Activator.getDefault().getImage(ImageKey.AUDIO_PLAY_AS_NEXT));
+			playAsNextItem.addSelectionListener(new AppendToPlayerSelectionAdapter(window, query, true));
+		}
 		
 		// append to player
 		MenuItem appendToPlayerItem = new MenuItem(menu, SWT.NONE);
