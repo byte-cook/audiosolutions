@@ -19,7 +19,7 @@ public class ID3TagViewEventListener extends EventListenerAdapter {
 	private boolean visible;
 
 	public ID3TagViewEventListener(ID3TagView view) {
-		super(view, ListenerType.COLLECTION_EDITOR_SELECTION, ListenerType.SELECTION, ListenerType.PART);
+		super(view, ListenerType.COLLECTION_EDITOR_SELECTION, ListenerType.PART);
 		this.view = view;
 	}
 

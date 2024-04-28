@@ -22,7 +22,7 @@ public class AudioDescriptionViewEventListener extends EventListenerAdapter {
 	private boolean visible;
 
 	public AudioDescriptionViewEventListener(AudioDescriptionView view) {
-		super(view, ListenerType.COLLECTION_EDITOR_SELECTION, ListenerType.SELECTION, ListenerType.PART);
+		super(view, ListenerType.COLLECTION_EDITOR_SELECTION, ListenerType.PART);
 		this.view = view;
 	}
 

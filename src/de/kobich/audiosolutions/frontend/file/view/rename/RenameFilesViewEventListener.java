@@ -19,7 +19,7 @@ public class RenameFilesViewEventListener extends EventListenerAdapter {
 	private final RenameFilesPreviewListener previewListener;
 
 	public RenameFilesViewEventListener(RenameFilesView view, RenameFilesPreviewListener previewListener) {
-		super(view, ListenerType.COLLECTION_EDITOR_SELECTION, ListenerType.SELECTION, ListenerType.PART, ListenerType.UI_EVENT);
+		super(view, ListenerType.COLLECTION_EDITOR_SELECTION, ListenerType.PART, ListenerType.UI_EVENT);
 		this.view = view;
 		this.previewListener = previewListener;
 	}

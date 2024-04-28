@@ -19,7 +19,7 @@ import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
 
 public class EventListenerAdapter implements IPartListener2, ISelectionListener, ISelectionChangedListener, IUIEventListener {
 	public static enum ListenerType {
-		COLLECTION_EDITOR_SELECTION, SELECTION, PART, UI_EVENT
+		COLLECTION_EDITOR_SELECTION, PART, UI_EVENT
 	}
 	private final Set<ListenerType> eventTypes;
 	private final IWorkbenchPage page;
@@ -52,12 +52,6 @@ public class EventListenerAdapter implements IPartListener2, ISelectionListener,
 				
 				SelectionSupport.INSTANCE.addPostSelectionChangedListener(this);
 				break;
-			case SELECTION:
-				// Listeners registered in this way are notified when the selection in the active part is changed or when a different part is activated. Only selections within the active part are propagated. 
-				// -> only the active part will fire a selectionChanged event (via mouse click only)
-				// -> required to get an event if more than one editor is open
-//				page.addPostSelectionListener(this);
-				break;
 			case PART:
 				page.getWorkbenchWindow().getPartService().addPartListener(this);
 				break;
@@ -79,9 +73,6 @@ public class EventListenerAdapter implements IPartListener2, ISelectionListener,
 //				page.removePostSelectionListener(FileCollectionEditor.ID, this);
 				
 				SelectionSupport.INSTANCE.removePostSelectionChangedListener(this);
-				break;
-			case SELECTION:
-//				page.removePostSelectionListener(this);
 				break;
 			case PART:
 				page.getWorkbenchWindow().getPartService().removePartListener(this);
