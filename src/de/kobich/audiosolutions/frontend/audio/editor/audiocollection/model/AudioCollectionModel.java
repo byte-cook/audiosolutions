@@ -11,13 +11,13 @@ import javax.annotation.Nullable;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.AlbumIdentity;
-import de.kobich.audiosolutions.core.service.AudioAttribute;
 import de.kobich.audiosolutions.core.service.AudioData;
 import de.kobich.audiosolutions.core.service.persist.domain.Album;
 import de.kobich.audiosolutions.core.service.search.AudioSearchService;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.ui.AbstractTableTreeNode;
 import de.kobich.audiosolutions.frontend.common.ui.editor.CollectionEditorDelta;
+import de.kobich.audiosolutions.frontend.common.ui.editor.EditorLayoutManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditorModel;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutDelta;
@@ -32,54 +32,65 @@ import lombok.Getter;
 
 public class AudioCollectionModel implements ICollectionEditorModel {
 	private final AudioSearchService searchService;
-	private FileCollection fileCollection;
+	private final FileCollection fileCollection;
+	private final EditorLayoutManager layoutManager;
 	@Getter
-	private Set<RelativePathTreeNode> paths;
+	private final Set<FileDescriptorTreeNode> files;
 	@Getter
-	private Set<AlbumTreeNode> albums;
+	private final Set<RelativePathTreeNode> paths;
 	@Getter
-	private Set<FileDescriptorTreeNode> files;
+	private final Set<AlbumTreeNode> albums;
 
-	public AudioCollectionModel(FileCollection fileCollection) {
+	public AudioCollectionModel(FileCollection fileCollection, EditorLayoutManager layoutManager) {
 		this.searchService = AudioSolutions.getService(AudioSearchService.class);
 		this.fileCollection = fileCollection;
+		this.layoutManager = layoutManager;
 		this.files = new HashSet<FileDescriptorTreeNode>();
-		DimensionMap2D<String, FileDescriptorTreeNode> path2Files = new DimensionMap2D<>(DimensionType.LIST);
-		DimensionMap2D<Long, FileDescriptorTreeNode> album2Files = new DimensionMap2D<>(DimensionType.LIST);
-		DimensionMap2D<String, FileDescriptorTreeNode> artist2Files = new DimensionMap2D<>(DimensionType.LIST);
-		for (FileDescriptor fileDescriptor : fileCollection.getFileDescriptors()) {
-			FileDescriptorTreeNode fileDescriptorNode = new FileDescriptorTreeNode(fileDescriptor);
-			files.add(fileDescriptorNode);
-
+		this.paths = new HashSet<RelativePathTreeNode>();
+		this.albums = new HashSet<AlbumTreeNode>();
+	}
+	
+	public void initLayout(LayoutType layout) {
+		switch (layout) {
+		case FLAT:
+			this.files.clear();;
+			for (FileDescriptor fileDescriptor : fileCollection.getFileDescriptors()) {
+				FileDescriptorTreeNode fileDescriptorNode = new FileDescriptorTreeNode(fileDescriptor);
+				files.add(fileDescriptorNode);
+			}
+			break;
+		case HIERARCHICAL:
+			DimensionMap2D<String, FileDescriptorTreeNode> path2Files = new DimensionMap2D<>(DimensionType.LIST);
+			for (FileDescriptor fileDescriptor : fileCollection.getFileDescriptors()) {
+				FileDescriptorTreeNode fileDescriptorNode = new FileDescriptorTreeNode(fileDescriptor);
+				String parentPath = getParentPath(fileDescriptor);
+				path2Files.addElement(parentPath, fileDescriptorNode);
+			}
 			// path
-			String parentPath = getParentPath(fileDescriptor);
-			path2Files.addElement(parentPath, fileDescriptorNode);
-
+			this.paths.clear();
+			for (String path : path2Files.keySet()) {
+				RelativePathTreeNode pathNode = new RelativePathTreeNode(path);
+				List<FileDescriptorTreeNode> children = path2Files.get(path).asList();
+				pathNode.getChildren().addAll(children);
+				paths.add(pathNode);
+			}
+			break;
+		case ALBUM:
+			DimensionMap2D<Long, FileDescriptorTreeNode> album2Files = new DimensionMap2D<>(DimensionType.LIST);
+			for (FileDescriptor fileDescriptor : fileCollection.getFileDescriptors()) {
+				FileDescriptorTreeNode fileDescriptorNode = new FileDescriptorTreeNode(fileDescriptor);
+				Long albumId = getAlbumId(fileDescriptor).orElse(null);
+				album2Files.addElement(albumId, fileDescriptorNode);
+			}
 			// album
-			Long albumId = getAlbumId(fileDescriptor).orElse(null);
-			album2Files.addElement(albumId, fileDescriptorNode);
-
-			// artist
-			String artist = getAudioDataValue(fileDescriptor, AudioAttribute.ARTIST);
-			artist2Files.addElement(artist, fileDescriptorNode);
-		}
-
-		// path
-		paths = new HashSet<RelativePathTreeNode>();
-		for (String path : path2Files.keySet()) {
-			RelativePathTreeNode pathNode = new RelativePathTreeNode(path);
-			List<FileDescriptorTreeNode> children = path2Files.get(path).asList();
-			pathNode.getChildren().addAll(children);
-			paths.add(pathNode);
-		}
-
-		// album
-		albums = new HashSet<AlbumTreeNode>();
-		for (Long id : album2Files.keySet()) {
-			AlbumTreeNode albumNode = createAlbumTreeNode(id);
-			List<FileDescriptorTreeNode> children = album2Files.get(id).asList();
-			albumNode.getChildren().addAll(children);
-			albums.add(albumNode);
+			albums.clear();
+			for (Long id : album2Files.keySet()) {
+				AlbumTreeNode albumNode = createAlbumTreeNode(id);
+				List<FileDescriptorTreeNode> children = album2Files.get(id).asList();
+				albumNode.getChildren().addAll(children);
+				albums.add(albumNode);
+			}
+			break;
 		}
 	}
 
@@ -89,7 +100,7 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 		this.fileCollection.addFileDescriptors(delta.getAddItems());
 		this.fileCollection.updateFileDescriptors(delta.getUpdateItems());
 		this.fileCollection.removeFileDescriptors(delta.getRemoveItems());
-
+		
 		// update UI model
 		LayoutDelta uiDeltas = new LayoutDelta();
 		for (FileDescriptor file : delta.getAddItems()) {
@@ -128,24 +139,31 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 			// file already exists
 			return;
 		}
-		files.add(fileDescriptorNode);
-		uiDeltas.addItem(null, fileDescriptorNode, LayoutType.FLAT);
-		// path
-		String parentPath = getParentPath(fileDescriptor);
-		RelativePathTreeNode pathNode = findParentNodeByContent(parentPath, this.paths);
-		if (pathNode != null) {
-			pathNode.getChildren().add(fileDescriptorNode);
-			uiDeltas.addItem(pathNode, fileDescriptorNode, LayoutType.HIERARCHICAL);
+		
+		switch (layoutManager.getActiveLayout()) {
+		case FLAT:
+			files.add(fileDescriptorNode);
+			uiDeltas.addItem(this, fileDescriptorNode, LayoutType.FLAT);
+			break;
+		case HIERARCHICAL:
+			String parentPath = getParentPath(fileDescriptor);
+			RelativePathTreeNode pathNode = findParentNodeByContent(parentPath, this.paths);
+			if (pathNode != null) {
+				pathNode.getChildren().add(fileDescriptorNode);
+				uiDeltas.addItem(pathNode, fileDescriptorNode, LayoutType.HIERARCHICAL);
+			}
+			else {
+				// new path node
+				pathNode = new RelativePathTreeNode(parentPath);
+				pathNode.getChildren().add(fileDescriptorNode);
+				paths.add(pathNode);
+				uiDeltas.addItem(this, pathNode, LayoutType.HIERARCHICAL);
+			}
+			break;
+		case ALBUM:
+			addAlbum(fileDescriptorNode, uiDeltas);
+			break;
 		}
-		else {
-			// new path node
-			pathNode = new RelativePathTreeNode(parentPath);
-			pathNode.getChildren().add(fileDescriptorNode);
-			paths.add(pathNode);
-			uiDeltas.addItem(this, pathNode, LayoutType.HIERARCHICAL);
-		}
-		// album
-		addAlbum(fileDescriptorNode, uiDeltas);
 	}
 
 	private void remove(FileDescriptor fileDescriptor, LayoutDelta uiDeltas) {
@@ -153,22 +171,28 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 		 * Note: removed fileDescriptor does not have audio data
 		 */
 		FileDescriptorTreeNode fileDescriptorNode = new FileDescriptorTreeNode(fileDescriptor);
-		files.remove(fileDescriptorNode);
-		uiDeltas.removeItem(fileDescriptorNode, LayoutType.FLAT);
-		// path
-		RelativePathTreeNode path = findParentNode(fileDescriptorNode, this.paths);
-		if (path != null) {
-			path.getChildren().remove(fileDescriptorNode);
-			uiDeltas.removeItem(fileDescriptorNode, LayoutType.values());
-			if (path.getChildren().isEmpty()) {
-				paths.remove(path);
-				uiDeltas.removeItem(path, LayoutType.HIERARCHICAL);
+		switch (layoutManager.getActiveLayout()) {
+		case FLAT:
+			files.remove(fileDescriptorNode);
+			uiDeltas.removeItem(fileDescriptorNode, LayoutType.FLAT);
+			break;
+		case HIERARCHICAL:
+			RelativePathTreeNode path = findParentNode(fileDescriptorNode, this.paths);
+			if (path != null) {
+				path.getChildren().remove(fileDescriptorNode);
+				uiDeltas.removeItem(fileDescriptorNode, LayoutType.values());
+				if (path.getChildren().isEmpty()) {
+					paths.remove(path);
+					uiDeltas.removeItem(path, LayoutType.HIERARCHICAL);
+				}
 			}
-		}
-		// album
-		AlbumTreeNode albumParentOld = findParentNode(fileDescriptorNode, this.albums);
-		if (albumParentOld != null) {
-			removeAlbum(albumParentOld, fileDescriptorNode, uiDeltas);
+			break;
+		case ALBUM:
+			AlbumTreeNode albumParentOld = findParentNode(fileDescriptorNode, this.albums);
+			if (albumParentOld != null) {
+				removeAlbum(albumParentOld, fileDescriptorNode, uiDeltas);
+			}
+			break;
 		}
 	}
 
@@ -187,13 +211,20 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 			// only persistent audio data will affect UI
 			return;
 		}
-		
-		// album
-		AlbumTreeNode albumParentOld = findParentNode(fileDescriptorNode, this.albums);
-		AlbumTreeNode albumParentNew = addAlbum(fileDescriptorNode, uiDeltas);
-		boolean albumChangeParent = !albumParentOld.equals(albumParentNew); 
-		if (albumChangeParent) {
-			removeAlbum(albumParentOld, fileDescriptorNode, uiDeltas);
+
+		switch (layoutManager.getActiveLayout()) {
+		case FLAT:
+		case HIERARCHICAL:
+			// FileDescriptorTreeNode already updated before
+			break;
+		case ALBUM:
+			AlbumTreeNode albumParentOld = findParentNode(fileDescriptorNode, this.albums);
+			AlbumTreeNode albumParentNew = addAlbum(fileDescriptorNode, uiDeltas);
+			boolean albumChangeParent = !albumParentOld.equals(albumParentNew); 
+			if (albumChangeParent) {
+				removeAlbum(albumParentOld, fileDescriptorNode, uiDeltas);
+			}
+			break;
 		}
 	}
 	
@@ -274,17 +305,6 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 		}
 		return Optional.empty();
 	}
-
-	private String getAudioDataValue(FileDescriptor fileDescriptor, AudioAttribute attribute) {
-		String value = AudioData.DEFAULT_VALUE;
-		if (fileDescriptor.hasMetaData(AudioData.class)) {
-			AudioData audioData = (AudioData) fileDescriptor.getMetaData();
-			if (audioData.hasAttribute(attribute)) {
-				value = audioData.getAttribute(attribute);
-			}
-		}
-		return value;
-	}
 	
 	private AlbumTreeNode createAlbumTreeNode(@Nullable Long albumId) {
 		if (albumId != null) {
@@ -292,14 +312,6 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 			return new AlbumTreeNode(album);
 		}
 		return new AlbumTreeNode(null);
-	}
-
-	public FileCollection getFileCollection() {
-		return fileCollection;
-	}
-
-	public void setFileCollection(FileCollection fileCollection) {
-		this.fileCollection = fileCollection;
 	}
 
 }

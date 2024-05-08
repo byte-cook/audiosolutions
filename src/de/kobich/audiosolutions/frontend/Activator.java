@@ -85,6 +85,7 @@ public class Activator extends AbstractUIPlugin {
 		ALBUM("/icons/audio/album.png"),
 		LAYOUT_FLAT("/icons/file/layout-flat.png"),
 		LAYOUT_HIERARCHICAL("/icons/file/layout-hierarchical.png"),
+		LAYOUT_ALBUM("/icons/audio/layout-album.png"),
 		AUDIO_FILE_NEW_WARN("/icons/audio/audio-file-new-warn.png"),
 		AUDIO_FILE_NEW("/icons/audio/audio-file-new.png"),
 		AUDIO_FILE_WARN("/icons/audio/audio-file-warn.png"),

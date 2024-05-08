@@ -1,28 +1,44 @@
 package de.kobich.audiosolutions.frontend.audio.editor.audiocollection;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -37,77 +53,96 @@ import de.kobich.audiosolutions.core.service.info.FileInfo;
 import de.kobich.audiosolutions.core.service.persist.AudioPersistenceService;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.layout.AudioAlbumLayout;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.layout.AudioFlatLayout;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.layout.AudioHierarchicalLayout;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AudioCollectionModel;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionContentProvider;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorCellModifier;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorColumn;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorComparator;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorComparator.Direction;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorLabelProvider;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.AudioDelta;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.FileDelta;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.ui.AbstractTableTreeNode;
 import de.kobich.audiosolutions.frontend.common.ui.ProgressDialog;
 import de.kobich.audiosolutions.frontend.common.ui.editor.AbstractFormEditor;
 import de.kobich.audiosolutions.frontend.common.ui.editor.CollectionEditorFileMonitor;
-import de.kobich.audiosolutions.frontend.common.ui.editor.CollectionEditorLayoutManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.CollectionEditorUpdateManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.CollectionEditorViewerFilter;
+import de.kobich.audiosolutions.frontend.common.ui.editor.EditorLayoutManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileOpeningInfo;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
+import de.kobich.audiosolutions.frontend.common.ui.editor.IEditorLayoutSupport;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutDelta;
+import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutDelta.AddItem;
+import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutDelta.ReplaceItem;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutType;
+import de.kobich.audiosolutions.frontend.common.ui.editor.LogoImagePostSelectionListener;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 import de.kobich.audiosolutions.frontend.common.util.FileLabelUtil;
+import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
+import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.JFaceUtils;
+import de.kobich.commons.ui.jface.MementoUtils;
+import de.kobich.commons.ui.jface.listener.TreeExpandKeyListener;
 import de.kobich.commons.ui.jface.progress.ProgressMonitorAdapter;
+import de.kobich.commons.ui.memento.IMementoItem;
 import de.kobich.component.file.FileDescriptor;
 
 /**
  * Audio collection editor.
  */
-public class AudioCollectionEditor extends AbstractFormEditor implements ICollectionEditor {
+public class AudioCollectionEditor extends AbstractFormEditor implements ICollectionEditor, IEditorLayoutSupport {
 	public static final String ID = "de.kobich.audiosolutions.editor.audioCollectionEditor";
 	private static final Logger logger = Logger.getLogger(AudioCollectionEditor.class);
 	private static final Point LOGO_SIZE = new Point(192, 128);
 	private FileCollection fileCollection;
 	private AudioCollectionModel model;
+	private AudioCollectionContentProvider contentProvider;
 	private AudioCollectionEditorLabelProvider labelProvider;
 	private CollectionEditorFileMonitor fileMonitor;
 	private AudioCollectionEditorEventListener eventListener;
-	private CollectionEditorLayoutManager editorLayoutManager;
+	private EditorLayoutManager layoutManager;
 	private CollectionEditorUpdateManager editorUpdateManager;
+	private TreeViewer treeViewer;
+	private Composite treeComposite;
 	private StyledText infoText;
 	private StyledText artistText;
 	private StyledText pathText;
 	private StyledText fileSizeText;
 	private CollectionEditorViewerFilter filter;
 	private Text filterText;
-	private Composite switchComposite;
-	private StackLayout switchLayout;
 	private boolean dirty;
 	private Label logoLabel;
 	private ToolTip logoTooltip;
 	private Image defaultLogoImage;
 	private Image smallLogoImage;
 	private Image largeLogoImage;
+	private IMementoItem mementoItem;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.EditorPart#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
-	 */
 	@Override
 	public void init(IEditorSite editorSite, IEditorInput editorInput) throws PartInitException {
 		setSite(editorSite);
 		setInput(editorInput);
 
 		if (editorInput instanceof FileCollection) {
+			IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+			this.mementoItem = MementoUtils.getMementoItemToSave(dialogSettings, ID);
+			
 			this.fileCollection = (FileCollection) editorInput;
 			this.labelProvider = new AudioCollectionEditorLabelProvider(true);
+			this.layoutManager = new EditorLayoutManager(this, mementoItem);
+			this.contentProvider = new AudioCollectionContentProvider(this.layoutManager);
 			this.eventListener = new AudioCollectionEditorEventListener(this);
 			this.eventListener.register();
-			this.model = new AudioCollectionModel(this.fileCollection);
+			this.model = new AudioCollectionModel(this.fileCollection, this.layoutManager);
 			this.editorUpdateManager = new CollectionEditorUpdateManager(this, this.model);
 			this.filter = new CollectionEditorViewerFilter();
 			setPartName(fileCollection.getName());
@@ -148,8 +183,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		this.fileCollection.removePropertyChangeListener(this.eventListener);
 		this.eventListener.deregister();
 		this.labelProvider.dispose();
-		this.editorLayoutManager.dispose();
-		this.switchComposite.dispose();
 		if (this.fileMonitor != null) {
 			this.fileMonitor.dispose();
 		}
@@ -161,10 +194,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		super.dispose();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
-	 */
 	@Override
 	public void doSave(IProgressMonitor progressMonitor) {
 		try {
@@ -177,17 +206,9 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.EditorPart#doSaveAs()
-	 */
 	@Override
 	public void doSaveAs() {}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.EditorPart#isDirty()
-	 */
 	@Override
 	public boolean isDirty() {
 		return dirty;
@@ -209,10 +230,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.EditorPart#isSaveAsAllowed()
-	 */
 	@Override
 	public boolean isSaveAsAllowed() {
 		return false;
@@ -243,22 +260,28 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	 * @param informationComposite
 	 */
 	protected void makeInformation(Composite body) {
-		Composite informationGroup = super.createSection(body, "", 1, Section.TITLE_BAR | Section.NO_TITLE | Section.EXPANDED);
+		Composite informationGroup = super.createSection(body, "", 4, Section.TITLE_BAR | Section.NO_TITLE | Section.EXPANDED);
 
 		this.infoText = super.createStyledText(informationGroup, false);//getFormToolkit().createLabel(informationGroup, "", SWT.NONE);
-		this.infoText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 1, 1));
+		this.infoText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 4, 1));
 		Font font = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
 		this.infoText.setFont(font);
 		this.artistText = super.createStyledText(informationGroup, false);//getFormToolkit().createLabel(informationGroup, "", SWT.NONE);
-		this.artistText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 1, 1));
+		this.artistText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 4, 1));
 		this.pathText = super.createStyledText(informationGroup, false);
-		this.pathText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 1, 1));
+		this.pathText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 4, 1));
 		this.fileSizeText = super.createStyledText(informationGroup, false);
-		this.fileSizeText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 1, 1));
-		
-//		Label br = getFormToolkit().createLabel(informationGroup, null);
-//		br.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 1, 1));
-		
+		this.fileSizeText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 4, 1));
+
+		// layout
+		this.layoutManager.restoreState();
+		Image iconFlat = Activator.getDefault().getImage(ImageKey.LAYOUT_FLAT);
+		this.layoutManager.createButton(informationGroup, SWT.TOGGLE, LayoutType.FLAT, iconFlat);
+		Image iconHierarchical = Activator.getDefault().getImage(ImageKey.LAYOUT_HIERARCHICAL);
+		this.layoutManager.createButton(informationGroup, SWT.TOGGLE, LayoutType.HIERARCHICAL, iconHierarchical);
+		Image iconAlbum = Activator.getDefault().getImage(ImageKey.LAYOUT_ALBUM);
+		this.layoutManager.createButton(informationGroup, SWT.TOGGLE, LayoutType.ALBUM, iconAlbum);
+
 		// filter
 		filterText = new Text(informationGroup, SWT.BORDER | SWT.SEARCH);
 		filterText.setLayoutData(JFaceUtils.createGridDataWithSpan(GridData.FILL_HORIZONTAL, 1, 1));
@@ -266,7 +289,10 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		filterText.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent evt) {
 				filter.setSearchText("*" + filterText.getText() + "*");
-				editorLayoutManager.refreshEditor();
+				
+				treeViewer.refresh();
+				// update selection (required for filtering)
+				treeViewer.setSelection(treeViewer.getSelection());
 			}
 		});
 		filterText.addKeyListener(new KeyAdapter() {
@@ -274,7 +300,10 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 				if (e.keyCode == SWT.ESC) {
 					filterText.setText("");
 					filter.setSearchText("*");
-					editorLayoutManager.refreshEditor();
+					
+					treeViewer.refresh();
+					// update selection (required for filtering)
+					treeViewer.setSelection(treeViewer.getSelection());
 				}
 			}
 		});
@@ -282,20 +311,68 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	
 	protected void makeContent(Composite parent) {
 		FormToolkit toolkit = super.getFormToolkit();
-		
-		// layout manager
-		editorLayoutManager = new CollectionEditorLayoutManager(this, toolkit, filter);
-		editorLayoutManager.addLayout(LayoutType.FLAT, new AudioFlatLayout(this, labelProvider));
-		editorLayoutManager.addLayout(LayoutType.HIERARCHICAL, new AudioHierarchicalLayout(this, labelProvider));
-		editorLayoutManager.addLayout(LayoutType.ALBUM, new AudioAlbumLayout(this, labelProvider));
 
-		// composite
-		switchComposite = toolkit.createComposite(parent);
-		switchLayout = new StackLayout();
-		switchComposite.setLayout(switchLayout);
-		switchComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		editorLayoutManager.makeLayouts(switchComposite, model);
-		switchLayout();
+		treeComposite = toolkit.createComposite(parent, SWT.NONE);
+		TreeColumnLayout treeColumnLayout = new TreeColumnLayout();
+		treeComposite.setLayout(treeColumnLayout);
+		treeComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+		Tree tree = toolkit.createTree(treeComposite, SWT.FULL_SELECTION | SWT.MULTI);
+		treeViewer = new TreeViewer(tree);
+		treeViewer.setContentProvider(contentProvider);
+		treeViewer.setLabelProvider(labelProvider);
+		treeViewer.setComparator(new AudioCollectionEditorComparator(AudioCollectionEditorColumn.FILE_NAME));
+		treeViewer.addFilter(filter);
+
+		tree.setLayoutData(new GridData(GridData.FILL_BOTH));
+		tree.addKeyListener(new TreeExpandKeyListener(treeViewer));
+
+		List<String> columnNames = new ArrayList<String>();
+		List<CellEditor> cellEditors = new ArrayList<CellEditor>();
+		for (final AudioCollectionEditorColumn column : AudioCollectionEditorColumn.values()) {
+			final TreeColumn treeColumn = new TreeColumn(tree, SWT.LEFT, column.getIndex());
+			treeColumn.setText(column.getLabel());
+			treeColumnLayout.setColumnData(treeColumn, new ColumnWeightData(column.getWidthPercent(), column.getWidth()));
+			treeColumn.setMoveable(true);
+			treeColumn.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					Direction direction = ((AudioCollectionEditorComparator) treeViewer.getComparator()).setSortColumn(column);
+					int dir = (Direction.ASCENDING.equals(direction)) ? SWT.UP : SWT.DOWN; 
+					treeViewer.getTree().setSortDirection(dir);
+					treeViewer.getTree().setSortColumn(treeColumn);
+					treeViewer.refresh();
+				}
+			});
+			columnNames.add(column.name());
+			cellEditors.add(new TextCellEditor(tree));
+		}
+
+		// add editor support
+		CellEditor[] editors = cellEditors.toArray(new CellEditor[0]); 
+	    String[] columnProperties = columnNames.toArray(new String[0]); 
+	    treeViewer.setColumnProperties(columnProperties);
+	    treeViewer.setCellModifier(new AudioCollectionEditorCellModifier(this));
+		treeViewer.setCellEditors(editors);
+		tree.setHeaderVisible(true);
+		tree.setLinesVisible(true);
+
+		Object[] elements = treeViewer.getExpandedElements();
+		ISelection selection = treeViewer.getSelection();
+		treeViewer.setInput(this.model);
+		treeViewer.setExpandedElements(elements);
+		treeViewer.setSelection(selection, true);
+		
+		treeViewer.addPostSelectionChangedListener(new LogoImagePostSelectionListener(this, filter));
+		getSite().setSelectionProvider(treeViewer);
+		SelectionSupport.INSTANCE.registerEditor(this, treeViewer);
+		showDefaultLogo();
+//		treeViewer.setSelection(treeViewer.getSelection(), true);
+		
+		// register context menu
+		MenuManager menuManager = new MenuManager();
+		Menu menuFlat = menuManager.createContextMenu(tree);
+		tree.setMenu(menuFlat);
+		getSite().registerContextMenu(menuManager, treeViewer);
 	}
 	
 	/*
@@ -318,13 +395,9 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		makeContent(contentComposite);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
-	 */
 	@Override
 	public void setFocus() {
-		editorLayoutManager.getActiveLayout().setFocus();
+		treeViewer.getTree().setFocus();
 	}
 	
 	@Override
@@ -339,8 +412,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 			getSite().getShell().getDisplay().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					editorLayoutManager.updateLayout(layoutDelta, oldSelection);
-					switchComposite.layout();
+					updateTreeLayout(layoutDelta, oldSelection, true);
 				}
 			});
 		}
@@ -358,10 +430,81 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 			getSite().getShell().getDisplay().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					editorLayoutManager.updateLayout(layoutDelta, oldSelection);
-					switchComposite.layout();
+					updateTreeLayout(layoutDelta, oldSelection, true);
 				}
 			});
+		}
+	}
+	
+	/**
+	 * Update tree layout by using layout delta
+	 * @param viewer
+	 * @param layoutDelta
+	 * @param layoutType
+	 * @param activeLayout
+	 */
+	private void updateTreeLayout(LayoutDelta layoutDelta, FileDescriptorSelection oldSelection, boolean activeLayout) {
+		try {
+			treeViewer.getTree().setRedraw(false);
+			
+			LayoutType layoutType = this.layoutManager.getActiveLayout();
+			
+			// add
+			if (layoutDelta.getAddItems().containsKey(layoutType)) {
+				for (AddItem item : layoutDelta.getAddItems().get(layoutType)) {
+					treeViewer.update(item.parent, new String[] { CollectionEditorViewerFilter.FILTER_PROP });
+					treeViewer.add(item.parent, item.element);
+				}
+			}
+			// selection
+			if (activeLayout) {
+				// do selection before remove because remove fires a SelectionChanged event if a selected item is affected
+				List<Object> newSelectionElements = new ArrayList<Object>();
+				
+				// add old selection
+				newSelectionElements.addAll(oldSelection.getElements());
+				// replace
+				if (layoutDelta.getReplaceItems().containsKey(layoutType)) {
+					for (ReplaceItem item : layoutDelta.getReplaceItems().get(layoutType)) {
+						for (Object o : oldSelection.getElements()) {
+							if (o instanceof FileDescriptorTreeNode) {
+								if (item.oldElement.equals(o)) {
+									newSelectionElements.remove(item.oldElement);
+									newSelectionElements.add(item.newElement);
+								}
+							}
+						}
+					}
+				}
+				
+				ISelection newSel = new StructuredSelection(newSelectionElements);
+				FileDescriptorSelection newSelection = new FileDescriptorSelection(newSel, oldSelection.getEditorFilter());
+				boolean selectionChanged = !newSelection.getFileDescriptors().equals(oldSelection.getFileDescriptors());
+				if (selectionChanged) {
+					treeViewer.setSelection(newSel);
+				}
+			}
+			// update
+			if (layoutDelta.getUpdateItems().containsKey(layoutType)) {
+				for (Object element : layoutDelta.getUpdateItems().get(layoutType)) {
+					treeViewer.update(element, null);
+				}
+			}
+			// refresh
+			if (layoutDelta.getRefreshItems().containsKey(layoutType)) {
+				for (Object element : layoutDelta.getRefreshItems().get(layoutType)) {
+					treeViewer.refresh(element);
+				}
+			}
+			// remove
+			if (layoutDelta.getRemoveItems().containsKey(layoutType)) {
+				for (Object element : layoutDelta.getRemoveItems().get(layoutType)) {
+					treeViewer.remove(element);
+				}
+			}
+		}
+		finally {
+			treeViewer.getTree().setRedraw(true);
 		}
 	}
 
@@ -369,9 +512,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	 * Switches the layout
 	 */
 	public void switchLayout() {
-		Control control = editorLayoutManager.switchLayout(LayoutType.getCurrentLayoutType(), this.fileCollection);
-		switchLayout.topControl = control;
-		switchComposite.layout();
+		// TODO editor remove
 	}
 	
 	/**
@@ -383,7 +524,21 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	
 	@Override
 	public FileDescriptorSelection getFileDescriptorSelection() {
-		return editorLayoutManager.getSelectedFiles();
+		if (Display.getCurrent() != null) {
+			// current thread is UI thread
+			ISelection selection = treeViewer.getSelection();
+			return new FileDescriptorSelection(selection, filter);
+		}
+		else {
+			final Wrapper<FileDescriptorSelection> SELECTION = Wrapper.empty();
+			JFaceExec.builder(getSite().getShell())
+				.ui(ctx -> {
+					ISelection selection = treeViewer.getSelection();
+					SELECTION.set(new FileDescriptorSelection(selection, filter));
+				})
+				.run();
+			return SELECTION.get();
+		}
 	}
 	
 	@Override
@@ -496,5 +651,52 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 			}
 		}
 	}
+
+	@Override
+	public void switchLayout(LayoutType layout) {
+		layoutManager.saveState();
+
+		ISelection selection = switchSelection(getFileDescriptorSelection(), layout);
+		treeViewer.refresh();
+		treeViewer.setSelection(selection, true);
+	}
 	
+	/**
+	 * Returns the selection for the new layout (tries to select as less nodes as possible)
+	 */
+	private ISelection switchSelection(FileDescriptorSelection selection, LayoutType layoutType) {
+		List<AbstractTableTreeNode<?, ?>> nodes = new ArrayList<>();
+		Set<FileDescriptor> filesInNodes = new HashSet<>();
+		
+		for (FileDescriptor fileDescriptor : selection.getFileDescriptors()) {
+			// check if nodes already contains file descriptor (e.g. RelativePathTreeNode's children files) 
+			if (filesInNodes.contains(fileDescriptor)) {
+				continue;
+			}
+			
+			// create file node
+			FileDescriptorTreeNode node = new FileDescriptorTreeNode(fileDescriptor);
+			
+			// get parent node
+			AbstractTableTreeNode<?, ?> parentNode = null;
+			Object parent = contentProvider.getParent(node);
+			if (parent instanceof RelativePathTreeNode) {
+				parentNode = (RelativePathTreeNode) contentProvider.getParent(node);
+			}
+			else if (parent instanceof AlbumTreeNode) {
+				parentNode = (AlbumTreeNode) contentProvider.getParent(node);
+			}
+			
+			// if all children of parent node should be selected 
+			if (parentNode != null && selection.getFileDescriptors().containsAll(parentNode.getFileDescriptors())) {
+				nodes.add(parentNode);
+				filesInNodes.addAll(parentNode.getFileDescriptors());
+			}
+			else {
+				nodes.add(node);
+				filesInNodes.add(node.getContent());
+			}
+		}
+		return new StructuredSelection(nodes);
+	}
 }

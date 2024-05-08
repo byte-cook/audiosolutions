@@ -5,18 +5,21 @@ import org.eclipse.jface.viewers.Viewer;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AudioCollectionModel;
+import de.kobich.audiosolutions.frontend.common.ui.editor.EditorLayoutManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutType;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
+import lombok.RequiredArgsConstructor;
 
-
+@RequiredArgsConstructor
 public class AudioCollectionContentProvider implements ITreeContentProvider {
-	private final LayoutType layoutType;
+	private final EditorLayoutManager layoutManager;
 	private AudioCollectionModel model;
 	
+	@Deprecated
 	public AudioCollectionContentProvider(LayoutType layoutType) {
-		this.layoutType = layoutType;
+		this((EditorLayoutManager) null);
 	}
 	
 	@Override
@@ -46,7 +49,7 @@ public class AudioCollectionContentProvider implements ITreeContentProvider {
 		}
 		else if (input instanceof FileDescriptorTreeNode) {
 			FileDescriptorTreeNode node = (FileDescriptorTreeNode) input;
-			switch (layoutType) {
+			switch (layoutManager.getActiveLayout()) {
 			case FLAT:
 				return model;
 			case HIERARCHICAL:
@@ -78,7 +81,9 @@ public class AudioCollectionContentProvider implements ITreeContentProvider {
 	@Override
 	public Object[] getElements(Object input) {
 		if (input instanceof AudioCollectionModel) {
-			switch (layoutType) {
+			model.initLayout(layoutManager.getActiveLayout());
+			
+			switch (layoutManager.getActiveLayout()) {
 			case FLAT:
 				return model.getFiles().toArray();
 			case HIERARCHICAL:
