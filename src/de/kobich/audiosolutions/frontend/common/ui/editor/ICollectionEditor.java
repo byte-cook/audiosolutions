@@ -38,6 +38,7 @@ public interface ICollectionEditor extends IEditorPart {
 	/**
 	 * Switches the layout
 	 */
+	@Deprecated
 	void switchLayout();
 
 	/**
