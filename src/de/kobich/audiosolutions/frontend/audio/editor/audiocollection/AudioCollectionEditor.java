@@ -113,6 +113,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	private CollectionEditorUpdateManager editorUpdateManager;
 	private TreeViewer treeViewer;
 	private Composite treeComposite;
+	private AudioCollectionEditorComparator comparator;
 	private StyledText infoText;
 	private StyledText artistText;
 	private StyledText pathText;
@@ -316,12 +317,14 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		TreeColumnLayout treeColumnLayout = new TreeColumnLayout();
 		treeComposite.setLayout(treeColumnLayout);
 		treeComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
+		comparator = new AudioCollectionEditorComparator(AudioCollectionEditorColumn.FILE_NAME);
 
 		Tree tree = toolkit.createTree(treeComposite, SWT.FULL_SELECTION | SWT.MULTI);
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setContentProvider(contentProvider);
 		treeViewer.setLabelProvider(labelProvider);
-		treeViewer.setComparator(new AudioCollectionEditorComparator(AudioCollectionEditorColumn.FILE_NAME));
+		treeViewer.setComparator(this.comparator);
 		treeViewer.addFilter(filter);
 
 		tree.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -336,7 +339,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 			treeColumn.setMoveable(true);
 			treeColumn.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					Direction direction = ((AudioCollectionEditorComparator) treeViewer.getComparator()).setSortColumn(column);
+					Direction direction = comparator.setSortColumn(column);
 					int dir = (Direction.ASCENDING.equals(direction)) ? SWT.UP : SWT.DOWN; 
 					treeViewer.getTree().setSortDirection(dir);
 					treeViewer.getTree().setSortColumn(treeColumn);
