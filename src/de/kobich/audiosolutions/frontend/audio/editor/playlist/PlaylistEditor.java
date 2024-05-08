@@ -76,9 +76,7 @@ import lombok.Getter;
 public class PlaylistEditor extends EditorPart implements PropertyChangeListener, IEditorLayoutSupport {
 	private static final Logger logger = Logger.getLogger(PlaylistEditor.class);
 	public static final String ID = "de.kobich.audiosolutions.editor.playlistEditor";
-	private Image iconFlat;
-	private Image iconHierarchical;
-	
+
 	private FormToolkit toolkit;
 	private Form form;
 	private Text name;
@@ -169,9 +167,9 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		filterSection.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		// layout
 		this.layoutManager.restoreState();
-		this.iconFlat = Activator.getDefault().getImage(ImageKey.LAYOUT_FLAT);
+		Image iconFlat = Activator.getDefault().getImage(ImageKey.LAYOUT_FLAT);
 		this.layoutManager.createButton(filterSection, SWT.TOGGLE, LayoutType.FLAT, iconFlat);
-		this.iconHierarchical = Activator.getDefault().getImage(ImageKey.LAYOUT_HIERARCHICAL);
+		Image iconHierarchical = Activator.getDefault().getImage(ImageKey.LAYOUT_HIERARCHICAL);
 		this.layoutManager.createButton(filterSection, SWT.TOGGLE, LayoutType.HIERARCHICAL, iconHierarchical);
 		// filter
 		final PlaylistEditorViewerFilter filter = new PlaylistEditorViewerFilter();
@@ -391,16 +389,17 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 
 	@Override
 	public void switchLayout(LayoutType layout) {
-		// switch selection
-		ISelection selection = switchSelection(getSelection(), (ITreeContentProvider) treeViewer.getContentProvider(), layout);
+		layoutManager.saveState();
 		
+		ISelection selection = switchSelection(getSelection(), (ITreeContentProvider) treeViewer.getContentProvider(), layout);
 		refresh();
 		treeViewer.setSelection(selection);
 	}
 	
+	/**
+	 * Returns the selection for the new layout (tries to select as less nodes as possible)
+	 */
 	protected ISelection switchSelection(PlaylistSelection selection, ITreeContentProvider contentProvider, LayoutType layoutType) {
-		layoutManager.saveState();
-		
 		List<Object> elements = new ArrayList<>();
 		Set<EditablePlaylistFile> filesInElements = new HashSet<>();
 		
