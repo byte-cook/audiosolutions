@@ -165,17 +165,18 @@ public class MediumsView extends ViewPart {
 	 * Refreshes this view
 	 */
 	public void refresh() {
-		final String filter = StringUtils.isNotBlank(filterText.getText()) ? "*" + filterText.getText() + "*" : null;
-		final Wrapper<List<Medium>> mediums = Wrapper.empty();
+		final Wrapper<String> FILTER = Wrapper.empty();
+		final Wrapper<List<Medium>> MEDIUMS = Wrapper.empty();
 		JFaceExec.builder(getSite().getShell(), "Loading Mediums")
 			.ui(ctx -> setContentDescription("Loading..."))
+			.ui(ctx -> FILTER.set(StringUtils.isNotBlank(filterText.getText()) ? "*" + filterText.getText() + "*" : null))
 			.worker(ctx -> {
 				AudioSearchService searchService = AudioSolutions.getService(AudioSearchService.class);
-				 mediums.set(searchService.searchMediums(filter));
+				 MEDIUMS.set(searchService.searchMediums(FILTER.orElse(null)));
 			})
 			.ui(ctx -> {
-				List<Medium> m = mediums.orElse(List.of());
-				if (mediums.isEmpty()) {
+				List<Medium> m = MEDIUMS.orElse(List.of());
+				if (MEDIUMS.isEmpty()) {
 					setContentDescription("No mediums available");
 				}
 				else {

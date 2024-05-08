@@ -165,16 +165,17 @@ public class ArtistsView extends ViewPart {
 	 * Refreshes this view
 	 */
 	public void refresh() {
-		final String filter = StringUtils.isNotBlank(filterText.getText()) ? "*" + filterText.getText() + "*" : null;
-		final Wrapper<List<Artist>> artists = Wrapper.empty();
+		final Wrapper<String> FILTER = Wrapper.empty();
+		final Wrapper<List<Artist>> ARTISTS = Wrapper.empty();
 		JFaceExec.builder(getSite().getShell(), "Loading Artists")
 			.ui(ctx -> setContentDescription("Loading..."))
+			.ui(ctx -> FILTER.set(StringUtils.isNotBlank(filterText.getText()) ? "*" + filterText.getText() + "*" : null))
 			.worker(ctx -> {
 				AudioSearchService audioSearchService = AudioSolutions.getService(AudioSearchService.class);
-				artists.set(audioSearchService.searchArtists(filter));
+				ARTISTS.set(audioSearchService.searchArtists(FILTER.orElse(null)));
 			})
 			.ui(ctx -> {
-				List<Artist> a = artists.orElse(List.of());
+				List<Artist> a = ARTISTS.orElse(List.of());
 				if (a.isEmpty()) {
 					setContentDescription("No artists available");
 				}
