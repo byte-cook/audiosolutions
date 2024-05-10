@@ -10,23 +10,26 @@ import lombok.Getter;
 
 @Getter
 public class PlaylistSelection {
-	public static final PlaylistSelection EMPTY = new PlaylistSelection(List.of(), List.of());
+	public static final PlaylistSelection EMPTY = new PlaylistSelection(List.of(), List.of(), null);
 	private final List<EditablePlaylistFile> files;
 	private final List<EditablePlaylistFolder> folders;
 	private final List<EditablePlaylistFile> allFiles;
 	private final List<EditablePlaylistFile> existingFiles;
+	private final PlaylistEditorViewerFilter filter;
 	
-	public PlaylistSelection(List<EditablePlaylistFile> files, List<EditablePlaylistFolder> folders) {
+	public PlaylistSelection(List<EditablePlaylistFile> files, List<EditablePlaylistFolder> folders, PlaylistEditorViewerFilter filter) {
 		this.files = files;
 		this.folders  = folders;
+		this.filter = filter;
 		// all files
 		List<EditablePlaylistFile> allFilesTmp = new ArrayList<>();
 		allFilesTmp.addAll(this.files);
 		this.folders.forEach(f -> allFilesTmp.addAll(f.getFiles()));
-		this.allFiles = Collections.unmodifiableList(allFilesTmp);
+		// skip non visible files
+		this.allFiles = allFilesTmp.stream().filter(f -> filter == null || filter.select(f)).toList();
 		// existing files
 		List<EditablePlaylistFile> existingFilesTmp = new ArrayList<>();
-		for (EditablePlaylistFile file : getAllFiles()) {
+		for (EditablePlaylistFile file : this.allFiles) {
 			if (file.getFile().exists()) {
 				existingFilesTmp.add(file);
 			}

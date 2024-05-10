@@ -81,6 +81,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 	private Form form;
 	private Text name;
 	private Text filterText;
+	private PlaylistEditorViewerFilter filter;
 	private TreeViewer treeViewer;
 	private PlaylistEditorEventListener eventListener;
 	@Getter
@@ -172,7 +173,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		Image iconHierarchical = Activator.getDefault().getImage(ImageKey.LAYOUT_HIERARCHICAL);
 		this.layoutManager.createButton(filterSection, SWT.TOGGLE, LayoutType.HIERARCHICAL, iconHierarchical);
 		// filter
-		final PlaylistEditorViewerFilter filter = new PlaylistEditorViewerFilter();
+		filter = new PlaylistEditorViewerFilter();
 		filterText = new Text(filterSection, SWT.BORDER | SWT.SEARCH);
 		filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		filterText.setMessage("Filter files");
@@ -180,6 +181,8 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 			public void keyReleased(KeyEvent evt) {
 				filter.setSearchText("*" + filterText.getText() + "*");
 				refresh();
+				// update selection (required for filtering)
+				treeViewer.setSelection(treeViewer.getSelection());
 			}
 		});
 		filterText.addKeyListener(new KeyAdapter() {
@@ -188,6 +191,8 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 					filterText.setText("");
 					filter.setSearchText("*");
 					refresh();
+					// update selection (required for filtering)
+					treeViewer.setSelection(treeViewer.getSelection());
 				}
 			}
 		});		
@@ -356,11 +361,11 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 			if (o instanceof EditablePlaylistFile file) {
 				files.add(file);
 			}
-			if (o instanceof EditablePlaylistFolder folder) {
+			else if (o instanceof EditablePlaylistFolder folder) {
 				folders.add(folder);
 			}
 		}
-		return new PlaylistSelection(files, folders);
+		return new PlaylistSelection(files, folders, filter);
 	}
 	
 	public void setSelection(Object[] items) {
