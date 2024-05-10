@@ -1,4 +1,4 @@
-package de.kobich.audiosolutions.frontend.audio.editor.playlist.action;
+package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -11,20 +11,20 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.commons.ui.jface.tree.TreeColumnData;
 import de.kobich.commons.ui.jface.tree.TreeColumnLayoutManager;
 
-public class ConfigurePlaylistColumnsAction extends AbstractHandler {
+public class ConfigureAudioCollectionColumnsAction extends AbstractHandler {
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		IEditorPart activeEditor = window.getActivePage().getActiveEditor();
 		
-		if (activeEditor instanceof PlaylistEditor playlistEditor) {
-			final TreeColumnLayoutManager columnManager = playlistEditor.getColumnManager();
+		if (activeEditor instanceof AudioCollectionEditor audioCollectionEditor) {
+			final TreeColumnLayoutManager columnManager = audioCollectionEditor.getColumnManager();
 			
 			final ListSelectionDialog dialog = ListSelectionDialog.of(columnManager.getHideableColumns())
 					.title("Configure Columns")
@@ -40,7 +40,7 @@ public class ConfigurePlaylistColumnsAction extends AbstractHandler {
 					})
 					.ui(ctx -> {
 						columnManager.updateColumns();
-						playlistEditor.refresh();
+						audioCollectionEditor.refresh();
 					})
 					.exceptionalDialog("Could not set columns")
 					.runProgressMonitorDialog(true, false);

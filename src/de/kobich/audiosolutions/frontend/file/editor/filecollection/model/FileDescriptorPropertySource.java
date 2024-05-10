@@ -21,12 +21,10 @@ public class FileDescriptorPropertySource implements IPropertySource {
 	private final FileDescriptorTreeNode fileDescriptorTreeNode;
 	private List<IPropertyDescriptor> propertyDescriptors;
 	private FileCollectionEditorLabelProvider fileLabelProvider;
-	private AudioCollectionEditorLabelProvider audioLabelProvider;
 	
 	public FileDescriptorPropertySource(FileDescriptorTreeNode fileDescriptorTreeNode) {
 		this.fileDescriptorTreeNode = fileDescriptorTreeNode;
 		this.fileLabelProvider = new FileCollectionEditorLabelProvider(false);
-		this.audioLabelProvider = new AudioCollectionEditorLabelProvider(false);
 	}
 
 	@Override
@@ -84,7 +82,7 @@ public class FileDescriptorPropertySource implements IPropertySource {
 		}
 		else if (property instanceof AudioCollectionEditorColumn) {
 			AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) property;
-			return audioLabelProvider.getColumnText(fileDescriptorTreeNode, column.getIndex());
+			return AudioCollectionEditorLabelProvider.getColumnText(fileDescriptorTreeNode, column);
 		}
 		return null;
 	}

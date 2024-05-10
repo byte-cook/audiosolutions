@@ -14,13 +14,14 @@ import de.kobich.audiosolutions.core.service.AudioState;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
+import de.kobich.audiosolutions.frontend.common.util.FileLabelUtil;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
+import de.kobich.commons.ui.jface.tree.TreeColumnLayoutManager;
 import de.kobich.component.file.FileDescriptor;
-import de.kobich.component.file.IMetaData;
 
 public class AudioCollectionEditorLabelProvider extends LabelProvider implements ITableLabelProvider {
-	private final boolean imageSupport;
+	private final TreeColumnLayoutManager layoutManager;
 	private Image folderImg;
 	private Image albumImg;
 	private Image audioFileNewWarnImg;
@@ -32,28 +33,23 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 	private Image audioFileRemoveImg;
 	private Image fileImg;
 	
-	public AudioCollectionEditorLabelProvider(boolean imageSupport) {
-		this.imageSupport = imageSupport;
-		if (imageSupport) {
-			this.folderImg = Activator.getDefault().getImage(ImageKey.FOLDER);
-			this.albumImg = Activator.getDefault().getImage(ImageKey.ALBUM);
-			this.audioFileNewWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_NEW_WARN);
-			this.audioFileNewImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_NEW);
-			this.audioFileWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_WARN);
-			this.audioFileImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE);
-			this.audioFileEditWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_EDIT_WARN);
-			this.audioFileEditImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_EDIT);
-			this.audioFileRemoveImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_REMOVE);
-			this.fileImg = Activator.getDefault().getImage(ImageKey.COMMON_FILE);
-		}
+	public AudioCollectionEditorLabelProvider(TreeColumnLayoutManager layoutManager) {
+		this.layoutManager = layoutManager;
+		this.folderImg = Activator.getDefault().getImage(ImageKey.FOLDER);
+		this.albumImg = Activator.getDefault().getImage(ImageKey.ALBUM);
+		this.audioFileNewWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_NEW_WARN);
+		this.audioFileNewImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_NEW);
+		this.audioFileWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_WARN);
+		this.audioFileImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE);
+		this.audioFileEditWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_EDIT_WARN);
+		this.audioFileEditImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_EDIT);
+		this.audioFileRemoveImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_REMOVE);
+		this.fileImg = Activator.getDefault().getImage(ImageKey.COMMON_FILE);
 	}
 
 	@Override
 	public Image getColumnImage(Object element, int columnIndex) {
-		if (!imageSupport) {
-			return null;
-		}
-		AudioCollectionEditorColumn column = AudioCollectionEditorColumn.getByIndex(columnIndex);
+		AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) layoutManager.getElementByIndex(columnIndex).orElseThrow();
 		if (AudioCollectionEditorColumn.FILE_NAME.equals(column)) {
 			if (element instanceof RelativePathTreeNode) {
 				return folderImg;
@@ -93,7 +89,11 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 
 	@Override
 	public String getColumnText(Object element, int columnIndex) {
-		AudioCollectionEditorColumn column = AudioCollectionEditorColumn.getByIndex(columnIndex);
+		AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) layoutManager.getElementByIndex(columnIndex).orElseThrow();
+		return AudioCollectionEditorLabelProvider.getColumnText(element, column);
+	}
+		
+	public static String getColumnText(Object element, AudioCollectionEditorColumn column) {
 		if (element instanceof RelativePathTreeNode) {
 			RelativePathTreeNode pathNode = (RelativePathTreeNode) element;
 			switch (column) {
@@ -123,52 +123,64 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 			FileDescriptorTreeNode audioFile = (FileDescriptorTreeNode) element;
 			FileDescriptor fileDescriptor = audioFile.getContent();
 			
-			if (AudioCollectionEditorColumn.FILE_NAME.equals(column)) {
-				return fileDescriptor.getFileName();
-			}
-			
-			IMetaData metaData = fileDescriptor.getMetaData();
-			if (metaData instanceof AudioData) {
-				AudioData audioData = (AudioData) metaData;
-				if (AudioState.REMOVED.equals(audioData.getState())) {
-					return "";
-				}
-				switch (column) {
-					case ALBUM:
-						return audioData.getAttribute(AudioAttribute.ALBUM);
-					case ALBUM_PUBLICATION:
-						String publication = audioData.getAttribute(AudioAttribute.ALBUM_PUBLICATION);
-						Date publicationDate = AudioAttributeUtils.convert2Date(publication);
-						return AudioAttributeUtils.convert2String(publicationDate);
-					case ARTIST:
-						return audioData.getAttribute(AudioAttribute.ARTIST);
-					case DISK:
-						return audioData.getAttribute(AudioAttribute.DISK);
-					case GENRE:
-						return audioData.getAttribute(AudioAttribute.GENRE);
-					case MEDIUM:
-						return audioData.getAttribute(AudioAttribute.MEDIUM);
-					case TRACK:
-						return audioData.getAttribute(AudioAttribute.TRACK);
-					case TRACK_FORMAT:
-						return audioData.getAttribute(AudioAttribute.TRACK_FORMAT);
-					case TRACK_NO:
-						Integer trackNo = audioData.getAttribute(AudioAttribute.TRACK_NO, Integer.class);
-						if (trackNo != null) {
-							return AudioAttributeUtils.convert2String(trackNo);
-						}
-						else {
-							return "";
-						}
-					default: 
-						break;
-				}
-			}
-			else {
-				return "";
+			switch (column) {
+				case FILE_NAME:
+					return fileDescriptor.getFileName();
+				case EXISTS:
+					return fileDescriptor.getFile().exists() ? "yes" : "no";
+				case RELATIVE_PATH:
+					return fileDescriptor.getRelativePath();
+				case EXTENSION:
+					return fileDescriptor.getExtension();
+				case SIZE:
+					return FileLabelUtil.getFileSizeLabel(fileDescriptor.getFile());
+				case LAST_MODIFIED:
+					return FileLabelUtil.getLastModifiedLabel(fileDescriptor.getFile());
+				case ALBUM:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.ALBUM);
+				case ALBUM_PUBLICATION:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.ALBUM_PUBLICATION);
+				case ARTIST:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.ARTIST);
+				case DISK:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.DISK);
+				case GENRE:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.GENRE);
+				case MEDIUM:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.MEDIUM);
+				case TRACK:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.TRACK);
+				case TRACK_FORMAT:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.TRACK_FORMAT);
+				case TRACK_NO:
+					return getAudioAttributeText(fileDescriptor, AudioAttribute.TRACK_NO);
 			}
 		}
-		throw new IllegalStateException("Illegal column index < " + columnIndex + ">, expected<0 - 3>");
+		throw new IllegalStateException("Illegal element < " + element + ">");
+	}
+	
+	private static String getAudioAttributeText(FileDescriptor fileDescriptor, AudioAttribute attribute) {
+		AudioData audioData = fileDescriptor.getMetaDataOptional(AudioData.class).orElse(null);
+		if (audioData != null) {
+			if (AudioState.REMOVED.equals(audioData.getState())) {
+				return "";
+			}
+
+			switch (attribute) {
+				case TRACK_NO:
+					Integer trackNo = audioData.getAttribute(AudioAttribute.TRACK_NO, Integer.class);
+					return AudioAttributeUtils.convert2String(trackNo);
+				case ALBUM_PUBLICATION:
+					String publication = audioData.getAttribute(AudioAttribute.ALBUM_PUBLICATION);
+					Date publicationDate = AudioAttributeUtils.convert2Date(publication);
+					return AudioAttributeUtils.convert2String(publicationDate);
+				default:
+					return audioData.getAttribute(attribute);
+			}
+		}
+		else {
+			return "";
+		}
 	}
 
 	@Override

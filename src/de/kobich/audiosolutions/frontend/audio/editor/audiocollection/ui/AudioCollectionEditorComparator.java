@@ -132,51 +132,54 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 			FileDescriptorTreeNode file1 = (FileDescriptorTreeNode) e1;
 			FileDescriptorTreeNode file2 = (FileDescriptorTreeNode) e2;
 
-			if (AudioCollectionEditorColumn.FILE_NAME.equals(column)) {
-				rc = file1.getContent().getFileName().compareToIgnoreCase(file2.getContent().getFileName());
-			}
-			else if (file1.getContent().hasMetaData(AudioData.class) && file2.getContent().hasMetaData(AudioData.class)) {
-				AudioData audioData1 = (AudioData) file1.getContent().getMetaData();
-				AudioData audioData2 = (AudioData) file2.getContent().getMetaData();
-				
-				// Determine which column and do the appropriate sort
-				switch (column) {
-					case TRACK:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.TRACK, false);
-						break;
-					case TRACK_FORMAT:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.TRACK_FORMAT, false);
-						break;
-					case TRACK_NO:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.TRACK_NO, true);
-						break;
-					case ARTIST:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.ARTIST, false);
-						break;
-					case ALBUM:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.ALBUM, false);
-						break;
-					case ALBUM_PUBLICATION:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.ALBUM_PUBLICATION, false);
-						break;
-					case DISK:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.DISK, true);
-						break;
-					case GENRE:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.GENRE, false);
-						break;
-					case MEDIUM:
-						rc = compareAudioAttributes(audioData1, audioData2, AudioAttribute.MEDIUM, true);
-						break;
-					default:
-						break;
-				}
-			}
-			else if (file1.getContent().hasMetaData(AudioData.class)) {
-				rc = -1;
-			}
-			else if (file2.getContent().hasMetaData(AudioData.class)) {
-				rc = 1;
+			switch (column) {
+				case FILE_NAME:
+					rc = file1.getContent().getFileName().compareToIgnoreCase(file2.getContent().getFileName());
+					break;
+				case EXISTS:
+					rc = Boolean.valueOf(file1.getContent().getFile().exists()).compareTo(Boolean.valueOf(file2.getContent().getFile().exists()));
+					break;
+				case RELATIVE_PATH:
+					rc = file1.getContent().getRelativePath().compareToIgnoreCase(file2.getContent().getRelativePath());
+					break;
+				case EXTENSION:
+					rc = file1.getContent().getExtension().compareToIgnoreCase(file2.getContent().getExtension());
+					break;
+				case SIZE:
+					rc = file1.getContent().getFile().length() > file2.getContent().getFile().length() ? 1 : -1;
+					break;
+				case LAST_MODIFIED:
+					rc = file1.getContent().getFile().lastModified() > file2.getContent().getFile().lastModified() ? 1 : -1;
+					break;
+				case TRACK:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.TRACK, false);
+					break;
+				case TRACK_FORMAT:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.TRACK_FORMAT, false);
+					break;
+				case TRACK_NO:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.TRACK_NO, true);
+					break;
+				case ARTIST:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.ARTIST, false);
+					break;
+				case ALBUM:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.ALBUM, false);
+					break;
+				case ALBUM_PUBLICATION:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.ALBUM_PUBLICATION, false);
+					break;
+				case DISK:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.DISK, true);
+					break;
+				case GENRE:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.GENRE, false);
+					break;
+				case MEDIUM:
+					rc = compareAudioAttributes(file1, file2, AudioAttribute.MEDIUM, true);
+					break;
+				default:
+					break;
 			}
 			
 			// by default, filter by name
@@ -195,38 +198,45 @@ public class AudioCollectionEditorComparator extends ViewerComparator {
 	
 	/**
 	 * Compares audio data by attribute
-	 * @param audioData1
-	 * @param audioData2
-	 * @param attribute
 	 * @return
 	 */
-	private int compareAudioAttributes(AudioData audioData1, AudioData audioData2, AudioAttribute attribute, boolean naturalSort) {
-		int rc = 0;
-		if (audioData1.hasAttribute(attribute) && audioData2.hasAttribute(attribute)) {
-			if (AudioAttribute.TRACK_NO.equals(attribute)) {
-				Integer trackNo1 = audioData1.getAttribute(attribute, Integer.class);
-				Integer trackNo2 = audioData2.getAttribute(attribute, Integer.class);
-				if (trackNo1 != null && trackNo2 != null) {
-					rc = trackNo1.compareTo(trackNo2);
-				}
-			}
-			else {
-				String v1 = audioData1.getAttribute(attribute);
-				String v2 = audioData2.getAttribute(attribute);
-				if (naturalSort) {
-					rc = NaturalSortStringComparator.INSTANCE.compare(v1.toLowerCase(), v2.toLowerCase());
+	private int compareAudioAttributes(FileDescriptorTreeNode file1, FileDescriptorTreeNode file2, AudioAttribute attribute, boolean naturalSort) {
+		if (file1.getContent().hasMetaData(AudioData.class) && file2.getContent().hasMetaData(AudioData.class)) {
+			AudioData audioData1 = file1.getContent().getMetaData(AudioData.class);
+			AudioData audioData2 = file2.getContent().getMetaData(AudioData.class);
+			
+			if (audioData1.hasAttribute(attribute) && audioData2.hasAttribute(attribute)) {
+				if (AudioAttribute.TRACK_NO.equals(attribute)) {
+					Integer trackNo1 = audioData1.getAttribute(attribute, Integer.class);
+					Integer trackNo2 = audioData2.getAttribute(attribute, Integer.class);
+					if (trackNo1 != null && trackNo2 != null) {
+						return trackNo1.compareTo(trackNo2);
+					}
 				}
 				else {
-					rc = v1.compareToIgnoreCase(v2);
+					String v1 = audioData1.getAttribute(attribute);
+					String v2 = audioData2.getAttribute(attribute);
+					if (naturalSort) {
+						return NaturalSortStringComparator.INSTANCE.compare(v1.toLowerCase(), v2.toLowerCase());
+					}
+					else {
+						return v1.compareToIgnoreCase(v2);
+					}
 				}
 			}
+			else if (audioData1.hasAttribute(attribute)) {
+				return -1;
+			}
+			else if (audioData2.hasAttribute(attribute)) {
+				return 1;
+			}
 		}
-		else if (audioData1.hasAttribute(attribute)) {
-			rc = -1;
+		else if (file1.getContent().hasMetaData(AudioData.class)) {
+			return -1;
 		}
-		else if (audioData2.hasAttribute(attribute)) {
-			rc = 1;
+		else if (file2.getContent().hasMetaData(AudioData.class)) {
+			return 1;
 		}
-		return rc;
+		return 0;
 	}
 }

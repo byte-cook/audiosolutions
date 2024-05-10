@@ -81,8 +81,6 @@ public class AudioCollectionContentProvider implements ITreeContentProvider {
 	@Override
 	public Object[] getElements(Object input) {
 		if (input instanceof AudioCollectionModel) {
-			model.initLayout(layoutManager.getActiveLayout());
-			
 			switch (layoutManager.getActiveLayout()) {
 			case FLAT:
 				return model.getFiles().toArray();

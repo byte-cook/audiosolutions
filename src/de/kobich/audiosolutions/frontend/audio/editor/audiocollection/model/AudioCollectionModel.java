@@ -50,8 +50,8 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 		this.albums = new HashSet<AlbumTreeNode>();
 	}
 	
-	public void initLayout(LayoutType layout) {
-		switch (layout) {
+	public void initLayout() {
+		switch (layoutManager.getActiveLayout()) {
 		case FLAT:
 			this.files.clear();;
 			for (FileDescriptor fileDescriptor : fileCollection.getFileDescriptors()) {

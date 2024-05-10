@@ -14,7 +14,6 @@ import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TextCellEditor;
@@ -93,8 +92,10 @@ import de.kobich.commons.ui.jface.JFaceUtils;
 import de.kobich.commons.ui.jface.MementoUtils;
 import de.kobich.commons.ui.jface.listener.TreeExpandKeyListener;
 import de.kobich.commons.ui.jface.progress.ProgressMonitorAdapter;
+import de.kobich.commons.ui.jface.tree.TreeColumnLayoutManager;
 import de.kobich.commons.ui.memento.IMementoItem;
 import de.kobich.component.file.FileDescriptor;
+import lombok.Getter;
 
 /**
  * Audio collection editor.
@@ -109,6 +110,8 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	private AudioCollectionEditorLabelProvider labelProvider;
 	private CollectionEditorFileMonitor fileMonitor;
 	private AudioCollectionEditorEventListener eventListener;
+	@Getter
+	private TreeColumnLayoutManager columnManager;
 	private EditorLayoutManager layoutManager;
 	private CollectionEditorUpdateManager editorUpdateManager;
 	private TreeViewer treeViewer;
@@ -138,7 +141,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 			this.mementoItem = MementoUtils.getMementoItemToSave(dialogSettings, ID);
 			
 			this.fileCollection = (FileCollection) editorInput;
-			this.labelProvider = new AudioCollectionEditorLabelProvider(true);
 			this.layoutManager = new EditorLayoutManager(this, mementoItem);
 			this.contentProvider = new AudioCollectionContentProvider(this.layoutManager);
 			this.eventListener = new AudioCollectionEditorEventListener(this);
@@ -322,20 +324,14 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 
 		Tree tree = toolkit.createTree(treeComposite, SWT.FULL_SELECTION | SWT.MULTI);
 		treeViewer = new TreeViewer(tree);
-		treeViewer.setContentProvider(contentProvider);
-		treeViewer.setLabelProvider(labelProvider);
 		treeViewer.setComparator(this.comparator);
 		treeViewer.addFilter(filter);
-
-		tree.setLayoutData(new GridData(GridData.FILL_BOTH));
-		tree.addKeyListener(new TreeExpandKeyListener(treeViewer));
-
-		List<String> columnNames = new ArrayList<String>();
-		List<CellEditor> cellEditors = new ArrayList<CellEditor>();
-		for (final AudioCollectionEditorColumn column : AudioCollectionEditorColumn.values()) {
-			final TreeColumn treeColumn = new TreeColumn(tree, SWT.LEFT, column.getIndex());
+		this.columnManager = new TreeColumnLayoutManager(treeComposite, treeViewer, mementoItem);
+		this.columnManager.setTreeColumnProvider(columnData -> {
+			final AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) columnData.getElement();
+			
+			TreeColumn treeColumn = new TreeColumn(tree, SWT.LEFT);
 			treeColumn.setText(column.getLabel());
-			treeColumnLayout.setColumnData(treeColumn, new ColumnWeightData(column.getWidthPercent(), column.getWidth()));
 			treeColumn.setMoveable(true);
 			treeColumn.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
@@ -346,9 +342,24 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 					treeViewer.refresh();
 				}
 			});
+			return treeColumn;
+			
+		});
+		List<String> columnNames = new ArrayList<>();
+		List<CellEditor> cellEditors = new ArrayList<>();
+		for (AudioCollectionEditorColumn column : AudioCollectionEditorColumn.values()) {
 			columnNames.add(column.name());
 			cellEditors.add(new TextCellEditor(tree));
+			columnManager.addColumn(column.createTreeColumnData());
 		}
+		columnManager.restoreState();
+		columnManager.createColumns();
+
+		this.labelProvider = new AudioCollectionEditorLabelProvider(columnManager);
+		treeViewer.setLabelProvider(labelProvider);
+		treeViewer.setContentProvider(contentProvider);
+		tree.setLayoutData(new GridData(GridData.FILL_BOTH));
+		tree.addKeyListener(new TreeExpandKeyListener(treeViewer));
 
 		// add editor support
 		CellEditor[] editors = cellEditors.toArray(new CellEditor[0]); 
@@ -361,6 +372,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 
 		Object[] elements = treeViewer.getExpandedElements();
 		ISelection selection = treeViewer.getSelection();
+		model.initLayout();
 		treeViewer.setInput(this.model);
 		treeViewer.setExpandedElements(elements);
 		treeViewer.setSelection(selection, true);
@@ -378,10 +390,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		getSite().registerContextMenu(menuManager, treeViewer);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
 	@Override
 	public void createPartControl(Composite parent) {
 		Form form = super.createForm(parent);
@@ -481,7 +489,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 				}
 				
 				ISelection newSel = new StructuredSelection(newSelectionElements);
-				FileDescriptorSelection newSelection = new FileDescriptorSelection(newSel, oldSelection.getEditorFilter());
+				FileDescriptorSelection newSelection = new FileDescriptorSelection(newSel, filter);
 				boolean selectionChanged = !newSelection.getFileDescriptors().equals(oldSelection.getFileDescriptors());
 				if (selectionChanged) {
 					treeViewer.setSelection(newSel);
@@ -654,14 +662,22 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 			}
 		}
 	}
+	
+	public void refresh() {
+		getSite().getShell().getDisplay().syncExec(() -> treeViewer.refresh());
+	}
 
 	@Override
 	public void switchLayout(LayoutType layout) {
-		layoutManager.saveState();
-
-		ISelection selection = switchSelection(getFileDescriptorSelection(), layout);
-		treeViewer.refresh();
-		treeViewer.setSelection(selection, true);
+		JFaceExec.builder(getEditorSite().getShell())
+			.worker(ctx -> layoutManager.saveState())
+			.worker(ctx -> model.initLayout())
+			.ui(ctx -> {
+				ISelection selection = switchSelection(getFileDescriptorSelection(), layout);
+				treeViewer.refresh();
+				treeViewer.setSelection(selection, true);
+			})
+			.runProgressMonitorDialog(true, false);
 	}
 	
 	/**

@@ -78,6 +78,7 @@ public class FileDescriptorSelection {
 		return Collections.unmodifiableList(elements);
 	}
 
+	@Deprecated
 	public CollectionEditorViewerFilter getEditorFilter() {
 		return editorFilter;
 	}

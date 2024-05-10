@@ -481,8 +481,7 @@
             name="Copy Files To Directory">
       </command>
       <command
-            defaultHandler="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.ConfigurePlaylistColumnsAction"
-            id="de.kobich.audiosolutions.commands.editor.configurePlaylistColumns"
+            id="de.kobich.audiosolutions.commands.editor.configureColumns"
             name="Configure Playlist Columns">
       </command>
       <command
@@ -1456,6 +1455,15 @@
                    label="Modify Import Directory..."
                    style="push">
              </command>
+             <separator
+                   name="de.kobich.audiosolutions.separator6"
+                   visible="true">
+             </separator>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.editor.configureColumns"
+                   label="Configure Columns..."
+                   style="push">
+             </command>
           </menuContribution>
       <menuContribution
             locationURI="toolbar:de.kobich.audiosolutions.view.file.browseFilesView">
@@ -1901,7 +1909,7 @@
                visible="true">
          </separator>
          <command
-               commandId="de.kobich.audiosolutions.commands.editor.configurePlaylistColumns"
+               commandId="de.kobich.audiosolutions.commands.editor.configureColumns"
                label="Configure Columns..."
                mode="FORCE_TEXT"
                style="push">
@@ -2834,6 +2842,30 @@
       <handler
             class="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.MoveToFolderAction"
             commandId="de.kobich.audiosolutions.commands.editor.moveToFolder">
+      </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.ConfigurePlaylistColumnsAction"
+            commandId="de.kobich.audiosolutions.commands.editor.configureColumns">
+         <activeWhen>
+            <with
+                  variable="activeEditorId">
+               <equals
+                     value="de.kobich.audiosolutions.editor.playlistEditor">
+               </equals>
+            </with>
+         </activeWhen>
+      </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action.ConfigureAudioCollectionColumnsAction"
+            commandId="de.kobich.audiosolutions.commands.editor.configureColumns">
+         <activeWhen>
+            <with
+                  variable="activeEditorId">
+               <equals
+                     value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+               </equals>
+            </with>
+         </activeWhen>
       </handler>
    </extension>
    <extension
