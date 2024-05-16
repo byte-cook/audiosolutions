@@ -520,13 +520,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	}
 
 	/**
-	 * Switches the layout
-	 */
-	public void switchLayout() {
-		// TODO editor remove
-	}
-	
-	/**
 	 * @return the fileCollection
 	 */
 	public FileCollection getFileCollection() {

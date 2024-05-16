@@ -19,6 +19,7 @@ import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 import de.kobich.commons.ui.jface.listener.SelectionProviderIntermediate;
 
+@Deprecated
 public class CollectionEditorLayoutManager {
 	private final ICollectionEditor editor;
 	private final FormToolkit toolkit;

@@ -10,8 +10,9 @@ import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 /**
  * File collection editors.
  */
+//@Deprecated
 public interface ICollectionEditor extends IEditorPart {
-	public static enum CollectionEditorType {
+	public enum CollectionEditorType {
 		DIRECTORY("Directory"), SEARCH("Search"), IMPORT("Import");
 		
 		private final String label;
@@ -39,7 +40,7 @@ public interface ICollectionEditor extends IEditorPart {
 	 * Switches the layout
 	 */
 	@Deprecated
-	void switchLayout();
+	default void switchLayout() {}
 
 	/**
 	 * Updates this editor

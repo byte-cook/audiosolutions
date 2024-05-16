@@ -24,6 +24,7 @@ import de.kobich.component.file.FileDescriptor;
 /**
  * Abstract layout providing some helper methods.
  */
+@Deprecated
 public abstract class AbstractCollectionEditorLayout implements ICollectionEditorLayout {
 	
 	/**
