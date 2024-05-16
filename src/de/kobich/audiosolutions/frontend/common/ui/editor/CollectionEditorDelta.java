@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import de.kobich.audiosolutions.core.service.AudioFileResult;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.component.file.FileDescriptor;
 import de.kobich.component.file.descriptor.FileDescriptorResult;
@@ -57,12 +56,6 @@ public class CollectionEditorDelta {
 
 	public Set<FileDescriptor> getRemoveItems() {
 		return removeItems;
-	}
-	
-	public void copyFromResult(AudioFileResult result) {
-		this.getAddItems().addAll(result.getReplacedFiles().values());
-		this.getRemoveItems().addAll(result.getReplacedFiles().keySet());
-		this.getReplaceItems().putAll(result.getReplacedFiles());
 	}
 	
 	public void copyFromResult(FileDescriptorResult result) {
