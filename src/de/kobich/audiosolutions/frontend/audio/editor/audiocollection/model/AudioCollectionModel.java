@@ -139,10 +139,10 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 			// file already exists
 			return;
 		}
+		files.add(fileDescriptorNode);
 		
 		switch (layoutManager.getActiveLayout()) {
 		case FLAT:
-			files.add(fileDescriptorNode);
 			uiDeltas.addItem(this, fileDescriptorNode, LayoutType.FLAT);
 			break;
 		case HIERARCHICAL:
@@ -171,9 +171,10 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 		 * Note: removed fileDescriptor does not have audio data
 		 */
 		FileDescriptorTreeNode fileDescriptorNode = new FileDescriptorTreeNode(fileDescriptor);
+		files.remove(fileDescriptorNode);
+		
 		switch (layoutManager.getActiveLayout()) {
 		case FLAT:
-			files.remove(fileDescriptorNode);
 			uiDeltas.removeItem(fileDescriptorNode, LayoutType.FLAT);
 			break;
 		case HIERARCHICAL:
