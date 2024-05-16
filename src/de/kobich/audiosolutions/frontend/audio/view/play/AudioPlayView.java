@@ -335,7 +335,10 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable,
 		
 		String currentFilePath = mementoItem.getString(STATE_CURRENT_FILE, "");
 		if (StringUtils.isNoneBlank(currentFilePath)) {
-			this.playlist.getFile(new File(currentFilePath)).ifPresent(f -> this.playlist.setStartFile(f));
+			File currentFile = new File(currentFilePath);
+			if (currentFile.exists()) {
+				this.playlist.getFile(currentFile).ifPresent(f -> this.playlist.setStartFile(f));
+			}
 		}
 		
 		provider.setPlaylistEmpty(this.playlist.isEmpty());
