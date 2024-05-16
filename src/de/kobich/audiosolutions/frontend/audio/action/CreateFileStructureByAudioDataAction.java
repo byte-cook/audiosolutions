@@ -93,7 +93,6 @@ public class CreateFileStructureByAudioDataAction extends AbstractHandler {
 						break;
 					case UI_2:
 						UIEvent event = new UIEvent(ActionType.FILE, audioCollectionEditor);
-						event.getEditorDelta().copyFromResult(result);
 						event.getFileDelta().copyFromResult(result);
 						EventSupport.INSTANCE.fireEvent(event);
 						break;
