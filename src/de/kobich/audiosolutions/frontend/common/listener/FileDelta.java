@@ -54,6 +54,7 @@ public class FileDelta {
 
 	public void copyFromResult(AudioFileResult result) {
 		this.getCreateItems().addAll(result.getCreatedFiles());
+		this.getDeleteItems().addAll(result.getDeletedFiles());
 	}
 	
 	public void copyFromResult(FileDescriptorResult result) {
