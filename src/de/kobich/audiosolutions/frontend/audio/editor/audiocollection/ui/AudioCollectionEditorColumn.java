@@ -24,7 +24,7 @@ public enum AudioCollectionEditorColumn {
 	RELATIVE_PATH(2, "Relative Path", 200, 35, 4, ColumnWeightData.MINIMUM_WIDTH, false),
 	EXTENSION(3, "Extension", 50, 5, 1, 30, false),
 	SIZE(4, "Size", 25, 10, 1, 30, false),
-	LAST_MODIFIED(5, "Last Modified", 75, 15, 1, 40, false);
+	LAST_MODIFIED(5, "Last Modified", 75, 15, 1, 50, false);
 	;
 	
 	private final int index;
