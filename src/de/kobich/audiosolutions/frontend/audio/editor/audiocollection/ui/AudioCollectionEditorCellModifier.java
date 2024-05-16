@@ -28,10 +28,7 @@ public class AudioCollectionEditorCellModifier implements ICellModifier {
 		this.editor = editor;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#canModify(java.lang.Object, java.lang.String)
-	 */
+	@Override
 	public boolean canModify(Object element, String property) {
 		if (element instanceof FileDescriptorTreeNode) {
 			AudioCollectionEditorColumn column = AudioCollectionEditorColumn.getByName(property);
@@ -53,10 +50,7 @@ public class AudioCollectionEditorCellModifier implements ICellModifier {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object, java.lang.String)
-	 */
+	@Override
 	public Object getValue(Object element, String property) {
 		if (element instanceof FileDescriptorTreeNode) {
 			FileDescriptorTreeNode treeNode = (FileDescriptorTreeNode) element;
