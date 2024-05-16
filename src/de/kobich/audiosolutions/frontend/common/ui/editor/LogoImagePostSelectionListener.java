@@ -40,7 +40,6 @@ public class LogoImagePostSelectionListener implements ISelectionChangedListener
 			editor.showDefaultLogo();
 			return;
 		}
-		// TODO: sort files as in UI, use AudioCollectionEditorComparator from editor
 		Collections.sort(files, new DefaultFileDescriptorComparator());
 		currentFile = files.get(0);
 		
