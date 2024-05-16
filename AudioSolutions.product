@@ -36,7 +36,7 @@ I hope you enjoy AudioSolutions.
 --launcher.GTK_version
 2
       </programArgs>
-      <vmArgs>-client -Xms512m -Xmx512m -DadjustHeightEnabled=true
+      <vmArgs>-Xms512m -Xmx1024m -DadjustHeightEnabled=true
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
@@ -61,9 +61,8 @@ I hope you enjoy AudioSolutions.
       </win>
    </launcher>
 
-
    <vm>
-      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</linux>
+      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-14</linux>
       <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/OSGi%Minimum-1.0</windows>
    </vm>
 
