@@ -13,46 +13,30 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum AudioCollectionEditorColumn {
 	// audio
-	FILE_NAME(0, "File Name", 150, 15, 3, ColumnWeightData.MINIMUM_WIDTH, true),
-	TRACK(1, "Track", 150, 15, 3, ColumnWeightData.MINIMUM_WIDTH, true),
-	TRACK_NO(2, "No", 30, 5, 1, 30, true),
-	TRACK_FORMAT(3, "Format", 30, 5, 1, 30, true),
-	ARTIST(4, "Artist", 100, 15, 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	ALBUM(5, "Album", 100, 10, 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	ALBUM_PUBLICATION(6, "Publication", 60, 10, 1, 40, true),
-	DISK(7, "Disk", 50, 5, 1, 30, true),
-	GENRE(8, "Genre", 60, 10, 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	MEDIUM(9, "Medium", 60, 10, 1, 30, true),
+	FILE_NAME("File Name", 3, ColumnWeightData.MINIMUM_WIDTH, true),
+	TRACK("Track", 3, ColumnWeightData.MINIMUM_WIDTH, true),
+	TRACK_NO("No", 1, 30, true),
+	TRACK_FORMAT("Format", 1, 30, true),
+	ARTIST("Artist", 2, ColumnWeightData.MINIMUM_WIDTH, true),
+	ALBUM("Album", 2, ColumnWeightData.MINIMUM_WIDTH, true),
+	ALBUM_PUBLICATION("Publication", 1, 40, true),
+	DISK("Disk", 1, 30, true),
+	GENRE("Genre", 2, ColumnWeightData.MINIMUM_WIDTH, true),
+	MEDIUM("Medium", 1, 30, true),
 	// file
-	EXISTS(1, "Exists", 40, 5, 1, 30, false),
-	RELATIVE_PATH(2, "Relative Path", 200, 35, 4, ColumnWeightData.MINIMUM_WIDTH, false),
-	EXTENSION(3, "Extension", 50, 5, 1, 30, false),
-	SIZE(4, "Size", 25, 10, 1, 30, false),
-	LAST_MODIFIED(5, "Last Modified", 75, 15, 1, 50, false);
+	EXISTS("Exists", 1, 30, false),
+	RELATIVE_PATH("Relative Path", 4, ColumnWeightData.MINIMUM_WIDTH, false),
+	EXTENSION("Extension", 1, 30, false),
+	SIZE("Size", 1, 30, false),
+	LAST_MODIFIED("Last Modified", 1, 50, false);
 	;
 	
-	private final int index;
 	@Getter
 	private final String label;
-	private final int width;
-	private final int widthPercent;
 
 	private final int widthShare;
 	private final int minimumWidth;
 	private final boolean visible;
-	
-	@Deprecated
-	public int getIndex() {
-		return index;
-	}
-	@Deprecated
-	public int getWidth() {
-		return width;
-	}
-	@Deprecated
-	public int getWidthPercent() {
-		return widthPercent;
-	}
 	
 	public EditingSupport createEditingSupport(AudioCollectionEditor editor, TreeViewer viewer) {
 		return new AudioCollectionEditingSupport(editor, viewer, this);
