@@ -3,6 +3,7 @@ package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui;
 import java.util.Date;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
@@ -114,40 +115,45 @@ public class AudioCollectionEditingSupport extends EditingSupport {
 	@Override
 	public void setValue(Object element, Object value) {
 		try {
+			String valueStr = String.valueOf(value);
+			if (StringUtils.isBlank(valueStr)) {
+				return;
+			}
+			
 			if (element instanceof FileDescriptorTreeNode treeNode) {
 				FileDescriptor fileDescriptor = treeNode.getContent();
 
 				AudioDataChange change = null;
 				switch (column) {
 					case ALBUM:
-						change = AudioDataChange.builder().album(String.valueOf(value)).build();
+						change = AudioDataChange.builder().album(valueStr).build();
 						break;
 					case ALBUM_PUBLICATION:
-						Date publication = AudioAttributeUtils.convert2Date(String.valueOf(value));
+						Date publication = AudioAttributeUtils.convert2Date(valueStr);
 						if (publication != null) {
 							change = AudioDataChange.builder().albumPublication(publication).build();
 						}
 						break;
 					case ARTIST:
-						change = AudioDataChange.builder().artist(String.valueOf(value)).build();
+						change = AudioDataChange.builder().artist(valueStr).build();
 						break;
 					case DISK:
-						change = AudioDataChange.builder().disk(String.valueOf(value)).build();
+						change = AudioDataChange.builder().disk(valueStr).build();
 						break;
 					case GENRE:
-						change = AudioDataChange.builder().genre(String.valueOf(value)).build();
+						change = AudioDataChange.builder().genre(valueStr).build();
 						break;
 					case MEDIUM:
-						change = AudioDataChange.builder().medium(String.valueOf(value)).build();
+						change = AudioDataChange.builder().medium(valueStr).build();
 						break;
 					case TRACK:
-						change = AudioDataChange.builder().track(String.valueOf(value)).build();
+						change = AudioDataChange.builder().track(valueStr).build();
 						break;
 					case TRACK_FORMAT:
-						change = AudioDataChange.builder().trackFormat(String.valueOf(value)).build();
+						change = AudioDataChange.builder().trackFormat(valueStr).build();
 						break;
 					case TRACK_NO:
-						Integer no = AudioAttributeUtils.convert2Integer(String.valueOf(value));
+						Integer no = AudioAttributeUtils.convert2Integer(valueStr);
 						if (no != null) {
 							change = AudioDataChange.builder().trackNo(no).build();
 						}
