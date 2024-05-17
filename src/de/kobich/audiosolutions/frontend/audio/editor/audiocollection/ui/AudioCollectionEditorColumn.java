@@ -1,7 +1,11 @@
 package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui;
 
+import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.TreeViewer;
 
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.commons.ui.jface.tree.TreeColumnData;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -50,18 +54,12 @@ public enum AudioCollectionEditorColumn {
 		return widthPercent;
 	}
 	
-	/**
-	 * Returns a column by name
-	 * @param name
-	 * @return
-	 */
-	public static AudioCollectionEditorColumn getByName(String name) {
-		for (AudioCollectionEditorColumn column : AudioCollectionEditorColumn.values()) {
-			if (column.name().equals(name)) {
-				return column;
-			}
-		}
-		throw new IndexOutOfBoundsException("No column with name: " + name);
+	public EditingSupport createEditingSupport(AudioCollectionEditor editor, TreeViewer viewer) {
+		return new AudioCollectionEditingSupport(editor, viewer, this);
+	}
+	
+	public CellLabelProvider createCellLabelProvider() {
+		return new AudioCollectionEditorLabelProvider(this);
 	}
 	
 	public TreeColumnData createTreeColumnData() {

@@ -2,9 +2,7 @@ package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui;
 
 import java.util.Date;
 
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 import de.kobich.audiosolutions.core.service.AudioAttribute;
@@ -17,11 +15,10 @@ import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.Albu
 import de.kobich.audiosolutions.frontend.common.util.FileLabelUtil;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
-import de.kobich.commons.ui.jface.tree.TreeColumnLayoutManager;
 import de.kobich.component.file.FileDescriptor;
 
-public class AudioCollectionEditorLabelProvider extends LabelProvider implements ITableLabelProvider {
-	private final TreeColumnLayoutManager layoutManager;
+public class AudioCollectionEditorLabelProvider extends ColumnLabelProvider {
+	private final AudioCollectionEditorColumn column;
 	private Image folderImg;
 	private Image albumImg;
 	private Image audioFileNewWarnImg;
@@ -33,8 +30,8 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 	private Image audioFileRemoveImg;
 	private Image fileImg;
 	
-	public AudioCollectionEditorLabelProvider(TreeColumnLayoutManager layoutManager) {
-		this.layoutManager = layoutManager;
+	public AudioCollectionEditorLabelProvider(AudioCollectionEditorColumn column) {
+		this.column = column;
 		this.folderImg = Activator.getDefault().getImage(ImageKey.FOLDER);
 		this.albumImg = Activator.getDefault().getImage(ImageKey.ALBUM);
 		this.audioFileNewWarnImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE_NEW_WARN);
@@ -48,8 +45,7 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 	}
 
 	@Override
-	public Image getColumnImage(Object element, int columnIndex) {
-		AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) layoutManager.getElementByIndex(columnIndex).orElseThrow();
+	public Image getImage(Object element) {
 		if (AudioCollectionEditorColumn.FILE_NAME.equals(column)) {
 			if (element instanceof RelativePathTreeNode) {
 				return folderImg;
@@ -88,8 +84,7 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 	}
 
 	@Override
-	public String getColumnText(Object element, int columnIndex) {
-		AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) layoutManager.getElementByIndex(columnIndex).orElseThrow();
+	public String getText(Object element) {
 		return AudioCollectionEditorLabelProvider.getColumnText(element, column);
 	}
 		
@@ -182,20 +177,5 @@ public class AudioCollectionEditorLabelProvider extends LabelProvider implements
 			return "";
 		}
 	}
-
-	@Override
-	public void addListener(ILabelProviderListener arg0) {}
-
-	@Override
-	public void dispose() {
-	}
-
-	@Override
-	public boolean isLabelProperty(Object arg0, String arg1) {
-		return false;
-	}
-
-	@Override
-	public void removeListener(ILabelProviderListener arg0) {}
 
 }

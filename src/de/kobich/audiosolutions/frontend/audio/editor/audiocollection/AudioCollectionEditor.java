@@ -13,11 +13,10 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -55,11 +54,9 @@ import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AudioCollectionModel;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionContentProvider;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorCellModifier;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorColumn;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorComparator;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorComparator.Direction;
-import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.ui.AudioCollectionEditorLabelProvider;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.AudioDelta;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
@@ -107,7 +104,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	private FileCollection fileCollection;
 	private AudioCollectionModel model;
 	private AudioCollectionContentProvider contentProvider;
-	private AudioCollectionEditorLabelProvider labelProvider;
 	private CollectionEditorFileMonitor fileMonitor;
 	private AudioCollectionEditorEventListener eventListener;
 	@Getter
@@ -185,7 +181,6 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		}
 		this.fileCollection.removePropertyChangeListener(this.eventListener);
 		this.eventListener.deregister();
-		this.labelProvider.dispose();
 		if (this.fileMonitor != null) {
 			this.fileMonitor.dispose();
 		}
@@ -330,7 +325,11 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		this.columnManager.setTreeColumnProvider(columnData -> {
 			final AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) columnData.getElement();
 			
-			TreeColumn treeColumn = new TreeColumn(tree, SWT.LEFT);
+			TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.LEFT);
+			treeViewerColumn.setLabelProvider(column.createCellLabelProvider());
+			treeViewerColumn.setEditingSupport(column.createEditingSupport(this, treeViewer));
+			
+			TreeColumn treeColumn = treeViewerColumn.getColumn();
 			treeColumn.setText(column.getLabel());
 			treeColumn.setMoveable(true);
 			treeColumn.addSelectionListener(new SelectionAdapter() {
@@ -343,45 +342,28 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 				}
 			});
 			return treeColumn;
-			
 		});
-		List<String> columnNames = new ArrayList<>();
-		List<CellEditor> cellEditors = new ArrayList<>();
 		for (AudioCollectionEditorColumn column : AudioCollectionEditorColumn.values()) {
-			columnNames.add(column.name());
-			cellEditors.add(new TextCellEditor(tree));
 			columnManager.addColumn(column.createTreeColumnData());
 		}
 		columnManager.restoreState();
 		columnManager.createColumns();
 
-		this.labelProvider = new AudioCollectionEditorLabelProvider(columnManager);
-		treeViewer.setLabelProvider(labelProvider);
 		treeViewer.setContentProvider(contentProvider);
 		tree.setLayoutData(new GridData(GridData.FILL_BOTH));
 		tree.addKeyListener(new TreeExpandKeyListener(treeViewer));
-
-		// add editor support
-		CellEditor[] editors = cellEditors.toArray(new CellEditor[0]); 
-	    String[] columnProperties = columnNames.toArray(new String[0]); 
-	    treeViewer.setColumnProperties(columnProperties);
-	    treeViewer.setCellModifier(new AudioCollectionEditorCellModifier(this));
-		treeViewer.setCellEditors(editors);
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
 
 		Object[] elements = treeViewer.getExpandedElements();
-		ISelection selection = treeViewer.getSelection();
 		model.initLayout();
 		treeViewer.setInput(this.model);
 		treeViewer.setExpandedElements(elements);
-		treeViewer.setSelection(selection, true);
 		
 		treeViewer.addPostSelectionChangedListener(new LogoImagePostSelectionListener(this, filter));
 		getSite().setSelectionProvider(treeViewer);
 		SelectionSupport.INSTANCE.registerEditor(this, treeViewer);
 		showDefaultLogo();
-//		treeViewer.setSelection(treeViewer.getSelection(), true);
 		
 		// register context menu
 		MenuManager menuManager = new MenuManager();
