@@ -1,29 +1,26 @@
 package de.kobich.audiosolutions.frontend.audio.editor.playlist;
 
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.graphics.Image;
 
 import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFile;
 import de.kobich.audiosolutions.core.service.playlist.EditablePlaylistFolder;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
-import de.kobich.commons.ui.jface.tree.TreeColumnLayoutManager;
 
-public class PlaylistEditorLabelProvider implements ITableLabelProvider {
-	private final TreeColumnLayoutManager layoutManager;
+public class PlaylistEditorLabelProvider extends ColumnLabelProvider {
+	private final PlaylistEditorColumn column;
 	private Image folderImg;
 	private Image fileImg;
 	
-	public PlaylistEditorLabelProvider(TreeColumnLayoutManager layoutManager) {
-		this.layoutManager = layoutManager;
+	public PlaylistEditorLabelProvider(PlaylistEditorColumn column) {
+		this.column = column;
 		this.folderImg = Activator.getDefault().getImage(ImageKey.FOLDER);
 		this.fileImg = Activator.getDefault().getImage(ImageKey.AUDIO_FILE);
 	}
 
 	@Override
-	public Image getColumnImage(Object element, int columnIndex) {
-		PlaylistEditorColumn column = (PlaylistEditorColumn) layoutManager.getElementByIndex(columnIndex).orElseThrow();
+	public Image getImage(Object element) {
 		if (PlaylistEditorColumn.NAME.equals(column)) {
 			if (element instanceof EditablePlaylistFolder folder) {
 				return folderImg;
@@ -36,8 +33,7 @@ public class PlaylistEditorLabelProvider implements ITableLabelProvider {
 	}
 
 	@Override
-	public String getColumnText(Object element, int columnIndex) {
-		PlaylistEditorColumn column = (PlaylistEditorColumn) layoutManager.getElementByIndex(columnIndex).orElseThrow();
+	public String getText(Object element) {
 		if (element instanceof EditablePlaylistFolder folder) {
 			switch (column) {
 				case NAME:
@@ -62,22 +58,7 @@ public class PlaylistEditorLabelProvider implements ITableLabelProvider {
 					return "";
 			}
 		}
-		throw new IllegalStateException("Illegal column index <" + columnIndex + ">, expected<0 - 3>");
+		throw new IllegalStateException("Illegal element <" + element + ">");
 	}
-
-	@Override
-	public void addListener(ILabelProviderListener arg0) {}
-
-	@Override
-	public void dispose() {
-	}
-
-	@Override
-	public boolean isLabelProperty(Object arg0, String arg1) {
-		return false;
-	}
-
-	@Override
-	public void removeListener(ILabelProviderListener arg0) {}
 
 }

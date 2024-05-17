@@ -16,13 +16,12 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TreeColumnLayout;
-import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -212,7 +211,11 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		this.columnManager.setTreeColumnProvider(columnData -> {
 			final PlaylistEditorColumn column = (PlaylistEditorColumn) columnData.getElement();
 			
-			TreeColumn treeColumn = new TreeColumn(tree, SWT.LEFT);
+			TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.LEFT);
+			treeViewerColumn.setLabelProvider(column.createCellLabelProvider());
+			treeViewerColumn.setEditingSupport(column.createEditingSupport(this, treeViewer));
+			
+			TreeColumn treeColumn = treeViewerColumn.getColumn();
 			treeColumn.setText(column.getLabel());
 			treeColumn.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
@@ -226,30 +229,19 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 			return treeColumn;
 			
 		});
-		List<String> columnNames = new ArrayList<>();
-		List<CellEditor> cellEditors = new ArrayList<>();
 		for (PlaylistEditorColumn column : PlaylistEditorColumn.values()) {
-			columnNames.add(column.name());
-			cellEditors.add(new TextCellEditor(tree));
 			columnManager.addColumn(column.createTreeColumnData());
 		}
 		columnManager.restoreState();
 		columnManager.createColumns();
 		
 		treeViewer.setContentProvider(new PlaylistEditorContentProvider(layoutManager));
-		treeViewer.setLabelProvider(new PlaylistEditorLabelProvider(columnManager));
 		tree.addKeyListener(new TreeExpandKeyListener(treeViewer));
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
 		treeViewer.addFilter(filter);
 		treeViewer.setInput(this.playlist);
-		
-		// add editor support
-		CellEditor[] editors = cellEditors.toArray(new CellEditor[0]); 
-	    String[] columnProperties = columnNames.toArray(new String[0]); 
-	    treeViewer.setColumnProperties(columnProperties);
-		treeViewer.setCellModifier(new PlaylistEditorCellModifier(this));
-		treeViewer.setCellEditors(editors);
+
 		getSite().setSelectionProvider(treeViewer);
 		SelectionSupport.INSTANCE.registerEditor(this, treeViewer);
 		
