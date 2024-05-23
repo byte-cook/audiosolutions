@@ -126,6 +126,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 	private Image smallLogoImage;
 	private Image largeLogoImage;
 	private IMementoItem mementoItem;
+	private LogoImagePostSelectionListener imagePostSelectionListener;
 
 	@Override
 	public void init(IEditorSite editorSite, IEditorInput editorInput) throws PartInitException {
@@ -189,6 +190,8 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		this.artistText.dispose();
 		this.pathText.dispose();
 		this.fileSizeText.dispose();
+		this.treeViewer.removeSelectionChangedListener(imagePostSelectionListener);
+		this.treeViewer.getTree().dispose();
 		super.dispose();
 	}
 
@@ -360,7 +363,8 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		treeViewer.setInput(this.model);
 		treeViewer.setExpandedElements(elements);
 		
-		treeViewer.addPostSelectionChangedListener(new LogoImagePostSelectionListener(this, filter));
+		this.imagePostSelectionListener = new LogoImagePostSelectionListener(this, filter);
+		treeViewer.addPostSelectionChangedListener(imagePostSelectionListener);
 		getSite().setSelectionProvider(treeViewer);
 		SelectionSupport.INSTANCE.registerEditor(this, treeViewer);
 		showDefaultLogo();
