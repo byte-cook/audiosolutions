@@ -835,7 +835,7 @@
                     icon="/icons/audio/audio-collection.png"
                     label="Open"
                     mode="FORCE_TEXT"
-                    style="pulldown"
+                    style="push"
                     tooltip="Open Audio Collection Editor">
               </command>
               <command
@@ -862,43 +862,6 @@
                     mnemonic="S"
                     mode="FORCE_TEXT"
                     style="push">
-              </command>
-           </toolbar>
-           <toolbar
-                 id="de.kobich.toolbar.audiocollectioneditor"
-                 label="Editor Layout">
-              <command
-                    commandId="de.kobich.audiosolutions.commands.setAudioCollectionEditorLayout"
-                    icon="/icons/file/layout-flat.png"
-                    label="Flat"
-                    style="radio"
-                    tooltip="Flat Layout">
-                 <parameter
-                       name="org.eclipse.ui.commands.radioStateParameter"
-                       value="flat">
-                 </parameter>
-              </command>
-              <command
-                    commandId="de.kobich.audiosolutions.commands.setAudioCollectionEditorLayout"
-                    icon="/icons/file/layout-hierarchical.png"
-                    label="Hierarchical"
-                    style="radio"
-                    tooltip="Hierarchical Layout">
-                 <parameter
-                       name="org.eclipse.ui.commands.radioStateParameter"
-                       value="hierarchical">
-                 </parameter>
-              </command>
-              <command
-                    commandId="de.kobich.audiosolutions.commands.setAudioCollectionEditorLayout"
-                    icon="icons/audio/layout-album.png"
-                    label="Album"
-                    style="radio"
-                    tooltip="Album Layout">
-                 <parameter
-                       name="org.eclipse.ui.commands.radioStateParameter"
-                       value="album">
-                 </parameter>
               </command>
            </toolbar>
            <toolbar
@@ -1172,24 +1135,6 @@
               </command>
            </toolbar>
 		</menuContribution>
-          <menuContribution
-                locationURI="menu:de.kobich.audiosolutions.commands.audio.openAudioCollectionEditor">
-             <command
-                   commandId="de.kobich.audiosolutions.commands.audio.openAudioCollectionEditor"
-                   icon="/icons/audio/audio-collection.png"
-                   id="de.kobich.menu.audio.openAudioCollectionEditor"
-                   label="Open Audio Collection Editor..."
-                   mode="FORCE_TEXT"
-                   style="push">
-             </command>
-             <command
-                   commandId="de.kobich.audiosolutions.commands.openFileCollectionEditor"
-                   icon="icons/file/file-collection.png"
-                   label="Open File Collection Editor..."
-                   mode="FORCE_TEXT"
-                   style="push">
-             </command>
-          </menuContribution>
           <menuContribution
                 allPopups="false"
                 locationURI="menu:de.kobich.audiosolutions.audio.convertFiles">
