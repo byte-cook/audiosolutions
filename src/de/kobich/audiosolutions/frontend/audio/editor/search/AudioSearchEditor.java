@@ -2,7 +2,6 @@ package de.kobich.audiosolutions.frontend.audio.editor.search;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +75,6 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 	private Composite artistsComposite;
 	private Composite albumsComposite;
 	private Composite tracksComposite;
-	private UUID currentSearchingId;
 
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -198,10 +196,10 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 	
 	public void startSearch() {
 		Display.getDefault().asyncExec(() -> {
-			// use an id to make sure that only the results of the last jobs are visible 
-			currentSearchingId = UUID.randomUUID();
 			setResultsAsLoading();
 			
+			// cancel previous jobs 
+			JFaceExec.cancelJobs(this);
 			startArtistJob();
 			startAlbumJob();
 			startTrackJob();
@@ -243,19 +241,16 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 				AudioTextSearchService searchService = AudioSolutions.getService(AudioTextSearchService.class);
 				ARTISTS.set(searchService.searchArtists(search, DEFAULT_MAX_RESULTS));
 			})
-			.ui(ctx -> updateArtists(ARTISTS.get(), this.currentSearchingId, search))
+			.ui(ctx -> updateArtists(ARTISTS.get(), search))
 			.exceptionally((ctx, exc) -> {
 				logger.info(exc.getMessage(), exc);
-				updateArtists(List.of(), this.currentSearchingId, search);
-				ctx.setCancelled(true);
+				updateArtists(List.of(), search);
+				ctx.setCanceled(true);
 			})
-			.runBackgroundJob(0, false, true, null);
+			.runBackgroundJob(0, false, true, null, this);
 	}
 	
-	private void updateArtists(final List<Artist> artists, UUID id, final String searchText) {
-		if (!id.equals(currentSearchingId)) {
-			return;
-		}
+	private void updateArtists(final List<Artist> artists, final String searchText) {
 		logger.info("Found artists: " + artists);
 		// artists
 		for (Control c : artistsComposite.getChildren()) {
@@ -298,19 +293,16 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 				AudioTextSearchService searchService = AudioSolutions.getService(AudioTextSearchService.class);
 				ALBUMS.set(searchService.searchAlbums(search, DEFAULT_MAX_RESULTS));
 			})
-			.ui(ctx -> updateAlbums(ALBUMS.get(), this.currentSearchingId, search))
+			.ui(ctx -> updateAlbums(ALBUMS.get(), search))
 			.exceptionally((ctx, exc) -> {
 				logger.info(exc.getMessage(), exc);
-				updateAlbums(List.of(), this.currentSearchingId, search);
-				ctx.setCancelled(true);
+				updateAlbums(List.of(), search);
+				ctx.setCanceled(true);
 			})
-			.runBackgroundJob(0, false, true, null);
+			.runBackgroundJob(0, false, true, null, this);
 	}
 
-	private void updateAlbums(final List<Album> albums, UUID id, final String searchText) {
-		if (!id.equals(currentSearchingId)) {
-			return;
-		}
+	private void updateAlbums(final List<Album> albums, final String searchText) {
 		logger.info("Found albums: " + albums);
 		// albums
 		for (Control c : albumsComposite.getChildren()) {
@@ -364,19 +356,16 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 				AudioTextSearchService searchService = AudioSolutions.getService(AudioTextSearchService.class);
 				TRACKS.set(searchService.searchTracks(search, DEFAULT_MAX_RESULTS));
 			})
-			.ui(ctx -> updateTracks(TRACKS.get(), this.currentSearchingId, search))
+			.ui(ctx -> updateTracks(TRACKS.get(), search))
 			.exceptionally((ctx, exc) -> {
 				logger.info(exc.getMessage(), exc);
-				updateTracks(List.of(), this.currentSearchingId, search);
-				ctx.setCancelled(true);
+				updateTracks(List.of(), search);
+				ctx.setCanceled(true);
 			})
-			.runBackgroundJob(0, false, true, null);
+			.runBackgroundJob(0, false, true, null, this);
 	}
 	
-	private void updateTracks(final List<Track> tracks, UUID id, final String searchText) {
-		if (!id.equals(currentSearchingId)) {
-			return;
-		}
+	private void updateTracks(final List<Track> tracks, final String searchText) {
 		logger.info("Found tracks: " + tracks);
 		// tracks
 		for (Control c : tracksComposite.getChildren()) {
