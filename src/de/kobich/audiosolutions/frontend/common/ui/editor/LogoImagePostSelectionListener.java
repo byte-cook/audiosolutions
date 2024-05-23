@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+
+import com.google.common.base.Objects;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.core.service.info.AudioInfoService;
@@ -16,18 +17,19 @@ import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.common.preferences.GeneralPreferencePage;
 import de.kobich.audiosolutions.frontend.common.proxy.RCPProxyProvider;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
-import de.kobich.commons.ui.jface.JFaceThreadRunner;
-import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
+import de.kobich.commons.type.Wrapper;
+import de.kobich.commons.ui.jface.JFaceExec;
 import de.kobich.component.file.DefaultFileDescriptorComparator;
 import de.kobich.component.file.FileDescriptor;
 
 public class LogoImagePostSelectionListener implements ISelectionChangedListener {
-	private static final Logger logger = Logger.getLogger(LogoImagePostSelectionListener.class);
+	private final File coverArtRootDir; 
 	private final ICollectionEditor editor;
 	private final CollectionEditorViewerFilter filter;
 	private FileDescriptor currentFile;
 	
 	public LogoImagePostSelectionListener(ICollectionEditor editor, CollectionEditorViewerFilter filter) {
+		this.coverArtRootDir = AudioSolutions.getCoverArtRootDir();
 		this.editor = editor;
 		this.filter = filter;
 	}
@@ -41,52 +43,35 @@ public class LogoImagePostSelectionListener implements ISelectionChangedListener
 			return;
 		}
 		Collections.sort(files, new DefaultFileDescriptorComparator());
+		if (Objects.equal(currentFile, files.get(0))) {
+			return;
+		}
 		currentFile = files.get(0);
 		
-		JFaceThreadRunner.cancel(LogoImagePostSelectionListener.class);
-
-		final AudioInfoService audioInfoService = AudioSolutions.getService(AudioInfoService.class);
-		final File coverArtRootDir = AudioSolutions.getCoverArtRootDir();
+		JFaceExec.cancelJobs(this);
 		
-		JFaceThreadRunner runner = new JFaceThreadRunner("Checking Audio Files", editor.getSite().getShell(), List.of(RunningState.UI_1, RunningState.WORKER_1, RunningState.UI_2)) {
-			private FileInfo fileInfo;
-			private FileDescriptor myFile;
-
-			@Override
-			protected void run(RunningState state) throws Exception {
-				switch (state) {
-				case UI_1:
-					myFile = currentFile;
-					editor.showDefaultLogo();
-					break;
-				case WORKER_1:
-					boolean loadCoversFromInternet = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferencePage.LOAD_COVERS_FROM_INTERNET);
-					this.fileInfo = audioInfoService.getFileInfo(List.of(myFile), loadCoversFromInternet, coverArtRootDir, new RCPProxyProvider(), null).orElse(null);
-					break;
-				case UI_2:
-					// ensure that this thread belongs to the current selected file
-					if (!myFile.equals(currentFile)) {
-						break;
-					}
-					
-					if (fileInfo != null) {
-						editor.showLogo(fileInfo);
-					}
-					else {
-						editor.showDefaultLogo();
-					}
-					break;
-				case UI_ERROR:
-					logger.warn(this.getException());
-					editor.showDefaultLogo();
-					break;
-				default:
-					break;
+		final Wrapper<FileDescriptor> FILE = Wrapper.of(this.currentFile);
+		final Wrapper<FileInfo> FILE_INFO = Wrapper.empty();
+		JFaceExec.builder(editor.getSite().getShell(), "Loading File Logo")
+//			.ui(ctx -> editor.showDefaultLogo())
+			.worker(ctx -> {
+				boolean loadCoversFromInternet = Activator.getDefault().getPreferenceStore().getBoolean(GeneralPreferencePage.LOAD_COVERS_FROM_INTERNET);
+				final AudioInfoService audioInfoService = AudioSolutions.getService(AudioInfoService.class);
+				FILE_INFO.set(audioInfoService.getFileInfo(List.of(FILE.get()), loadCoversFromInternet, coverArtRootDir, new RCPProxyProvider(), null).orElse(null));
+			})
+			.ui(ctx -> {
+				if (FILE_INFO.isPresent()) {
+					editor.showLogo(FILE_INFO.get());
 				}
-			}
-			
-		};
-		runner.runBackgroundJob(0, false, true, null, LogoImagePostSelectionListener.class);
+				else {
+					editor.showDefaultLogo();
+				}
+			})
+			.exceptionally((ctx, e) -> {
+				editor.showDefaultLogo();
+				ctx.setCanceled(true);
+			})
+			.runBackgroundJob(0, false, true, null, this);
 	}
 
 }
