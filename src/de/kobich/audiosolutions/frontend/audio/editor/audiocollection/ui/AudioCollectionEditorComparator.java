@@ -8,8 +8,8 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import de.kobich.audiosolutions.core.service.AudioAttribute;
 import de.kobich.audiosolutions.core.service.AudioData;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.FileDescriptorTreeNode;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.RelativePathTreeNode;
 import de.kobich.commons.collections.NaturalSortStringComparator;
 import de.kobich.commons.utils.CompareUtils;
 

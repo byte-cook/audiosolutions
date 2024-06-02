@@ -22,8 +22,6 @@ import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditorModel;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutDelta;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutType;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
 import de.kobich.commons.collections.Dimension.DimensionType;
 import de.kobich.commons.collections.DimensionMap2D;
 import de.kobich.commons.utils.RelativePathUtils;

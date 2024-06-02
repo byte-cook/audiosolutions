@@ -12,9 +12,9 @@ import de.kobich.audiosolutions.core.service.AudioState;
 import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.FileDescriptorTreeNode;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.RelativePathTreeNode;
 import de.kobich.audiosolutions.frontend.common.util.FileLabelUtil;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
 import de.kobich.component.file.FileDescriptor;
 
 public class AudioCollectionEditorLabelProvider extends ColumnLabelProvider {
@@ -151,7 +151,7 @@ public class AudioCollectionEditorLabelProvider extends ColumnLabelProvider {
 					return getAudioAttributeText(fileDescriptor, AudioAttribute.TRACK_NO);
 			}
 		}
-		throw new IllegalStateException("Illegal element < " + element + ">");
+		throw new IllegalStateException("Illegal element <" + element + ">");
 	}
 	
 	private static String getAudioAttributeText(FileDescriptor fileDescriptor, AudioAttribute attribute) {

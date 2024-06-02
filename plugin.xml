@@ -142,11 +142,6 @@
             name="Open Audio Collection Editor">
       </command>
       <command
-            categoryId="AudioSolutions.FileCategory"
-            id="de.kobich.audiosolutions.commands.openFileCollectionEditor"
-            name="Open File Collection Editor">
-      </command>
-      <command
             categoryId="AudioSolutions.AudioCategory"
             id="de.kobich.audiosolutions.commands.audio.openAudioCollectionEditor"
             name="Open Audio Collection Editor">
@@ -224,11 +219,6 @@
                class="org.eclipse.ui.handlers.RegistryToggleState:false"
                id="org.eclipse.ui.commands.toggleState">
          </state>
-      </command>
-      <command
-            categoryId="AudioSolutions.FileCategory"
-            id="de.kobich.audiosolutions.commands.view.browser.openFileCollectionEditor"
-            name="Open File Collection Editor">
       </command>
       <command
             categoryId="AudioSolutions.AudioCategory"
@@ -405,20 +395,6 @@
             name="Set Audio Description">
       </command>
       <command
-            categoryId="AudioSolutions.AudioCategory"
-            id="de.kobich.audiosolutions.commands.setAudioCollectionEditorLayout"
-            name="Set Audio Collection Editor Layout">
-         <commandParameter
-               id="org.eclipse.ui.commands.radioStateParameter"
-               name="State"
-               optional="false">
-         </commandParameter>
-         <state
-               class="org.eclipse.ui.handlers.RadioState:flat"
-               id="org.eclipse.ui.commands.radioState">
-         </state>
-      </command>
-      <command
             id="de.kobich.audiosolutions.audio.createFileStructureByAudioData"
             name="Create File Structure">
       </command>
@@ -511,13 +487,6 @@
    <extension
          point="org.eclipse.ui.editors">
          <editor
-               class="de.kobich.audiosolutions.frontend.file.editor.filecollection.FileCollectionEditor"
-               default="true"
-               icon="icons/file/file-collection.png"
-               id="de.kobich.audiosolutions.editor.fileCollectionEditor"
-               name="File Collection">
-      </editor>
-         <editor
                class="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor"
                default="true"
                icon="icons/audio/audio-collection.png"
@@ -569,12 +538,6 @@
                   icon="/icons/audio/audio-collection.png"
                   id="de.kobich.menu.audio.openAudioCollectionEditor"
                   label="Open Audio Collection Editor..."
-                  style="push">
-            </command>
-            <command
-                  commandId="de.kobich.audiosolutions.commands.openFileCollectionEditor"
-                  icon="icons/file/file-collection.png"
-                  label="Open File Collection Editor..."
                   style="push">
             </command>
             <command
@@ -1467,12 +1430,6 @@
                style="push">
          </command>
          <command
-               commandId="de.kobich.audiosolutions.commands.view.browser.openFileCollectionEditor"
-               icon="icons/file/file-collection.png"
-               label="Open File Collection Editor"
-               style="push">
-         </command>
-         <command
                commandId="de.kobich.audiosolutions.commands.view.browser.openAudioCollectionEditor"
                icon="icons/audio/audio-collection.png"
                label="Open Audio Collection Editor"
@@ -1890,7 +1847,7 @@
          <handler
                commandId="org.eclipse.ui.edit.delete">
             <class
-                  class="de.kobich.audiosolutions.frontend.file.editor.filecollection.action.DeleteFileDescriptionAction">
+                  class="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action.DeleteFileDescriptionAction">
             </class>
             <activeWhen>
                <with
@@ -1909,7 +1866,7 @@
          <handler
                commandId="org.eclipse.ui.edit.rename">
             <class
-                  class="de.kobich.audiosolutions.frontend.file.editor.filecollection.action.RenameFileDescriptorsAction">
+                  class="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action.RenameFileDescriptorsAction">
             </class>
             <activeWhen>
                <with
@@ -1927,31 +1884,6 @@
                   </iterate>
                </with>
             </activeWhen>
-         </handler>
-         <handler
-               commandId="de.kobich.audiosolutions.commands.setAudioCollectionEditorLayout">
-            <class
-                  class="de.kobich.audiosolutions.frontend.audio.action.SetAudioCollectionEditorLayoutAction">
-            </class>
-            <activeWhen>
-               <with
-                     variable="activeEditor">
-                  <or>
-                     <instanceof
-                           value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                     </instanceof>
-                     <instanceof
-                           value="de.kobich.audiosolutions.frontend.file.editor.filecollection.FileCollectionEditor">
-                     </instanceof>
-                  </or>
-               </with>
-            </activeWhen>
-         </handler>
-         <handler
-               commandId="de.kobich.audiosolutions.commands.openFileCollectionEditor">
-            <class
-                  class="de.kobich.audiosolutions.frontend.file.action.OpenFileCollectionEditorAction">
-            </class>
          </handler>
          <handler
                commandId="de.kobich.audiosolutions.commands.audio.copyToClipboard">
@@ -2126,35 +2058,6 @@
          <class
                class="de.kobich.audiosolutions.frontend.file.view.browse.action.ShowFilesAction">
          </class>
-      </handler>
-      <handler
-            commandId="de.kobich.audiosolutions.commands.view.browser.openFileCollectionEditor">
-         <class
-               class="de.kobich.audiosolutions.frontend.file.view.browse.action.OpenFileCollectionEditorAction">
-         </class>
-         <activeWhen>
-            <and>
-               <with
-                     variable="activePartId">
-                  <equals
-                        value="de.kobich.audiosolutions.view.file.browseFilesView">
-                  </equals>
-               </with>
-               <with
-                     variable="selection">
-                  <count
-                        value="1">
-                  </count>
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <instanceof
-                           value="de.kobich.audiosolutions.frontend.file.IFileSource">
-                     </instanceof>
-                  </iterate>
-               </with>
-            </and>
-         </activeWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.view.browser.openAudioCollectionEditor">
@@ -2967,11 +2870,6 @@
             sequence="DEL">
       </key>
       <key
-            commandId="de.kobich.audiosolutions.commands.openFileCollectionEditor"
-            schemeId="de.kobich.audiosolutions.scheme"
-            sequence="M1+M2+O">
-      </key>
-      <key
             commandId="de.kobich.audiosolutions.commands.audio.openAudioCollectionEditor"
             schemeId="de.kobich.audiosolutions.scheme"
             sequence="M1+O">
@@ -3089,20 +2987,6 @@
    <extension
          point="org.eclipse.ui.exportWizards">
       <category
-            id="de.kobich.audiosolutions.export.fileCategory"
-            name="File">
-      </category>
-      <wizard
-            category="de.kobich.audiosolutions.export.fileCategory"
-            class="de.kobich.audiosolutions.frontend.file.wizard.FileCollectionExportWizard"
-            icon="icons/file/file-collection.png"
-            id="de.kobich.audiosolutions.frontend.file.exportWizard"
-            name="File Collection Export Wizard">
-         <description>
-            Wizard that export file collections
-         </description>
-      </wizard>
-      <category
             id="de.kobich.audiosolutions.export.audioCategory"
             name="Audio">
       </category>
@@ -3126,20 +3010,6 @@
    </extension>
    <extension
          point="org.eclipse.ui.importWizards">
-      <category
-            id="de.kobich.audiosolutions.import.fileCategory"
-            name="File">
-      </category>
-      <wizard
-            category="de.kobich.audiosolutions.import.fileCategory"
-            class="de.kobich.audiosolutions.frontend.file.wizard.FileCollectionImportWizard"
-            icon="icons/file/file-collection.png"
-            id="de.kobich.audiosolutions.frontend.file.importWizard"
-            name="File Collection Import Wizard">
-         <description>
-            A Wizard that import file collections
-         </description>
-      </wizard>
       <category
             id="de.kobich.audiosolutions.import.audioCategory"
             name="Audio">

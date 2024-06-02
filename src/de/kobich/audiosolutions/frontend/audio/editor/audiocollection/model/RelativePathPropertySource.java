@@ -1,4 +1,4 @@
-package de.kobich.audiosolutions.frontend.file.editor.filecollection.model;
+package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;

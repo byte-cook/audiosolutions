@@ -12,7 +12,6 @@ import de.kobich.audiosolutions.core.service.persist.domain.Album;
 import de.kobich.audiosolutions.core.service.persist.domain.Artist;
 import de.kobich.audiosolutions.frontend.common.ui.AbstractTableTreeNode;
 import de.kobich.audiosolutions.frontend.file.IFileDescriptorsSource;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.component.file.FileDescriptor;
 import lombok.Setter;
 

@@ -17,10 +17,10 @@ import de.kobich.audiosolutions.core.service.AudioData;
 import de.kobich.audiosolutions.core.service.AudioDataChange;
 import de.kobich.audiosolutions.core.service.data.AudioDataService;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.component.file.FileDescriptor;
 
 public class AudioCollectionEditingSupport extends EditingSupport {

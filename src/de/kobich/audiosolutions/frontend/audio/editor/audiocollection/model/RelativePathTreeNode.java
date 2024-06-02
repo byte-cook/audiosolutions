@@ -1,4 +1,4 @@
-package de.kobich.audiosolutions.frontend.file.editor.filecollection.model;
+package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model;
 
 import java.util.HashSet;
 import java.util.Set;

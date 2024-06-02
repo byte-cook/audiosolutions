@@ -5,11 +5,11 @@ import org.eclipse.jface.viewers.Viewer;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AlbumTreeNode;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.AudioCollectionModel;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.FileDescriptorTreeNode;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.RelativePathTreeNode;
 import de.kobich.audiosolutions.frontend.common.ui.editor.EditorLayoutManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.FileCollection;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutType;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.RelativePathTreeNode;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

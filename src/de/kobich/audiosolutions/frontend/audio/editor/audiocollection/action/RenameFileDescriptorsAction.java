@@ -1,4 +1,4 @@
-package de.kobich.audiosolutions.frontend.file.editor.filecollection.action;
+package de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -13,26 +13,40 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum AudioCollectionEditorColumn {
 	// audio
-	FILE_NAME("File Name", 3, ColumnWeightData.MINIMUM_WIDTH, true),
-	TRACK("Track", 3, ColumnWeightData.MINIMUM_WIDTH, true),
-	TRACK_NO("No", 1, 30, true),
-	TRACK_FORMAT("Format", 1, 30, true),
-	ARTIST("Artist", 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	ALBUM("Album", 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	ALBUM_PUBLICATION("Publication", 1, 40, true),
-	DISK("Disk", 1, 30, true),
-	GENRE("Genre", 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	MEDIUM("Medium", 1, 30, true),
+	FILE_NAME("File Name", AudioCollectionEditorColumnType.AUDIO, 3, ColumnWeightData.MINIMUM_WIDTH, true),
+	TRACK("Track", AudioCollectionEditorColumnType.AUDIO, 3, ColumnWeightData.MINIMUM_WIDTH, true),
+	TRACK_NO("No", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
+	TRACK_FORMAT("Format", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
+	ARTIST("Artist", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true),
+	ALBUM("Album", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true),
+	ALBUM_PUBLICATION("Publication", AudioCollectionEditorColumnType.AUDIO, 1, 40, true),
+	DISK("Disk", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
+	GENRE("Genre", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true),
+	MEDIUM("Medium", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
 	// file
-	EXISTS("Exists", 1, 30, false),
-	RELATIVE_PATH("Relative Path", 4, ColumnWeightData.MINIMUM_WIDTH, false),
-	EXTENSION("Extension", 1, 30, false),
-	SIZE("Size", 1, 30, false),
-	LAST_MODIFIED("Last Modified", 1, 50, false);
+	EXISTS("Exists", AudioCollectionEditorColumnType.FILE, 1, 30, false),
+	RELATIVE_PATH("Relative Path", AudioCollectionEditorColumnType.FILE, 4, ColumnWeightData.MINIMUM_WIDTH, false),
+	EXTENSION("Extension", AudioCollectionEditorColumnType.FILE, 1, 30, false),
+	SIZE("Size", AudioCollectionEditorColumnType.FILE, 1, 30, false),
+	LAST_MODIFIED("Last Modified", AudioCollectionEditorColumnType.FILE, 1, 50, false);
 	;
+	
+	public enum AudioCollectionEditorColumnType { 
+		AUDIO, FILE;
+		
+		public boolean isAudio() {
+			return AUDIO.equals(this);
+		}
+		
+		public boolean isFile() {
+			return FILE.equals(this);
+		}
+	}
 	
 	@Getter
 	private final String label;
+	@Getter
+	private final AudioCollectionEditorColumnType type;
 
 	private final int widthShare;
 	private final int minimumWidth;

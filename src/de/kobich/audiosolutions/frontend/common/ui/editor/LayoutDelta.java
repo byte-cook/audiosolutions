@@ -1,7 +1,7 @@
 package de.kobich.audiosolutions.frontend.common.ui.editor;
 
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.model.FileDescriptorTreeNode;
 import de.kobich.audiosolutions.frontend.common.ui.AbstractTableTreeNode;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.model.FileDescriptorTreeNode;
 import de.kobich.commons.collections.Dimension.DimensionType;
 import de.kobich.commons.collections.DimensionMap2D;
 

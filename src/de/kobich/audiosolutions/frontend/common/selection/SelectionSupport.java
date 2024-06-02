@@ -17,7 +17,6 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.search.AudioSearchEditor;
-import de.kobich.audiosolutions.frontend.file.editor.filecollection.FileCollectionEditor;
 import de.kobich.commons.ListenerList;
 import lombok.RequiredArgsConstructor;
 
@@ -134,7 +133,6 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	public void partClosed(IWorkbenchPartReference partRef) {
 		switch (partRef.getId()) {
 		case AudioCollectionEditor.ID:
-		case FileCollectionEditor.ID:
 		case PlaylistEditor.ID:
 		case AudioSearchEditor.ID:
 			IEditorPart editor = (IEditorPart) partRef.getPart(false);
@@ -148,7 +146,6 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 		// called when partRef gets focus
 		switch (partRef.getId()) {
 		case AudioCollectionEditor.ID:
-		case FileCollectionEditor.ID:
 		case PlaylistEditor.ID:
 		case AudioSearchEditor.ID:
 			IEditorPart editor = (IEditorPart) partRef.getPart(false);
