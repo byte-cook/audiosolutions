@@ -2,18 +2,15 @@ package de.kobich.audiosolutions.frontend.common.ui;
 
 import org.eclipse.jface.action.StatusLineContributionItem;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistSelection;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 
-public class StatusLineEventListener implements ISelectionListener, ISelectionChangedListener {
+public class StatusLineEventListener implements ISelectionListener {
 	public static final StatusLineEventListener INSTANCE = new StatusLineEventListener();
 	
 	public StatusLineContributionItem selectedItem;
@@ -32,11 +29,6 @@ public class StatusLineEventListener implements ISelectionListener, ISelectionCh
 			selectedItem.setText("");
 			availableItem.setText("");
 		}
-	}
-
-	@Override
-	public void selectionChanged(SelectionChangedEvent event) {
-		selectionChanged(SelectionSupport.INSTANCE.getActiveEditor(), event.getSelection());
 	}
 	
 	private void updateStatusLine(ICollectionEditor collectionEditor, FileDescriptorSelection selection) {

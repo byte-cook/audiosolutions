@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
@@ -19,12 +17,12 @@ import org.eclipse.ui.services.ISourceProviderService;
 
 import de.kobich.audiosolutions.frontend.common.listener.IUIEventListener;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 import de.kobich.component.file.FileDescriptor;
 
-public class FileDescriptorSourceProvider extends AbstractSourceProvider implements ISelectionListener, IUIEventListener, ISelectionChangedListener, IPartListener2 {
+public class FileDescriptorSourceProvider extends AbstractSourceProvider implements ISelectionListener, IUIEventListener, IPartListener2 {
 	private static final String FILE_DESCRIPTOR_SELECTION = "fileDescriptorSelection";
 	private static final String ACTIVE_COLLECTION_EDITOR = "activeCollectionEditor";
 	private static final String[] PROVIDED_SOURCE_NAMES = new String[] { FILE_DESCRIPTOR_SELECTION, ACTIVE_COLLECTION_EDITOR };
@@ -83,11 +81,6 @@ public class FileDescriptorSourceProvider extends AbstractSourceProvider impleme
 	}
 
 	@Override
-	public void selectionChanged(SelectionChangedEvent event) {
-		selectionChanged(SelectionSupport.INSTANCE.getActiveEditor(), event.getSelection());
-	}
-
-	@Override
 	public void partActivated(IWorkbenchPartReference partRef) {
 	}
 
@@ -109,7 +102,7 @@ public class FileDescriptorSourceProvider extends AbstractSourceProvider impleme
 
 	@Override
 	public void partHidden(IWorkbenchPartReference partRef) {
-		if (partRef.getPart(true).equals(SelectionSupport.INSTANCE.getActiveEditor())) {
+		if (partRef.getPart(true).equals(SelectionManager.INSTANCE.getActiveEditor())) {
 			this.fileDescriptors = new HashSet<>();
 			fireSourceChanged(ISources.WORKBENCH, FILE_DESCRIPTOR_SELECTION, fileDescriptors);
 		}
@@ -117,8 +110,8 @@ public class FileDescriptorSourceProvider extends AbstractSourceProvider impleme
 
 	@Override
 	public void partVisible(IWorkbenchPartReference partRef) {
-		if (partRef.getPart(true).equals(SelectionSupport.INSTANCE.getActiveEditor())) {
-			ICollectionEditor collectionEditor = SelectionSupport.INSTANCE.getActiveEditor(ICollectionEditor.class);
+		if (partRef.getPart(true).equals(SelectionManager.INSTANCE.getActiveEditor())) {
+			ICollectionEditor collectionEditor = SelectionManager.INSTANCE.getActiveEditor(ICollectionEditor.class);
 			if (collectionEditor == null) {
 				return;
 			}

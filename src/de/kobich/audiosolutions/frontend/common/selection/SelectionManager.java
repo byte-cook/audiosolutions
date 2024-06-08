@@ -7,12 +7,14 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PlatformUI;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
@@ -28,23 +30,23 @@ import lombok.RequiredArgsConstructor;
  * Events of non-active editors are ignored. 
  * <p>
  * If you need to know whether the active editor is hidden, you should implement {@link IPartListener2#partHidden(IWorkbenchPartReference)}.
+ * <p>
+ * Overview:<br/>
+ * Editor --registerEditor--> SelectionManager<br/>
+ * Editor --fireEvent--> SelectionManager --fireEvent--> listeners (views).
  * 
  */
-public class SelectionSupport implements IPostSelectionProvider, IPartListener2 {
-	private static final Logger logger = Logger.getLogger(SelectionSupport.class);
-	public static final SelectionSupport INSTANCE = new SelectionSupport();
-	private final Map<IEditorPart, PartSelectionDelegator> editorDelegator;
+public class SelectionManager implements IPartListener2 {
+	private static final Logger logger = Logger.getLogger(SelectionManager.class);
+	public static final SelectionManager INSTANCE = new SelectionManager();
 	private final Map<IEditorPart, PartSelectionDelegator> editorPostDelegator;
-	private final ListenerList<ISelectionChangedListener> postSelectionChangedListeners;
-	private final Map<IEditorPart, Long> editorAccessTime;
+	private final ListenerList<ISelectionListener> postSelectionListeners;
 	private IEditorPart activeEditor;
 	private ISelection selection;
 	
-	private SelectionSupport() {
-		this.editorDelegator = new HashMap<>();
+	private SelectionManager() {
 		this.editorPostDelegator = new HashMap<>();
-		this.postSelectionChangedListeners = new ListenerList<>();
-		this.editorAccessTime = new HashMap<>();
+		this.postSelectionListeners = new ListenerList<>();
 	}
 	
 	/**
@@ -53,6 +55,8 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	 * @param selectionProvider
 	 */
 	public void registerEditor(IEditorPart editor, IPostSelectionProvider selectionProvider) {
+		editor.getSite().setSelectionProvider(selectionProvider);
+		
 		if (!editorPostDelegator.containsKey(editor)) {
 			PartSelectionDelegator postDelegator = new PartSelectionDelegator(editor, this);
 			((IPostSelectionProvider) selectionProvider).addPostSelectionChangedListener(postDelegator);
@@ -65,12 +69,9 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	 * @param editor
 	 * @param selectionProvider
 	 */
-	public void deregisterEditor(IEditorPart editor, ISelectionProvider selectionProvider) {
-		if (editorDelegator.containsKey(editor)) {
-			PartSelectionDelegator delegator = editorDelegator.get(editor);
-			selectionProvider.removeSelectionChangedListener(delegator);
-			editorDelegator.remove(editor);
-		}
+	public void deregisterEditor(IEditorPart editor, IPostSelectionProvider selectionProvider) {
+		editor.getSite().setSelectionProvider(null);
+		
 		if (editorPostDelegator.containsKey(editor) && selectionProvider instanceof IPostSelectionProvider) {
 			PartSelectionDelegator postDelegator = editorPostDelegator.get(editor);
 			((IPostSelectionProvider) selectionProvider).removePostSelectionChangedListener(postDelegator);
@@ -97,32 +98,20 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 		return null;
 	}
 
-	@Override
 	public ISelection getSelection() {
 		return selection;
 	}
 
-	@Override
-	public void setSelection(ISelection selection) {
+	private void setSelection(ISelection selection) {
 		this.selection = selection;
 	}
 
-	@Override
-	public void addSelectionChangedListener(ISelectionChangedListener listener) {
+	public void addPostSelectionListener(ISelectionListener listener) {
+		this.postSelectionListeners.addListener(listener);
 	}
 
-	@Override
-	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-	}
-
-	@Override
-	public void addPostSelectionChangedListener(ISelectionChangedListener listener) {
-		this.postSelectionChangedListeners.addListener(listener);
-	}
-
-	@Override
-	public void removePostSelectionChangedListener(ISelectionChangedListener listener) {
-		this.postSelectionChangedListeners.removeListener(listener);
+	public void removePostSelectionListener(ISelectionListener listener) {
+		this.postSelectionListeners.removeListener(listener);
 	}
 
 	@Override
@@ -184,23 +173,22 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 		}
 		if (editor == null) {
 			this.activeEditor = null;
-			firePostSelectionChanged(new SelectionChangedEvent(this, new StructuredSelection()));
+			firePostSelectionChanged(null, StructuredSelection.EMPTY);
 			return;
 		}
 		
 		// set active editor and activation time
 		this.activeEditor = editor;
-		this.editorAccessTime.put(activeEditor, System.currentTimeMillis());
 		logger.info("Active editor: " + activeEditor.getTitle());
 		
 		// send last selection event of the new active editor
 		if (this.editorPostDelegator.containsKey(this.activeEditor)) {
 			PartSelectionDelegator postDelegator = this.editorPostDelegator.get(this.activeEditor);
-			if (postDelegator.lastEvent != null) {
-				firePostSelectionChanged(postDelegator.lastEvent);
+			if (postDelegator.lastSelection != null) {
+				firePostSelectionChanged(this.activeEditor, postDelegator.lastSelection);
 			}
 			else {
-				firePostSelectionChanged(new SelectionChangedEvent(this, StructuredSelection.EMPTY));
+				firePostSelectionChanged(this.activeEditor, StructuredSelection.EMPTY);
 			}
 		}
 	}
@@ -210,35 +198,26 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	 * @param editor
 	 */
 	private void resetActiveEditor(IEditorPart editor) {
-		this.editorAccessTime.remove(editor);
 		if (this.activeEditor == null || !this.activeEditor.equals(editor)) {
 			return;
 		}
 		
 		// set previous active editor
-		IEditorPart tmpActiveEditor = null;
-		long max = 0;
-		for (IEditorPart e : editorAccessTime.keySet()) {
-			long accessTime = editorAccessTime.get(e);
-			if (accessTime > max) {
-				tmpActiveEditor = e;
-				max = accessTime;
-			}
-		}
-		setActiveEditor(tmpActiveEditor);
+		IEditorPart activeEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		setActiveEditor(activeEditor);
 	}
 	
 	/**
 	 * Informs about selection changes
 	 * @param event
 	 */
-	private void firePostSelectionChanged(SelectionChangedEvent event) {
+	private void firePostSelectionChanged(IWorkbenchPart part, ISelection selection) {
 		// update selection
-		setSelection(event.getSelection());
+		setSelection(selection);
 		
 		// inform listeners
-		for (ISelectionChangedListener l : postSelectionChangedListeners) {
-			l.selectionChanged(event);
+		for (ISelectionListener l : postSelectionListeners) {
+			l.selectionChanged(part, selection);
 		}
 	}
 	
@@ -248,14 +227,14 @@ public class SelectionSupport implements IPostSelectionProvider, IPartListener2 
 	@RequiredArgsConstructor
 	private static class PartSelectionDelegator implements ISelectionChangedListener {
 		private final IEditorPart editor;
-		private final SelectionSupport selectionManager;
-		private SelectionChangedEvent lastEvent;
+		private final SelectionManager selectionManager;
+		private ISelection lastSelection;
 		
 		@Override
 		public void selectionChanged(SelectionChangedEvent event) {
-			this.lastEvent = event;
+			this.lastSelection = event.getSelection();
 			if (selectionManager.activeEditor != null && selectionManager.activeEditor.equals(this.editor)) {
-				selectionManager.firePostSelectionChanged(event);
+				selectionManager.firePostSelectionChanged(editor, event.getSelection());
 			}
 		}
 	}

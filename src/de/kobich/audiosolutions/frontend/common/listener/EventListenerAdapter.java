@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
@@ -15,9 +13,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 
-public class EventListenerAdapter implements IPartListener2, ISelectionListener, ISelectionChangedListener, IUIEventListener {
+public class EventListenerAdapter implements IPartListener2, ISelectionListener, IUIEventListener {
 	public static enum ListenerType {
 		COLLECTION_EDITOR_SELECTION, PART, UI_EVENT
 	}
@@ -50,7 +48,7 @@ public class EventListenerAdapter implements IPartListener2, ISelectionListener,
 //				page.addPostSelectionListener(AudioCollectionEditor.ID, this);
 //				page.addPostSelectionListener(FileCollectionEditor.ID, this);
 				
-				SelectionSupport.INSTANCE.addPostSelectionChangedListener(this);
+				SelectionManager.INSTANCE.addPostSelectionListener(this);
 				break;
 			case PART:
 				page.getWorkbenchWindow().getPartService().addPartListener(this);
@@ -72,7 +70,7 @@ public class EventListenerAdapter implements IPartListener2, ISelectionListener,
 //				page.removePostSelectionListener(AudioCollectionEditor.ID, this);
 //				page.removePostSelectionListener(FileCollectionEditor.ID, this);
 				
-				SelectionSupport.INSTANCE.removePostSelectionChangedListener(this);
+				SelectionManager.INSTANCE.removePostSelectionListener(this);
 				break;
 			case PART:
 				page.getWorkbenchWindow().getPartService().removePartListener(this);
@@ -138,8 +136,4 @@ public class EventListenerAdapter implements IPartListener2, ISelectionListener,
 	@Override
 	public void partVisible(IWorkbenchPartReference partReference) {}
 
-	@Override
-	public final void selectionChanged(SelectionChangedEvent event) {
-		selectionChanged(SelectionSupport.INSTANCE.getActiveEditor(), event.getSelection());
-	}
 }
