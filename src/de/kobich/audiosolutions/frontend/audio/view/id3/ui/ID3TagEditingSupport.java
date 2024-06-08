@@ -39,7 +39,7 @@ public class ID3TagEditingSupport extends EditingSupport {
 	private static final Logger logger = Logger.getLogger(ID3TagEditingSupport.class);
 	private static final String KEEP_VALUE = "<keep-value>";
 	private static final String DELETE_VALUE = "<delete-value>";
-	private ComboBoxCellEditor editor;
+	private ComboBoxCellEditor comboBoxCellEditor;
 	private TextCellEditor textCellEditor;
 	private ID3TagView view;
 	private TableViewer viewer;
@@ -74,11 +74,11 @@ public class ID3TagEditingSupport extends EditingSupport {
 				values.add(0, KEEP_VALUE);
 				Collections.sort(values);
 				textCellEditor = null;
-				editor = new ComboBoxCellEditor(viewer.getTable(), values.toArray(new String[0]));
-				return editor;
+				comboBoxCellEditor = new ComboBoxCellEditor(viewer.getTable(), values.toArray(new String[0]));
+				return comboBoxCellEditor;
 			}
 			else {
-				editor = null;
+				comboBoxCellEditor = null;
 				textCellEditor = new TextCellEditor(viewer.getTable());
 //				if (!values.isEmpty()) {
 //					textCellEditor.setValue(values.iterator().next());
@@ -93,7 +93,7 @@ public class ID3TagEditingSupport extends EditingSupport {
 	protected Object getValue(Object element) {
 		if (element instanceof ID3TagItem) {
 			ID3TagItem item = (ID3TagItem) element;
-			if (editor != null) {
+			if (comboBoxCellEditor != null) {
 				return Integer.valueOf(0);
 			}
 			else if (textCellEditor != null) {
@@ -123,13 +123,13 @@ public class ID3TagEditingSupport extends EditingSupport {
 					switch (state) {
 					case UI_1:
 						// get value to set
-						if (editor != null) {
+						if (comboBoxCellEditor != null) {
 							int index = Integer.parseInt("" + valueObj);
 							if (index == -1) {
-								value = ((CCombo) editor.getControl()).getText();
+								value = ((CCombo) comboBoxCellEditor.getControl()).getText();
 							}
 							else {
-								value = editor.getItems()[index];
+								value = comboBoxCellEditor.getItems()[index];
 							}
 							
 							if (DELETE_VALUE.equals(value)) {
