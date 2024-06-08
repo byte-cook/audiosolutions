@@ -345,13 +345,10 @@ public class AudioPlayView extends ViewPart implements IMementoItemSerializable,
 		this.playlist.getPropertyChangeSupport().addPropertyChangeListener(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#dispose()
-	 */
+	@Override
 	public void dispose() {
-		this.playlist.getPropertyChangeSupport().removePropertyChangeListener(this);
 		this.disposedCalled = true;
+		this.playlist.getPropertyChangeSupport().removePropertyChangeListener(this);
 		if (this.playerClient != null && playerListener != null) {
 			this.playerClient.getListenerList().removeListener(playerListener);
 		}
