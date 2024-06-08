@@ -11,7 +11,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.component.file.FileDescriptor;
 
 
@@ -25,7 +25,7 @@ public class SetAudioDataByCDDBAction extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		try {
-			final AudioCollectionEditor audioCollectionEditor = SelectionSupport.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
+			final AudioCollectionEditor audioCollectionEditor = SelectionManager.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
 			if (audioCollectionEditor == null) {
 				return null;
 			}

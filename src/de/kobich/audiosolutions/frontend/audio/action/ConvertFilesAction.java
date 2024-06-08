@@ -35,7 +35,7 @@ import de.kobich.audiosolutions.frontend.common.action.JobResultAction;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.FileResultDialog;
 import de.kobich.audiosolutions.frontend.common.util.PlatformUtil;
 import de.kobich.commons.runtime.executor.command.CommandLineTool;
@@ -61,7 +61,7 @@ public class ConvertFilesAction extends AbstractHandler {
 
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		
-		final AudioCollectionEditor audioCollectionEditor = SelectionSupport.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
+		final AudioCollectionEditor audioCollectionEditor = SelectionManager.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
 		if (audioCollectionEditor == null) {
 			return null;
 		}

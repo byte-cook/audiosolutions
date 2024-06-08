@@ -26,7 +26,7 @@ import de.kobich.audiosolutions.frontend.Activator;
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.common.ColouredMessageConsoleStream;
 import de.kobich.audiosolutions.frontend.common.action.JobResultAction;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.FileResultDialog;
 import de.kobich.audiosolutions.frontend.common.util.PlatformUtil;
 import de.kobich.commons.runtime.executor.command.CommandLineTool;
@@ -45,7 +45,7 @@ public class CheckAudioFilesAction extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		
-		final AudioCollectionEditor audioCollectionEditor = SelectionSupport.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
+		final AudioCollectionEditor audioCollectionEditor = SelectionManager.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
 		if (audioCollectionEditor == null) {
 			return null;
 		}

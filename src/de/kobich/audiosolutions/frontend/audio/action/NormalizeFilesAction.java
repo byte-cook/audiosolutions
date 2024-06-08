@@ -33,7 +33,7 @@ import de.kobich.audiosolutions.frontend.common.action.JobResultAction;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.FileResultDialog;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import de.kobich.audiosolutions.frontend.common.util.PlatformUtil;
@@ -53,7 +53,7 @@ public class NormalizeFilesAction extends AbstractHandler {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		
 		// get file descriptors
-		final ICollectionEditor collectionEditor = SelectionSupport.INSTANCE.getActiveEditor(ICollectionEditor.class);
+		final ICollectionEditor collectionEditor = SelectionManager.INSTANCE.getActiveEditor(ICollectionEditor.class);
 		if (collectionEditor == null) {
 			return null;
 		}

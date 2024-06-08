@@ -17,7 +17,7 @@ import de.kobich.audiosolutions.core.AudioSolutions;
 import de.kobich.audiosolutions.frontend.common.FileDescriptorSourceProvider;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.preferences.GeneralPreferencePage;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.StatusLineEventListener;
 import de.kobich.audiosolutions.frontend.perspective.AudioPerspective;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
@@ -118,14 +118,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			window.addPageListener(PageListener.INSTANCE);
 			
 			// SelectionSupport
-			window.getActivePage().addPartListener(SelectionSupport.INSTANCE);
+			window.getActivePage().addPartListener(SelectionManager.INSTANCE);
 			// SourceProvider
 			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
 			window.getActivePage().addPartListener(sourceProvider);
-			SelectionSupport.INSTANCE.addPostSelectionChangedListener(sourceProvider);
+			SelectionManager.INSTANCE.addPostSelectionListener(sourceProvider);
 			EventSupport.INSTANCE.addListener(sourceProvider);
 			// StatusLineEventListener
-			SelectionSupport.INSTANCE.addPostSelectionChangedListener(StatusLineEventListener.INSTANCE);
+			SelectionManager.INSTANCE.addPostSelectionListener(StatusLineEventListener.INSTANCE);
 		}
 		
 		@Override
@@ -134,10 +134,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 			// SourceProvider
 			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
-			SelectionSupport.INSTANCE.removePostSelectionChangedListener(sourceProvider);
+			SelectionManager.INSTANCE.removePostSelectionListener(sourceProvider);
 			EventSupport.INSTANCE.removeListener(sourceProvider);
 			// StatusLineEventListener
-			SelectionSupport.INSTANCE.removePostSelectionChangedListener(StatusLineEventListener.INSTANCE);
+			SelectionManager.INSTANCE.removePostSelectionListener(StatusLineEventListener.INSTANCE);
 		}
 		
 		@Override
@@ -161,7 +161,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		@Override
 		public void pageClosed(IWorkbenchPage page) {
 			// SelectionSupport
-			page.removePartListener(SelectionSupport.INSTANCE);
+			page.removePartListener(SelectionManager.INSTANCE);
 			// SourceProvider
 			FileDescriptorSourceProvider sourceProvider = FileDescriptorSourceProvider.getInstance();
 			page.removePartListener(sourceProvider);

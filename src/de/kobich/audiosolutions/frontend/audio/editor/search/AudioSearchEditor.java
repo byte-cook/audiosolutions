@@ -54,7 +54,7 @@ import de.kobich.audiosolutions.frontend.Activator.ImageKey;
 import de.kobich.audiosolutions.frontend.audio.editor.search.action.DoSearchHyperlinkAdapter;
 import de.kobich.audiosolutions.frontend.audio.editor.search.action.OpenAllSelectionAdapter;
 import de.kobich.audiosolutions.frontend.audio.editor.search.action.OpenMenuHyperlinkAdapter;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.AbstractScrolledFormEditor;
 import de.kobich.audiosolutions.frontend.common.util.DecoratorUtils;
 import de.kobich.commons.type.Wrapper;
@@ -154,7 +154,7 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		albumsComposite = super.createTableWrapSection(this.toolkit, body, "Albums", 4, Section.TITLE_BAR | Section.EXPANDED);
 		tracksComposite = super.createTableWrapSection(this.toolkit, body, "Tracks", 6, Section.TITLE_BAR | Section.EXPANDED);
 		
-		SelectionSupport.INSTANCE.registerEditor(this, DummySelectionProvider.INSTANCE);
+		SelectionManager.INSTANCE.registerEditor(this, DummySelectionProvider.INSTANCE);
 		startSearch();
 	}
 	
@@ -191,6 +191,7 @@ public class AudioSearchEditor extends AbstractScrolledFormEditor {
 		this.artistsComposite.dispose();
 		this.albumsComposite.dispose();
 		this.tracksComposite.dispose();
+		SelectionManager.INSTANCE.deregisterEditor(this, DummySelectionProvider.INSTANCE);
 		super.dispose();
 	}
 	

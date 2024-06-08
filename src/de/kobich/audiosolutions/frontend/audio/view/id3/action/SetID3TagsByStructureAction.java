@@ -28,7 +28,7 @@ import de.kobich.audiosolutions.frontend.common.FileDescriptorConverter;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.FileResultDialog;
 import de.kobich.audiosolutions.frontend.common.ui.StructureDialog;
 import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
@@ -49,7 +49,7 @@ public class SetID3TagsByStructureAction extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-		final ICollectionEditor fileCollectionEditor = SelectionSupport.INSTANCE.getActiveEditor(ICollectionEditor.class);
+		final ICollectionEditor fileCollectionEditor = SelectionManager.INSTANCE.getActiveEditor(ICollectionEditor.class);
 		if (fileCollectionEditor == null) {
 			return null;
 		}

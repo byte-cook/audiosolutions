@@ -20,7 +20,7 @@ import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioColle
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
 import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
 import de.kobich.commons.ui.jface.StatusLineUtils;
@@ -36,7 +36,7 @@ public class SetAudioDataByTextAction extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 
-		final AudioCollectionEditor audioCollectionEditor = SelectionSupport.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
+		final AudioCollectionEditor audioCollectionEditor = SelectionManager.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
 		if (audioCollectionEditor == null) {
 			return null;
 		}
