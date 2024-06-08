@@ -4,6 +4,7 @@ import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.swt.SWT;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.commons.ui.jface.tree.TreeColumnData;
@@ -13,22 +14,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum AudioCollectionEditorColumn {
 	// audio
-	FILE_NAME("File Name", AudioCollectionEditorColumnType.AUDIO, 3, ColumnWeightData.MINIMUM_WIDTH, true),
-	TRACK("Track", AudioCollectionEditorColumnType.AUDIO, 3, ColumnWeightData.MINIMUM_WIDTH, true),
-	TRACK_NO("No", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
-	TRACK_FORMAT("Format", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
-	ARTIST("Artist", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	ALBUM("Album", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	ALBUM_PUBLICATION("Publication", AudioCollectionEditorColumnType.AUDIO, 1, 40, true),
-	DISK("Disk", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
-	GENRE("Genre", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true),
-	MEDIUM("Medium", AudioCollectionEditorColumnType.AUDIO, 1, 30, true),
+	FILE_NAME("File Name", AudioCollectionEditorColumnType.AUDIO, 3, ColumnWeightData.MINIMUM_WIDTH, true, SWT.LEFT),
+	TRACK("Track", AudioCollectionEditorColumnType.AUDIO, 3, ColumnWeightData.MINIMUM_WIDTH, true, SWT.LEFT),
+	TRACK_NO("No", AudioCollectionEditorColumnType.AUDIO, 1, 30, true, SWT.RIGHT),
+	TRACK_FORMAT("Format", AudioCollectionEditorColumnType.AUDIO, 1, 30, true, SWT.LEFT),
+	ARTIST("Artist", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true, SWT.LEFT),
+	ALBUM("Album", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true, SWT.LEFT),
+	ALBUM_PUBLICATION("Publication", AudioCollectionEditorColumnType.AUDIO, 1, 40, true, SWT.LEFT),
+	DISK("Disk", AudioCollectionEditorColumnType.AUDIO, 1, 30, true, SWT.LEFT),
+	GENRE("Genre", AudioCollectionEditorColumnType.AUDIO, 2, ColumnWeightData.MINIMUM_WIDTH, true, SWT.LEFT),
+	MEDIUM("Medium", AudioCollectionEditorColumnType.AUDIO, 1, 30, true, SWT.LEFT),
 	// file
-	EXISTS("Exists", AudioCollectionEditorColumnType.FILE, 1, 30, false),
-	RELATIVE_PATH("Relative Path", AudioCollectionEditorColumnType.FILE, 4, ColumnWeightData.MINIMUM_WIDTH, false),
-	EXTENSION("Extension", AudioCollectionEditorColumnType.FILE, 1, 30, false),
-	SIZE("Size", AudioCollectionEditorColumnType.FILE, 1, 30, false),
-	LAST_MODIFIED("Last Modified", AudioCollectionEditorColumnType.FILE, 1, 50, false);
+	EXISTS("Exists", AudioCollectionEditorColumnType.FILE, 1, 30, false, SWT.LEFT),
+	RELATIVE_PATH("Relative Path", AudioCollectionEditorColumnType.FILE, 4, ColumnWeightData.MINIMUM_WIDTH, false, SWT.LEFT),
+	EXTENSION("Extension", AudioCollectionEditorColumnType.FILE, 1, 30, false, SWT.LEFT),
+	SIZE("Size", AudioCollectionEditorColumnType.FILE, 1, 30, false, SWT.RIGHT),
+	LAST_MODIFIED("Last Modified", AudioCollectionEditorColumnType.FILE, 1, 50, false, SWT.LEFT);
 	;
 	
 	public enum AudioCollectionEditorColumnType { 
@@ -51,6 +52,8 @@ public enum AudioCollectionEditorColumn {
 	private final int widthShare;
 	private final int minimumWidth;
 	private final boolean visible;
+	@Getter
+	private final int style;
 	
 	public EditingSupport createEditingSupport(AudioCollectionEditor editor, TreeViewer viewer) {
 		return new AudioCollectionEditingSupport(editor, viewer, this);

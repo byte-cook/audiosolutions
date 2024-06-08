@@ -58,7 +58,7 @@ import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditorCom
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.EditorLayoutManager;
 import de.kobich.audiosolutions.frontend.common.ui.editor.IEditorLayoutSupport;
 import de.kobich.audiosolutions.frontend.common.ui.editor.LayoutType;
@@ -188,7 +188,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 			public void keyReleased(KeyEvent e) {
 				if (e.keyCode == SWT.ESC) {
 					filterText.setText("");
-					filter.setSearchText("*");
+					filter.setSearchText("");
 					refresh();
 					// update selection (required for filtering)
 					treeViewer.setSelection(treeViewer.getSelection());
@@ -211,7 +211,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		this.columnManager.setTreeColumnProvider(columnData -> {
 			final PlaylistEditorColumn column = (PlaylistEditorColumn) columnData.getElement();
 			
-			TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.LEFT);
+			TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, column.getStyle());
 			treeViewerColumn.setLabelProvider(column.createCellLabelProvider());
 			treeViewerColumn.setEditingSupport(column.createEditingSupport(this, treeViewer));
 			
@@ -242,8 +242,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 		treeViewer.addFilter(filter);
 		treeViewer.setInput(this.playlist);
 
-		getSite().setSelectionProvider(treeViewer);
-		SelectionSupport.INSTANCE.registerEditor(this, treeViewer);
+		SelectionManager.INSTANCE.registerEditor(this, treeViewer);
 		
 		// enable context menu
 		MenuManager menuManager = new MenuManager();
@@ -266,6 +265,7 @@ public class PlaylistEditor extends EditorPart implements PropertyChangeListener
 	public void dispose() {
 		this.playlist.getPropertyChangeSupport().removePropertyChangeListener(this);
 		this.eventListener.deregister();
+		SelectionManager.INSTANCE.deregisterEditor(this, treeViewer);
 		toolkit.dispose();
 		form.dispose();
 		super.dispose();

@@ -64,7 +64,7 @@ import de.kobich.audiosolutions.frontend.common.listener.AudioDelta;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.FileDelta;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.selection.SelectionSupport;
+import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.AbstractTableTreeNode;
 import de.kobich.audiosolutions.frontend.common.ui.ProgressDialog;
 import de.kobich.audiosolutions.frontend.common.ui.editor.AbstractFormEditor;
@@ -191,6 +191,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		this.pathText.dispose();
 		this.fileSizeText.dispose();
 		this.treeViewer.removeSelectionChangedListener(imagePostSelectionListener);
+		SelectionManager.INSTANCE.deregisterEditor(this, treeViewer);
 		this.treeViewer.getTree().dispose();
 		super.dispose();
 	}
@@ -328,7 +329,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		this.columnManager.setTreeColumnProvider(columnData -> {
 			final AudioCollectionEditorColumn column = (AudioCollectionEditorColumn) columnData.getElement();
 			
-			TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, SWT.LEFT);
+			TreeViewerColumn treeViewerColumn = new TreeViewerColumn(treeViewer, column.getStyle());
 			treeViewerColumn.setLabelProvider(column.createCellLabelProvider());
 			treeViewerColumn.setEditingSupport(column.createEditingSupport(this, treeViewer));
 			
@@ -365,8 +366,7 @@ public class AudioCollectionEditor extends AbstractFormEditor implements ICollec
 		
 		this.imagePostSelectionListener = new LogoImagePostSelectionListener(this, filter);
 		treeViewer.addPostSelectionChangedListener(imagePostSelectionListener);
-		getSite().setSelectionProvider(treeViewer);
-		SelectionSupport.INSTANCE.registerEditor(this, treeViewer);
+		SelectionManager.INSTANCE.registerEditor(this, treeViewer);
 		showDefaultLogo();
 		
 		// register context menu
