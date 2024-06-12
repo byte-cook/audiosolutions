@@ -142,11 +142,6 @@
             name="Open Audio Collection Editor">
       </command>
       <command
-            categoryId="AudioSolutions.AudioCategory"
-            id="de.kobich.audiosolutions.commands.audio.openAudioCollectionEditor"
-            name="Open Audio Collection Editor">
-      </command>
-      <command
             categoryId="AudioSolutions.FileCategory"
             id="de.kobich.audiosolutions.commands.file.openWithSystemEditor"
             name="Open With System Editor">
