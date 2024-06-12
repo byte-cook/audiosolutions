@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -82,8 +83,10 @@ public class AudioCollectionModel implements ICollectionEditorModel {
 			}
 			// album
 			albums.clear();
+			List<Album> foundAlbums = searchService.searchAlbums(album2Files.keySet().stream().filter(Objects::nonNull).toList());
 			for (Long id : album2Files.keySet()) {
-				AlbumTreeNode albumNode = createAlbumTreeNode(id);
+				Album album = foundAlbums.stream().filter(a -> id.equals(a.getId())).findAny().orElse(null);
+				AlbumTreeNode albumNode = new AlbumTreeNode(album);
 				List<FileDescriptorTreeNode> children = album2Files.get(id).asList();
 				albumNode.getChildren().addAll(children);
 				albums.add(albumNode);
