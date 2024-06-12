@@ -8,9 +8,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
@@ -23,33 +24,25 @@ import de.kobich.audiosolutions.core.service.describe.AudioDescriptionType;
 import de.kobich.audiosolutions.core.service.describe.GetAudioDescriptionRequest;
 import de.kobich.commons.ui.jface.JFaceUtils;
 import de.kobich.component.file.FileDescriptor;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 public class AudioDescriptionView extends ViewPart { 
 	public static final Logger logger = Logger.getLogger(AudioDescriptionView.class);
 	public static final String ID = "de.kobich.audiosolutions.view.audio.descriptionView";
 	private AudioDescriptionViewEventListener eventListener;
 	private List<FileDescriptor> fileDescriptors;
-	private List<AudioAttributeElement> elements;
-	private int currentIndex;
-	private Composite typeGroup;
-	private Button[] typeButtons;
-	private Label typeLabel;
-	private Label typeInfoLabel;
-	private Text descriptionAreaText;
+	private List<AudioDescriptionElement> elements;
+	private TabFolder folder;
 //	private boolean pin;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.ViewPart#init(org.eclipse.ui.IViewSite, org.eclipse.ui.IMemento)
-	 */
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
 		this.eventListener = new AudioDescriptionViewEventListener(this);
-		this.elements = new ArrayList<AudioAttributeElement>();
-		this.elements.add(new AudioAttributeElement(AudioDescriptionType.ARTIST, "Artist", "Affects all tracks of the same artist"));
-		this.elements.add(new AudioAttributeElement(AudioDescriptionType.ALBUM, "Album", "Affects all tracks on the same album"));
-		this.elements.add(new AudioAttributeElement(AudioDescriptionType.TRACK, "Track", "Affects only the selected track"));
+		this.elements = new ArrayList<AudioDescriptionElement>();
+		
 //		ICommandService commandService = (ICommandService) getSite().getService(ICommandService.class);
 //		Command pinCommand = commandService.getCommand(PinViewAction.ID);
 //		State pinState = pinCommand.getState(PinViewAction.STATE_ID);
@@ -60,59 +53,26 @@ public class AudioDescriptionView extends ViewPart {
 //		this.pin = pinValue.booleanValue();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
 	@Override
 	public void createPartControl(Composite parent) {
 		parent.setLayout(JFaceUtils.createViewGridLayout(1, false, JFaceUtils.MARGIN_TOP));
 		parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		// edit audio data
-		Composite topComposite = new Composite(parent, SWT.NONE);
-		topComposite.setLayout(JFaceUtils.createViewGridLayout(2, false, JFaceUtils.MARGIN_WIDTH));
-		topComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		// type
-		typeLabel = new Label(topComposite, SWT.NONE);
-		typeLabel.setText("Description Type:");
-		final int typeCount = elements.size();
-		typeGroup = new Composite(topComposite, SWT.NONE);
-		typeGroup.setLayout(JFaceUtils.createViewGridLayout(typeCount, false));
-		typeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		typeButtons = new Button[typeCount];
-		for (int i = 0; i < typeCount; ++ i) {
-			AudioAttributeElement element = elements.get(i);
-			typeButtons[i] = new Button(typeGroup, SWT.RADIO);
-			typeButtons[i].setText(element.label);
-			final int index = i;
-			typeButtons[i].addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					currentIndex = index;
-					typeInfoLabel.setText(elements.get(currentIndex).description);
-					AudioDescriptionType type = getAudioDescriptionType();
-					getViewSite().getShell().getDisplay().asyncExec(new TaskRunnable(fileDescriptors, type));
-				}
-			});
-		}
-		currentIndex = 0;
-		typeButtons[currentIndex].setSelection(true);
-		typeInfoLabel = new Label(topComposite, SWT.NONE);
-		typeInfoLabel.setForeground(JFaceUtils.getInfoTextForegroundColor());
-		GridData infoData = new GridData(GridData.FILL_HORIZONTAL);
-		infoData.horizontalSpan = 2;
-		typeInfoLabel.setLayoutData(infoData);
-		typeInfoLabel.setText(elements.get(currentIndex).description);
-		
-		// text area
-		descriptionAreaText = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-		GridData textLayoutData = new GridData(GridData.FILL_BOTH);
-		descriptionAreaText.setLayoutData(textLayoutData);
-		
-		fireDeselection();
+		this.folder = new TabFolder(parent, SWT.NONE);
+		this.folder.setLayoutData(new GridData(GridData.FILL_BOTH));
+		this.folder.setLayout(JFaceUtils.createViewGridLayout(1, false, JFaceUtils.MARGIN_WIDTH));
+		this.folder.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				AudioDescriptionElement tab = getAudioDescriptionElement();
+				getViewSite().getShell().getDisplay().asyncExec(new TaskRunnable(fileDescriptors, tab));
+			}
+		});
 
-		// register for events
+		this.elements.add(AudioDescriptionElement.create(AudioDescriptionType.ARTIST, "Artist", "Affects all tracks of the same artist", folder));
+		this.elements.add(AudioDescriptionElement.create(AudioDescriptionType.ALBUM, "Album", "Affects all tracks on the same album", folder));
+		this.elements.add(AudioDescriptionElement.create(AudioDescriptionType.TRACK, "Track", "Affects only the selected track", folder));
+
+		fireDeselection();
 		eventListener.register();
 	}
 
@@ -120,32 +80,20 @@ public class AudioDescriptionView extends ViewPart {
 	 * Passing the focus request to the viewer's control.
 	 */
 	public void setFocus() {
-		this.typeGroup.setFocus();
+		this.folder.setFocus();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#dispose()
-	 */
 	@Override
 	public void dispose() {
 		this.eventListener.deregister();
-		this.typeGroup.dispose();
-		this.descriptionAreaText.dispose();
-		this.typeLabel.dispose();
-		for (Button button : this.typeButtons) {
-			button.dispose();
-		}
-		this.typeInfoLabel.dispose();
+		
+		this.elements.forEach(AudioDescriptionElement::dispose);
+		this.folder.dispose();
 		super.dispose();
 	}
 	
-	public String getAudioDescription() {
-		return descriptionAreaText.getText();
-	}
-	
-	public AudioDescriptionType getAudioDescriptionType() {
-		return elements.get(currentIndex).type;
+	public AudioDescriptionElement getAudioDescriptionElement() {
+		return elements.get(this.folder.getSelectionIndex());
 	}
 
 	/**
@@ -177,14 +125,9 @@ public class AudioDescriptionView extends ViewPart {
 			public void run() {
 				if (getViewSite().getShell() != null && !getViewSite().getShell().isDisposed()) {
 					setContentDescription("Please select one audio file.");
-					if (typeGroup != null && !typeGroup.isDisposed()) {
-						typeGroup.setEnabled(false);
-						typeLabel.setEnabled(false);
-						for (Button b : typeButtons) {
-							b.setEnabled(false);
-						}
-					}
-					descriptionAreaText.setEnabled(false);
+					getAudioDescriptionElement().setEnabled(false);
+					folder.setEnabled(false);
+					
 				}
 			}
 		});
@@ -198,8 +141,8 @@ public class AudioDescriptionView extends ViewPart {
 //			return;
 //		}
 		
-		AudioDescriptionType type = getAudioDescriptionType();
-		getViewSite().getShell().getDisplay().asyncExec(new TaskRunnable(fileDescriptors, type));
+		AudioDescriptionElement tab = getAudioDescriptionElement();
+		getViewSite().getShell().getDisplay().asyncExec(new TaskRunnable(fileDescriptors, tab));
 	}
 	
 	/**
@@ -207,11 +150,11 @@ public class AudioDescriptionView extends ViewPart {
 	 */
 	private class TaskRunnable implements Runnable {
 		private List<FileDescriptor> fileDescriptors;
-		private AudioDescriptionType type;
+		private AudioDescriptionElement tab;
 		
-		public TaskRunnable(List<FileDescriptor> fileDescriptors, AudioDescriptionType type) {
+		public TaskRunnable(List<FileDescriptor> fileDescriptors, AudioDescriptionElement tab) {
 			this.fileDescriptors = fileDescriptors;
-			this.type = type;
+			this.tab = tab;
 		}
 		
 		public void run() {
@@ -223,17 +166,14 @@ public class AudioDescriptionView extends ViewPart {
 				FileDescriptor fileDescriptor = fileDescriptors.get(0);
 				
 				AudioDescriptionService audioDescriptionService = AudioSolutions.getService(AudioDescriptionService.class);
-				GetAudioDescriptionRequest request = new GetAudioDescriptionRequest(type, fileDescriptors);
+				GetAudioDescriptionRequest request = new GetAudioDescriptionRequest(tab.type, fileDescriptors);
 				String description = audioDescriptionService.getAudioDescription(request).orElse("");
-				descriptionAreaText.setText(description);
-				if (typeGroup != null && !typeGroup.isDisposed()) {
-					typeGroup.setEnabled(true);
-					typeLabel.setEnabled(true);
-					for (Button b : typeButtons) {
-						b.setEnabled(true);
-					}
+				if (folder.isDisposed()) {
+					return;
 				}
-				descriptionAreaText.setEnabled(true);
+				folder.setEnabled(true);
+				tab.setEnabled(true);
+				tab.descriptionAreaText.setText(description);
 				setContentDescription(fileDescriptor.getFileName() + " selected");
 			}
 			catch (Exception exc) {
@@ -245,15 +185,46 @@ public class AudioDescriptionView extends ViewPart {
 	/**
 	 * AudioAttributeElement
 	 */
-	private class AudioAttributeElement {
-		private AudioDescriptionType type;
-		private String label;
-		private String description;
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class AudioDescriptionElement {
+		@Getter
+		private final AudioDescriptionType type;
+		private final Label typeInfoLabel;
+		private final Text descriptionAreaText;
 		
-		public AudioAttributeElement(AudioDescriptionType type, String label, String description) {
-			this.label = label;
-			this.type = type;
-			this.description = description;
+		public static AudioDescriptionElement create(AudioDescriptionType type, String label, String description, TabFolder folder) {
+			TabItem item = new TabItem(folder, SWT.NULL);
+			item.setText(label);
+			
+			Composite tabComposite = new Composite(folder, SWT.NONE);
+			tabComposite.setLayout(JFaceUtils.createViewGridLayout(1, false, JFaceUtils.MARGIN_WIDTH, JFaceUtils.MARGIN_TOP));
+			item.setControl(tabComposite);
+			
+			Label typeInfoLabel = new Label(tabComposite, SWT.NONE);
+			typeInfoLabel.setForeground(JFaceUtils.getInfoTextForegroundColor());
+			typeInfoLabel.setText(description);
+			typeInfoLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			
+			// text area
+			Text descriptionAreaText = new Text(tabComposite, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+			GridData textLayoutData = new GridData(GridData.FILL_BOTH);
+			descriptionAreaText.setLayoutData(textLayoutData);
+			
+			return new AudioDescriptionElement(type, typeInfoLabel, descriptionAreaText);
+		}
+		
+		public void setEnabled(boolean b) {
+			typeInfoLabel.setEnabled(b);
+			descriptionAreaText.setEnabled(b);
+		}
+		
+		public String getText() {
+			return descriptionAreaText.getText();
+		}
+		
+		public void dispose() {
+			typeInfoLabel.dispose();
+			descriptionAreaText.dispose();
 		}
 	}
 }

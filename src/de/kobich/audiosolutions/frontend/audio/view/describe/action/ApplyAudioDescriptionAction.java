@@ -15,6 +15,7 @@ import de.kobich.audiosolutions.core.service.describe.AudioDescriptionService;
 import de.kobich.audiosolutions.core.service.describe.AudioDescriptionType;
 import de.kobich.audiosolutions.core.service.describe.SetAudioDescriptionRequest;
 import de.kobich.audiosolutions.frontend.audio.view.describe.AudioDescriptionView;
+import de.kobich.audiosolutions.frontend.audio.view.describe.AudioDescriptionView.AudioDescriptionElement;
 import de.kobich.component.file.FileDescriptor;
 
 /**
@@ -28,8 +29,9 @@ public class ApplyAudioDescriptionAction extends AbstractHandler {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		AudioDescriptionView view = (AudioDescriptionView) window.getActivePage().findView(AudioDescriptionView.ID);
 		if (view != null) {
-			String description = view.getAudioDescription();
-			AudioDescriptionType type = view.getAudioDescriptionType();
+			AudioDescriptionElement tab = view.getAudioDescriptionElement();
+			String description = tab.getText();
+			AudioDescriptionType type = tab.getType();
 			List<FileDescriptor> fileDescriptors = view.getFileDescriptors();
 			
 			try {
