@@ -3,7 +3,6 @@ package de.kobich.audiosolutions.frontend.file.view.rename;
 import java.util.Set;
 
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
@@ -57,14 +56,6 @@ public class RenameFilesViewEventListener extends EventListenerAdapter {
 		}
 	}
 
-	@Override
-	public void partClosed(IWorkbenchPartReference partReference) {
-		IEditorPart editorPart = partReference.getPage().getActiveEditor();
-		if (editorPart == null) {
-			view.fireDeselection();
-		}
-	}
-	
 	@Override
 	public void partOpened(IWorkbenchPartReference partReference) {
 		// fire event of active editor if this view is opened
