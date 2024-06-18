@@ -26,13 +26,13 @@ I hope you enjoy AudioSolutions.
    </configIni>
 
    <launcherArgs>
-      <programArgs>#-data 
+      <programArgs>#-clean
+#-data 
 #@noDefault
 -data 
 /home/christoph/Desktop-PC/Projekte/Java/data/audiosolutions
 #-consoleLog
 #-Dswt.enable.autoScale=true -Dswt.autoScale=200 -Dswt.autoScale.method=nearest
--clean
 --launcher.GTK_version
 2
       </programArgs>
@@ -62,7 +62,7 @@ I hope you enjoy AudioSolutions.
    </launcher>
 
    <vm>
-      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-14</linux>
+      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</linux>
       <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/OSGi%Minimum-1.0</windows>
    </vm>
 
