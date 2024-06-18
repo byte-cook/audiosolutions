@@ -746,6 +746,10 @@
                   label="Show View..."
                   style="push">
             </command>
+            <command
+                  commandId="org.eclipse.ui.window.resetPerspective"
+                  style="push">
+            </command>
             <separator
                   name="de.kobich.menu.window.separator1"
                   visible="true">
@@ -2733,6 +2737,10 @@
     <activityPatternBinding
           activityId="de.kobich.audiosolutions.frontend.ui.disable"
           pattern="org\.eclipse\.ui\.views/.*Outline.*">
+    </activityPatternBinding>
+    <activityPatternBinding
+          activityId="de.kobich.audiosolutions.frontend.ui.disable"
+          pattern="org.eclipse.ui.*/org.eclipse.ui.internal.introview">
     </activityPatternBinding>
    </extension>
    <extension
