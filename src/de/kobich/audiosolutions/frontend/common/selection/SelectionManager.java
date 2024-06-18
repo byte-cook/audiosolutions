@@ -15,10 +15,12 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.SelectionListenerFactory;
 
 import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.playlist.PlaylistEditor;
 import de.kobich.audiosolutions.frontend.audio.editor.search.AudioSearchEditor;
+import de.kobich.audiosolutions.frontend.common.listener.EventListenerAdapter;
 import de.kobich.commons.ListenerList;
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +37,7 @@ import lombok.RequiredArgsConstructor;
  * Editor --registerEditor--> SelectionManager<br/>
  * Editor --fireEvent--> SelectionManager --fireEvent--> listeners (views).
  * 
+ * @see SelectionListenerFactory
  */
 public class SelectionManager implements IPartListener2 {
 	private static final Logger logger = Logger.getLogger(SelectionManager.class);
@@ -113,6 +116,21 @@ public class SelectionManager implements IPartListener2 {
 	public void removePostSelectionListener(ISelectionListener listener) {
 		this.postSelectionListeners.removeListener(listener);
 	}
+	
+	/**
+	 * @see EventListenerAdapter#fireSelectionChangedOfActiveEditor()
+	 */
+//	public void fireSelectionChangedOfActiveEditor(ISelectionListener listener) {
+//		IEditorPart editor = getActiveEditor();
+//		if (editor == null) {
+//			return;
+//		}
+//		
+//		PartSelectionDelegator delegator = this.editorPostDelegator.get(editor);
+//		if (delegator != null) {
+//			listener.selectionChanged(delegator.editor, delegator.lastSelection);
+//		}
+//	}
 
 	@Override
 	public void partOpened(IWorkbenchPartReference partRef) {
