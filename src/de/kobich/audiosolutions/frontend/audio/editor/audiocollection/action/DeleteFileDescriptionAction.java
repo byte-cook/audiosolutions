@@ -7,8 +7,8 @@ import java.util.Set;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -46,7 +46,7 @@ public class DeleteFileDescriptionAction extends AbstractHandler {
 				.ui(ctx -> {
 					FileQueryDialog dialog = FileQueryDialog.createYesNoDialog(ctx.getParent(), ctx.getName(), "Do you really want to delete following file(s)?", fileDescriptors);
 					int status = dialog.open();
-					ctx.setCanceled(IDialogConstants.CANCEL_ID == status);
+					ctx.setCanceled(Window.OK != status);
 				})
 				.worker(ctx -> {
 					Collection<File> files = ConverterUtils.convert(fileDescriptors, FileDescriptorConverter.INSTANCE);
