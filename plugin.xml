@@ -135,8 +135,21 @@
       </command>
       <command
             categoryId="AudioSolutions.FileCategory"
-            id="de.kobich.audiosolutions.commands.file.openWithSystemEditor"
-            name="Open With System Editor">
+            id="de.kobich.audiosolutions.commands.file.openFileBySystem"
+            name="Open File By System">
+      </command>
+      <command
+            id="de.kobich.audiosolutions.commands.file.openFolderBySystem"
+            name="Open Folder By System">
+      </command>
+      <command
+            id="de.kobich.audiosolutions.commands.audio.openTracksOfSelection"
+            name="Open Tracks Of Selection">
+         <commandParameter
+               id="de.kobich.audiosolutions.commands.audio.openTracksOfSelection.type"
+               name="type"
+               optional="false">
+         </commandParameter>
       </command>
       <command
             categoryId="AudioSolutions.FileCategory"
@@ -1076,46 +1089,6 @@
              </command>
           </menuContribution>
           <menuContribution
-                locationURI="popup:de.kobich.audiosolutions.editor.fileCollectionEditor">
-                <command
-                      commandId="de.kobich.audiosolutions.commands.file.openWithSystemEditor"
-                      icon="/icons/file/file.png"
-                      id="de.kobich.menu.filecollectioneditor.openWithSystemEditor"
-                      label="Open With System Editor"
-                      style="push">
-                </command>
-                <separator
-                      name="TestGui.separator1"
-                      visible="true">
-                </separator>
-                <command
-                      commandId="org.eclipse.ui.edit.rename"
-                      icon="/icons/file/rename.png"
-                      id="de.kobich.menu.filecollectioneditor.renameFileDescriptor"
-                      label="Rename..."
-                      style="push">
-                </command>
-                <command
-                      commandId="org.eclipse.ui.edit.delete"
-                      icon="/icons/file/delete.png"
-                      label="Delete..."
-                      style="push">
-                </command>
-                <separator
-                      name="TestGui.separator2"
-                      visible="true">
-                </separator>
-                <command
-                      commandId="de.kobich.audiosolutions.commands.openPreferences"
-                      label="Preferences..."
-                      style="push">
-                   <parameter
-                         name="de.kobich.audiosolutions.commands.openPreferences.pageId"
-                         value="de.kobich.audiosolutions.preferences.general">
-                   </parameter>
-                </command>
-          </menuContribution>
-          <menuContribution
                 locationURI="popup:de.kobich.audiosolutions.editor.audioCollectionEditor">
              <command
                    commandId="org.eclipse.ui.file.save"
@@ -1123,13 +1096,52 @@
                    style="push">
              </command>
              <command
-                   commandId="de.kobich.audiosolutions.commands.file.openWithSystemEditor"
+                   commandId="de.kobich.audiosolutions.commands.file.openFileBySystem"
                    icon="/icons/file/file.png"
-                   label="Open With System Editor"
+                   label="Open File By System"
+                   style="push">
+             </command>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.file.openFolderBySystem"
+                   icon="icons/file/folder.png"
                    style="push">
              </command>
              <separator
                    name="de.kobich.audiosolutions.separator1"
+                   visible="true">
+             </separator>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.audio.openTracksOfSelection"
+                   icon="icons/audio/artist.png"
+                   label="Open All Tracks Of The Selected Artist"
+                   style="push">
+                <parameter
+                      name="de.kobich.audiosolutions.commands.audio.openTracksOfSelection.type"
+                      value="artist">
+                </parameter>
+             </command>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.audio.openTracksOfSelection"
+                   icon="icons/audio/album.png"
+                   label="Open All Tracks Of The Selected Album"
+                   style="push">
+                <parameter
+                      name="de.kobich.audiosolutions.commands.audio.openTracksOfSelection.type"
+                      value="album">
+                </parameter>
+             </command>
+             <command
+                   commandId="de.kobich.audiosolutions.commands.audio.openTracksOfSelection"
+                   icon="icons/audio/audio-file.png"
+                   label="Open Similar Tracks"
+                   style="push">
+                <parameter
+                      name="de.kobich.audiosolutions.commands.audio.openTracksOfSelection.type"
+                      value="track">
+                </parameter>
+             </command>
+             <separator
+                   name="de.kobich.audiosolutions.separator2"
                    visible="true">
              </separator>
              <command
@@ -1174,7 +1186,7 @@
                    style="push">
              </command>
              <separator
-                   name="de.kobich.audiosolutions.separator2"
+                   name="de.kobich.audiosolutions.separator3"
                    visible="true">
              </separator>
              <command
@@ -1190,7 +1202,7 @@
                    style="push">
              </command>
              <separator
-                   name="de.kobich.audiosolutions.separator3"
+                   name="de.kobich.audiosolutions.separator4"
                    visible="true">
              </separator>
              <menu
@@ -1274,7 +1286,7 @@
                 </command>
              </menu>
              <separator
-                   name="de.kobich.audiosolutions.separator4"
+                   name="de.kobich.audiosolutions.separator5"
                    visible="true">
              </separator>
              <command
@@ -1287,7 +1299,7 @@
                 </parameter>
              </command>
              <separator
-                   name="de.kobich.audiosolutions.separator5"
+                   name="de.kobich.audiosolutions.separator6"
                    visible="true">
              </separator>
              <command
@@ -1301,7 +1313,7 @@
                    style="push">
              </command>
              <separator
-                   name="de.kobich.audiosolutions.separator6"
+                   name="de.kobich.audiosolutions.separator7"
                    visible="true">
              </separator>
              <command
@@ -1650,11 +1662,11 @@
    <extension
          point="org.eclipse.ui.handlers">
          <handler
-               commandId="de.kobich.audiosolutions.commands.file.openWithSystemEditor">
+               commandId="de.kobich.audiosolutions.commands.file.openFileBySystem">
             <class
-                  class="de.kobich.audiosolutions.frontend.common.action.OpenWithSystemEditorAction">
+                  class="de.kobich.audiosolutions.frontend.common.action.OpenFileBySystemAction">
             </class>
-            <activeWhen>
+            <enabledWhen>
                <with
                      variable="fileDescriptorSelection">
                   <iterate
@@ -1666,8 +1678,33 @@
                      </test>
                   </iterate>
                </with>
-            </activeWhen>
+            </enabledWhen>
          </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.common.action.OpenFolderBySystemAction"
+            commandId="de.kobich.audiosolutions.commands.file.openFolderBySystem">
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <test
+                        property="fileDescriptor.exists"
+                        value="true">
+                  </test>
+               </iterate>
+            </with>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="de.kobich.audiosolutions.frontend.audio.action.OpenTracksOfSelectionAction"
+            commandId="de.kobich.audiosolutions.commands.audio.openTracksOfSelection">
+         <activeWhen>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference></activeWhen>
+      </handler>
          <handler
                commandId="org.eclipse.ui.edit.delete">
             <class
@@ -1729,12 +1766,9 @@
                   class="de.kobich.audiosolutions.frontend.audio.action.ModifyImportDirectoryAction">
             </class>
             <activeWhen>
-               <with
-                     variable="activeEditorId">
-                  <equals
-                        value="de.kobich.audiosolutions.editor.audioCollectionEditor">
-                  </equals>
-               </with>
+               <reference
+                     definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+               </reference>
             </activeWhen>
          </handler>
       <handler
@@ -1863,35 +1897,32 @@
                class="de.kobich.audiosolutions.frontend.audio.view.id3.action.SetID3TagsByAudioDataAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="id3TagView.fileSelected">
-                  <equals
-                        value="true">
-                  </equals>
-               </with>
-               <with
-                     variable="activeEditorId">
-                  <equals
-                        value="de.kobich.audiosolutions.editor.audioCollectionEditor">
-                  </equals>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
-      </handler>
-      <handler
-            commandId="de.kobich.audiosolutions.commands.view.id3tag.setID3TagsByStructure">
-         <class
-               class="de.kobich.audiosolutions.frontend.audio.view.id3.action.SetID3TagsByStructureAction">
-         </class>
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="id3TagView.fileSelected">
                <equals
                      value="true">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
+      </handler>
+      <handler
+            commandId="de.kobich.audiosolutions.commands.view.id3tag.setID3TagsByStructure">
+         <class
+               class="de.kobich.audiosolutions.frontend.audio.view.id3.action.SetID3TagsByStructureAction">
+         </class>
+         <enabledWhen>
+            <with
+                  variable="id3TagView.fileSelected">
+               <equals
+                     value="true">
+               </equals>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.view.id3tag.pinView">
@@ -1911,21 +1942,18 @@
                class="de.kobich.audiosolutions.frontend.audio.action.EditAudioDataAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <count
-                        value="+">
-                  </count>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <count
+                     value="+">
+               </count>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.assignFilesToSameAlbum">
@@ -1933,21 +1961,18 @@
                class="de.kobich.audiosolutions.frontend.audio.action.AssignFilesToSameAlbumAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <count
-                        value="+">
-                  </count>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <count
+                     value="+">
+               </count>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.setAudioDataByID3Tags">
@@ -1955,21 +1980,18 @@
                class="de.kobich.audiosolutions.frontend.audio.action.SetAudioDataByID3TagsAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <count
-                        value="+">
-                  </count>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <count
+                     value="+">
+               </count>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.setAudioDataByStructure">
@@ -1977,21 +1999,18 @@
                class="de.kobich.audiosolutions.frontend.audio.action.SetAudioDataByStructureAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <count
-                        value="+">
-                  </count>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <count
+                     value="+">
+               </count>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.setAudioDataByCDDB">
@@ -1999,21 +2018,18 @@
                class="de.kobich.audiosolutions.frontend.audio.action.SetAudioDataByCDDBAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <count
-                        value="+">
-                  </count>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <count
+                     value="+">
+               </count>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.setAudioDataByText">
@@ -2021,21 +2037,18 @@
                class="de.kobich.audiosolutions.frontend.audio.action.SetAudioDataByTextAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <count
-                        value="+">
-                  </count>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <count
+                     value="+">
+               </count>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.audio.removeAudioData">
@@ -2043,29 +2056,26 @@
                class="de.kobich.audiosolutions.frontend.audio.action.RemoveAudioDataAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <count
-                        value="+">
-                  </count>
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <test
-                           property="fileDescriptor.hasAudioData"
-                           value="true">
-                     </test>
-                  </iterate>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <count
+                     value="+">
+               </count>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <test
+                        property="fileDescriptor.hasAudioData"
+                        value="true">
+                  </test>
+               </iterate>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             class="de.kobich.audiosolutions.frontend.audio.view.play.action.PlayAudioFileAction"
@@ -2119,14 +2129,14 @@
          <class
                class="de.kobich.audiosolutions.frontend.audio.view.play.action.RemoveFilesFromPlayerAction">
          </class>
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="audioPlayView.playListEmpty">
                <equals
                      value="false">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
             class="de.kobich.audiosolutions.frontend.audio.view.play.action.PauseAudioFileAction"
@@ -2171,26 +2181,26 @@
       <handler
             class="de.kobich.audiosolutions.frontend.audio.view.play.action.PreviousAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.PreviousAudioFile">
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="audioPlayView.playing">
                <equals
                      value="true">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
             class="de.kobich.audiosolutions.frontend.audio.view.play.action.NextAudioFileAction"
             commandId="de.kobich.audiosolutions.commands.audio.NextAudioFile">
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="audioPlayView.playing">
                <equals
                      value="true">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
             class="de.kobich.audiosolutions.frontend.audio.view.play.action.ToggleLoopEnabledAction"
@@ -2201,14 +2211,14 @@
          <class
                class="de.kobich.audiosolutions.frontend.audio.view.describe.action.ApplyAudioDescriptionAction">
          </class>
-         <activeWhen>
+         <enabledWhen>
             <with
-                  variable="audioDescriptionView.modified">
+                  variable="audioPlayView.playing">
                <equals
                      value="true">
                </equals>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.audio.createFileStructureByAudioData">
@@ -2216,37 +2226,34 @@
                class="de.kobich.audiosolutions.frontend.audio.action.CreateFileStructureByAudioDataAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <test
-                           property="fileDescriptor.hasAudioData"
-                           value="true">
-                     </test>
-                     <test
-                           property="fileDescriptor.exists"
-                           value="true">
-                     </test>
-                  </iterate>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <test
+                        property="fileDescriptor.hasAudioData"
+                        value="true">
+                  </test>
+                  <test
+                        property="fileDescriptor.exists"
+                        value="true">
+                  </test>
+               </iterate>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.view.artists.openTracksOfArtists">
          <class
                class="de.kobich.audiosolutions.frontend.audio.view.artists.action.OpenTracksOfArtistAction">
          </class>
-         <activeWhen>
+         <enabledWhen>
             <with
                   variable="selection">
                <iterate
@@ -2257,7 +2264,7 @@
                   </instanceof>
                </iterate>
             </with>
-         </activeWhen>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.audio.convertFiles">
@@ -2265,26 +2272,23 @@
                class="de.kobich.audiosolutions.frontend.audio.action.ConvertFilesAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <test
-                           property="fileDescriptor.exists"
-                           value="true">
-                     </test>
-                  </iterate>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <test
+                        property="fileDescriptor.exists"
+                        value="true">
+                  </test>
+               </iterate>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             commandId="de.kobich.audiosolutions.commands.view.artists.copyArtistsToClipboard">
@@ -2308,25 +2312,23 @@
                class="de.kobich.audiosolutions.frontend.audio.action.CheckAudioFilesAction">
          </class>
          <activeWhen>
-            <and>
-               <with
-                     variable="activeCollectionEditor">
-                  <instanceof
-                        value="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor">
-                  </instanceof>
-               </with>
-               <with
-                     variable="fileDescriptorSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="or">
-                     <test
-                           property="fileDescriptor.exists"
-                           value="true">
-                     </test></iterate>
-               </with>
-            </and>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
+         <enabledWhen>
+            <with
+                  variable="fileDescriptorSelection">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <test
+                        property="fileDescriptor.exists"
+                        value="true">
+                  </test>
+               </iterate>
+            </with>
+         </enabledWhen>
       </handler>
       <handler
             class="de.kobich.audiosolutions.frontend.audio.editor.playlist.action.AddFilesToPlaylistAction"
@@ -2356,12 +2358,9 @@
             class="de.kobich.audiosolutions.frontend.audio.editor.audiocollection.action.ConfigureAudioCollectionColumnsAction"
             commandId="de.kobich.audiosolutions.commands.editor.configureColumns">
          <activeWhen>
-            <with
-                  variable="activeEditorId">
-               <equals
-                     value="de.kobich.audiosolutions.editor.audioCollectionEditor">
-               </equals>
-            </with>
+            <reference
+                  definitionId="de.kobich.audiosolutions.isAudioCollectionEditor">
+            </reference>
          </activeWhen>
       </handler>
    </extension>
@@ -2677,5 +2676,17 @@
             Wizard that import audio collections
          </description>
       </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+      <definition
+            id="de.kobich.audiosolutions.isAudioCollectionEditor">
+         <with
+               variable="activeEditorId">
+            <equals
+                  value="de.kobich.audiosolutions.editor.audioCollectionEditor">
+            </equals>
+         </with>
+      </definition>
    </extension>
 </plugin>
