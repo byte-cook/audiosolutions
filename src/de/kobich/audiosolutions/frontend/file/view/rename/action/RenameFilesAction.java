@@ -14,12 +14,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
 import de.kobich.audiosolutions.frontend.common.selection.SelectionManager;
 import de.kobich.audiosolutions.frontend.common.ui.FileResultDialog;
-import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesView;
 import de.kobich.audiosolutions.frontend.file.view.rename.RenameFilesViewSourceProvider;
 import de.kobich.audiosolutions.frontend.file.view.rename.model.FileModel;
@@ -45,7 +45,7 @@ public class RenameFilesAction extends AbstractHandler {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		final RenameFilesView view = (RenameFilesView) window.getActivePage().findView(RenameFilesView.ID);
 		final FileModel fileModel = view.getFileModel();
-		final ICollectionEditor editor = SelectionManager.INSTANCE.getActiveEditor(ICollectionEditor.class);
+		final AudioCollectionEditor editor = SelectionManager.INSTANCE.getActiveEditor(AudioCollectionEditor.class);
 
 		List<RunningState> states = Arrays.asList(RunningState.UI_1, RunningState.WORKER_1, RunningState.UI_2);
 		JFaceThreadRunner runner = new JFaceThreadRunner("Rename Files", window.getShell(), states) {

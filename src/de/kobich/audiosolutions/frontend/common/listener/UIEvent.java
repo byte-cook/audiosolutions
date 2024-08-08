@@ -2,8 +2,8 @@ package de.kobich.audiosolutions.frontend.common.listener;
 
 import javax.annotation.Nullable;
 
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.common.ui.editor.CollectionEditorDelta;
-import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import lombok.Getter;
 
 /**
@@ -28,7 +28,7 @@ public class UIEvent {
 	 * @param type
 	 * @param actionEditor editor which initiated this event
 	 */
-	public UIEvent(ActionType type, @Nullable ICollectionEditor actionEditor) {
+	public UIEvent(ActionType type, @Nullable AudioCollectionEditor actionEditor) {
 		this.actionType = type;
 		this.editorDelta = actionEditor != null ? new CollectionEditorDelta(type, actionEditor) : null;
 		switch (type) {

@@ -17,11 +17,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import de.kobich.audiosolutions.core.AudioSolutions;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.common.listener.ActionType;
 import de.kobich.audiosolutions.frontend.common.listener.EventSupport;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
 import de.kobich.audiosolutions.frontend.common.ui.QueryTextDialog;
-import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import de.kobich.commons.ui.jface.JFaceThreadRunner;
 import de.kobich.commons.ui.jface.JFaceThreadRunner.RunningState;
 import de.kobich.component.file.DefaultFileDescriptorComparator;
@@ -42,8 +42,7 @@ public class RenameFileDescriptorsAction extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		final IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		IEditorPart editorPart = window.getActivePage().getActiveEditor();
-		if (editorPart instanceof ICollectionEditor) {
-			final ICollectionEditor editor = (ICollectionEditor) editorPart;
+		if (editorPart instanceof AudioCollectionEditor editor) {
 			Set<FileDescriptor> fileDescriptors = editor.getFileDescriptorSelection().getFileDescriptors();
 			if (fileDescriptors.isEmpty()) {
 				return null;
