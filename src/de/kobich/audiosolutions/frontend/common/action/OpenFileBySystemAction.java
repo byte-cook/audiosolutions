@@ -13,7 +13,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.commons.ui.jface.StatusLineUtils;
 import de.kobich.component.file.FileDescriptor;
 
@@ -21,22 +21,17 @@ import de.kobich.component.file.FileDescriptor;
 /**
  * Opens a file by system editor.
  */
-public class OpenWithSystemEditorAction extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(OpenWithSystemEditorAction.class);
-	public static final String ID = "de.kobich.audiosolutions.commands.file.openWithSystemEditor";
+public class OpenFileBySystemAction extends AbstractHandler {
+	private static final Logger logger = Logger.getLogger(OpenFileBySystemAction.class);
+	public static final String ID = "de.kobich.audiosolutions.commands.file.openFileBySystem";
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-	 */
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
 		try {
 			IEditorPart editorPart = window.getActivePage().getActiveEditor();
-			if (editorPart instanceof ICollectionEditor) {
-				ICollectionEditor fileCollectionEditor = (ICollectionEditor) editorPart;
-				Set<FileDescriptor> fileDescriptors = fileCollectionEditor.getFileDescriptorSelection().getFileDescriptors();
+			if (editorPart instanceof AudioCollectionEditor audioCollectionEditor) {
+				Set<FileDescriptor> fileDescriptors = audioCollectionEditor.getFileDescriptorSelection().getFileDescriptors();
 				
 				// open all selected files
 				boolean allFilesExist = true;
