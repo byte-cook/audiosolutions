@@ -6,9 +6,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
+import de.kobich.audiosolutions.frontend.audio.editor.audiocollection.AudioCollectionEditor;
 import de.kobich.audiosolutions.frontend.common.listener.EventListenerAdapter;
 import de.kobich.audiosolutions.frontend.common.listener.UIEvent;
-import de.kobich.audiosolutions.frontend.common.ui.editor.ICollectionEditor;
 import de.kobich.audiosolutions.frontend.common.util.FileDescriptorSelection;
 import de.kobich.audiosolutions.frontend.file.view.rename.ui.RenameFilesPreviewListener;
 import de.kobich.component.file.FileDescriptor;
@@ -28,8 +28,7 @@ public class RenameFilesViewEventListener extends EventListenerAdapter {
 	 */
 	@Override
 	public void selectionChanged(IWorkbenchPart workbenchPart, ISelection selection) {
-		if (workbenchPart instanceof ICollectionEditor) {
-			ICollectionEditor collectionEditor = (ICollectionEditor) workbenchPart;
+		if (workbenchPart instanceof AudioCollectionEditor collectionEditor) {
 			FileDescriptorSelection util = collectionEditor.getFileDescriptorSelection();
 			
 			Set<FileDescriptor> fileDescriptors = util.getFileDescriptors();
@@ -68,7 +67,7 @@ public class RenameFilesViewEventListener extends EventListenerAdapter {
 	public void eventFired(UIEvent event) {
 		switch (event.getActionType()) {
 		case FILE:
-			view.getFileModel().reloadFiles();
+			view.getFileModel().reload();
 			previewListener.updatePreview();
 			break;
 		case AUDIO_DATA:

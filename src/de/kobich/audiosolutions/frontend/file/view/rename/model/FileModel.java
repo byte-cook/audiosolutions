@@ -40,7 +40,7 @@ public class FileModel {
 		renameables.remove(renameable);
 	}
 	
-	public void reloadFiles() {
+	public void reload() {
 		for (RenameFileDescriptor renameable : renameables) {
 			renameable.reload();
 		}
