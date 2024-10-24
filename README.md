@@ -30,13 +30,13 @@ sudo apt install openjdk-17-jdk
 2. Download latest AudioSolutions version from /releases/:
 
 ```
-curl -LJO https://raw.githubusercontent.com/byte-cook/audiosolutions/main/releases/audiosolutions-10.0.0-rc-linux-x86_64.tar.xz
+curl -LJO https://raw.githubusercontent.com/byte-cook/audiosolutions/main/releases/audiosolutions-10.0.0-linux-x86_64.tar.xz
 ```
 
 3. Unpack the file into any directory or use opt.py:
 
 ```
-sudo opt.py update audiosolutions --delete --keep /opt/audiosolutions/audiosolutions.ini audiosolutions-10.0.0-rc-linux-x86_64.tar.xz
+sudo opt.py update audiosolutions --delete --keep /opt/audiosolutions/audiosolutions.ini audiosolutions-10.0.0-linux-x86_64.tar.xz
 ```
 
 4. (optional) Install third party tools:
