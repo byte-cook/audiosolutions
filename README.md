@@ -36,7 +36,7 @@ curl -LJO https://raw.githubusercontent.com/byte-cook/audiosolutions/main/releas
 3. Unpack the file into any directory or use opt.py:
 
 ```
-sudo opt.py update audiosolutions --delete --keep /opt/audiosolutions/audiosolutions.ini audiosolutions-10.0.0-linux-x86_64.tar.xz
+sudo opt.py install audiosolutions audiosolutions-10.0.0-linux-x86_64.tar.xz
 ```
 
 4. (optional) Install third party tools:
@@ -47,3 +47,18 @@ sudo apt install faac faad flac lame libmad0 libmpcdec6 mppenc vorbis-tools wavp
 
 5. Run audiosolutions binary
 
+## Update
+
+1. Download latest AudioSolutions version from /releases/:
+
+```
+curl -LJO https://raw.githubusercontent.com/byte-cook/audiosolutions/main/releases/audiosolutions-10.0.0-linux-x86_64.tar.xz
+```
+
+2. Unpack the file into any directory or use opt.py:
+
+```
+sudo opt.py update audiosolutions --delete --keep /opt/audiosolutions/audiosolutions.ini audiosolutions-10.0.0-linux-x86_64.tar.xz
+```
+
+3. Run audiosolutions binary
