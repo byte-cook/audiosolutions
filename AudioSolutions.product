@@ -61,10 +61,15 @@ I hope you enjoy AudioSolutions.
       </win>
    </launcher>
 
+
    <vm>
       <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17</linux>
       <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/OSGi%Minimum-1.0</windows>
    </vm>
+
+   <license>
+        <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+   </license>
 
    <plugins>
       <plugin id="com.ibm.icu"/>
