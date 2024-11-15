@@ -33,7 +33,7 @@ sudo apt install openjdk-17-jdk
 curl -LJO https://raw.githubusercontent.com/byte-cook/audiosolutions/main/releases/audiosolutions-10.0.0-linux-x86_64.tar.xz
 ```
 
-3. Unpack the file into any directory or use opt.py:
+3. Unpack the file into any directory or use [opt.py](https://github.com/byte-cook/opt):
 
 ```
 sudo opt.py install audiosolutions audiosolutions-10.0.0-linux-x86_64.tar.xz
@@ -42,10 +42,18 @@ sudo opt.py install audiosolutions audiosolutions-10.0.0-linux-x86_64.tar.xz
 4. (optional) Install third party tools:
 
 ```
-sudo apt install faac faad flac lame libmad0 libmpcdec6 mppenc vorbis-tools wavpack 
+sudo apt install faac faad flac lame libmad0 libmpcdec6 mppenc vorbis-tools wavpack mp3gain
 ```
 
-5. Run audiosolutions binary
+5. (optional) Create menu entry in your desktop with opt.py:
+
+```
+curl -LJO https://raw.githubusercontent.com/byte-cook/audiosolutions/main/desktop/audiosolutions.desktop
+curl -LJO https://raw.githubusercontent.com/byte-cook/audiosolutions/main/desktop/audiosolutions-48.png
+sudo opt.py desktop audiosolutions audiosolutions.desktop audiosolutions-48.png
+```
+
+6. Run audiosolutions binary
 
 ## Update
 

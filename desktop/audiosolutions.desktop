@@ -1,0 +1,17 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=AudioSolutions
+Name[de]=AudioSolutions
+Exec=audiosolutions
+Icon=audiosolutions-48
+#Icon[de_DE]=icon-48
+#Encoding=UTF-8
+Comment=Manage audio files
+#StartupNotify=false
+Categories=AudioVideo;Audio
+#OnlyShowIn=GNOME;XFCE;
+#MimeType=video/mpeg;audio/mpeg;
+X-Desktop-File-Install-Version=0.20
+
